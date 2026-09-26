@@ -18,6 +18,7 @@ reporting.
 
 ### Added
 
+- `Visit` entity for passing validated visit data between processing activities, independent of database persistence.
 - Generic `DbMgr` with parameterized queries, UTC connections, transaction rollback, read-only transactions, and explicit connection cleanup.
 - Separate visitor schema activity with reporting indexes and relational constraints, designed for repeatable installation and upgrade setup.
 - PyMySQL dependency, focused database tests, and a data access guide linked from the documentation index.

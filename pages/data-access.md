@@ -11,6 +11,11 @@ Application operations belong in domain database interfaces, which use the
 generic `mycount/interface/DbMgr.py` bridge. That bridge owns the MariaDB
 connection, cursors, SQL execution, and transaction mechanics.
 
+`mycount/entity/Visit.py` holds validated visit data during processing. It is
+an immutable dataclass with no database operations. Processing activities can
+return enriched copies using `dataclasses.replace`; validation belongs at the
+input boundary and persistence belongs in the database interface.
+
 ## Connection and transactions
 
 The Python code requires Python 3.11 or later and the dependencies declared in
