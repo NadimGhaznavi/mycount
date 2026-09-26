@@ -16,6 +16,13 @@ import pymysql
 
 from mycount.activity.VisitorSchema import VisitorSchema
 from mycount.interface.DbMgr import DbMgr
+from mycount.activity.GeoIpSchema import GeoIpSchema
+from mycount.activity.UpdateGeoIp import UpdateGeoIp
+from mycount.interface.GeoIp import GeoIp
+from mycount.interface.GeoIpImportDb import GeoIpImportDb
+from mycount.interface.VisitDb import VisitDb
+from mycount.entity.Visit import Visit
+from test_geoip import FixtureGeoIpSource, archive
 
 
 @unittest.skipUnless(shutil.which("mariadb-install-db") and shutil.which("mariadbd"),
@@ -70,6 +77,7 @@ class DatabaseTests(unittest.TestCase):
         if cls.db.query("SHOW TABLES"):
             raise AssertionError("DbMgr must not initialize the schema")
         VisitorSchema(cls.db).apply()
+        GeoIpSchema(cls.db).apply()
 
     @classmethod
     def stop_server(cls):
@@ -83,6 +91,73 @@ class DatabaseTests(unittest.TestCase):
     def tearDown(self):
         self.db.execute("DELETE FROM page_views")
         self.db.execute("DELETE FROM pages")
+        self.db.execute("DELETE FROM geoip_ranges")
+
+    def test_geoip_refresh_and_both_address_families(self):
+        counts = UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()
+        self.assertEqual(counts, {4: 1, 6: 2})
+        reader = DbMgr()
+        try:
+            geo = GeoIp(reader)
+            for ip in ("8.8.8.0", "8.8.8.255", "::ffff:8.8.8.8", "2606:4700::1"):
+                self.assertEqual(geo.locate(ip).city_name, "Example")
+            self.assertEqual(geo.locate("2606:4700:10::1").city_name, "Specific")
+            # A gap after the nested range must still match the enclosing range.
+            self.assertEqual(geo.locate("2606:4700:10::100").city_name, "Example")
+            for ip in ("8.8.9.0", "127.0.0.1", "::1", "2607::1"):
+                self.assertIsNone(geo.locate(ip).country_code)
+        finally:
+            reader.close()
+        UpdateGeoIp(FixtureGeoIpSource(city="Updated"), GeoIpImportDb(self.db)).run()
+        self.assertEqual(GeoIp(self.db).locate("8.8.8.8").city_name, "Updated")
+
+    def test_failed_second_download_preserves_both_active_families(self):
+        database = GeoIpImportDb(self.db)
+        UpdateGeoIp(FixtureGeoIpSource(city="Original"), database).run()
+        with self.assertRaises(OSError):
+            UpdateGeoIp(FixtureGeoIpSource(fail_version=6, city="New"), database).run()
+        self.assertEqual(GeoIp(self.db).locate("8.8.8.8").city_name, "Original")
+        self.assertEqual(GeoIp(self.db).locate("2606:4700::1").city_name, "Original")
+        self.assertEqual(self.db.query("SHOW TABLES LIKE 'geoip_ranges_next'"), [])
+        # The lock is released even after failure, allowing the next update.
+        UpdateGeoIp(FixtureGeoIpSource(city="Retry"), database).run()
+        self.assertEqual(GeoIp(self.db).locate("8.8.8.8").city_name, "Retry")
+
+    def test_empty_second_file_does_not_publish(self):
+        class EmptySource(FixtureGeoIpSource):
+            def download(self, version, destination):
+                if version == 6:
+                    archive(destination, version, [])
+                else:
+                    super().download(version, destination)
+        with self.assertRaisesRegex(ValueError, "empty"):
+            UpdateGeoIp(EmptySource(), GeoIpImportDb(self.db)).run()
+        self.assertEqual(self.db.query("SELECT * FROM geoip_ranges"), [])
+
+    def test_geoip_refresh_lock_excludes_another_connection(self):
+        reader = DbMgr()
+        try:
+            with GeoIpImportDb(self.db).refresh():
+                with self.assertRaisesRegex(RuntimeError, "already running"):
+                    with GeoIpImportDb(reader).refresh():
+                        self.fail("A second importer entered the refresh")
+        finally:
+            reader.close()
+
+    def test_city_migration_and_visit_round_trip(self):
+        self.db.execute("ALTER TABLE page_views MODIFY city_name VARCHAR(128) NULL")
+        view_id = self.view(self.page())
+        VisitorSchema(self.db).apply()
+        self.assertEqual(self.db.query("SELECT page_view_id FROM page_views")[0]["page_view_id"], view_id)
+        city = "É" * 137
+        visit = Visit(site="mycount", url="https://example.com/other", received_at=datetime.now(timezone.utc),
+                      city_name=city, languages=("en-CA", "fr"))
+        first = VisitDb(self.db).record(visit)
+        second = VisitDb(self.db).record(visit)
+        rows = self.db.query("SELECT page_id, city_name FROM page_views WHERE page_view_id IN (%s, %s)", (first, second))
+        self.assertEqual(rows[0], rows[1])
+        self.assertEqual(rows[0]["city_name"], city)
+        self.assertEqual(self.db.query("SELECT COUNT(*) AS n FROM page_view_languages")[0]["n"], 4)
 
     def page(self, url="https://example.com/products/", site="mycount"):
         return self.db.insert("INSERT INTO pages(site, url) VALUES (%s, %s)", (site, url))

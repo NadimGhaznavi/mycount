@@ -21,7 +21,7 @@ input boundary and persistence belongs in the database interface.
 The Python code requires Python 3.11 or later and the dependencies declared in
 `requirements.txt`. `DbMgr` reads `DB_HOST`, `DB_NAME`, `DB_USER`, and
 `DB_PASSWORD` from the process environment. `DB_PORT` defaults to `3306`.
-The future installer will store credentials in `/etc/mycount/database.env`;
+The installer stores credentials in `/etc/mycount/database.env`;
 the service launcher must supply them to the process. The database manager
 does not execute or load that file itself.
 
@@ -46,14 +46,15 @@ the credentials present in the environment, the schema entry point is:
 python3 -B -m mycount.activity.VisitorSchema
 ```
 
-The future install and upgrade scripts will invoke this entry point. It
-creates missing tables and preserves existing records on repeated runs.
-Future changes to existing tables require explicit migrations; rerunning
+The installer explicitly applies `VisitorSchema` and `GeoIpSchema`. Setup
+creates missing tables and preserves existing visitor records on repeated
+runs. Changes to existing tables use explicit migrations; rerunning
 `CREATE TABLE IF NOT EXISTS` does not alter them.
 
 The schema provides relational constraints and reporting indexes. Its
-definition lives in the source code. Collection, fingerprint generation, and
-the installation scripts remain separate work.
+definition lives in the source code. GeoIP source access, reference-data
+refresh, lookups, and visit persistence each have a separate component using
+the shared database bridge. Fingerprint generation remains unfinished.
 
 ## Focused checks
 
@@ -62,11 +63,12 @@ installed:
 
 ```sh
 python3 -B -m unittest discover -s tests -p 'test_db_mgr.py' -v
+python3 -B -m unittest discover -s tests -p 'test_geoip.py' -v
 PATH="/usr/sbin:$PATH" python3 -B -m unittest discover -s tests -p 'test_database.py' -v
 ```
 
-The first command tests database mechanics with a mocked connection. The
-second starts a disposable MariaDB instance under a temporary directory,
+The first two commands test database mechanics and CSV parsing locally. The
+last starts a disposable MariaDB instance under a temporary directory,
 tests the actual schema and transactions, and removes the instance afterward.
 It requires `mariadb-install-db` and `mariadbd` on `PATH` and permission to
 open a local listening socket. It does not use an existing database server.

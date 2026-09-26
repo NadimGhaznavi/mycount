@@ -47,6 +47,11 @@ class DbMgr:
             cursor.execute(sql, params)
             return cursor.lastrowid
 
+    def execute_many(self, sql: str, rows: Sequence[Sequence[Any]]) -> int:
+        """Execute a batch with bound parameters and return the affected count."""
+        with self._connection.cursor() as cursor:
+            return cursor.executemany(sql, rows)
+
     def query(self, sql: str, params: Sequence[Any] | Mapping[str, Any] = ()) -> list[dict[str, Any]]:
         """Return materialized rows; cursors never escape this interface."""
         with self._connection.cursor() as cursor:

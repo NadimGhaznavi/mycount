@@ -1,6 +1,7 @@
 """Explicit visitor schema setup for installation and upgrades."""
 
 from mycount.interface.DbMgr import DbMgr
+from mycount.constants.DMyCount import DMyCount
 
 
 class VisitorSchema:
@@ -23,7 +24,7 @@ class VisitorSchema:
                 UNIQUE KEY uq_page_site_url (site, url_hash)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
         """)
-        self._db.execute("""
+        self._db.execute(f"""
             CREATE TABLE IF NOT EXISTS page_views (
                 page_view_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
                 page_id BIGINT UNSIGNED NOT NULL,
@@ -31,7 +32,7 @@ class VisitorSchema:
                 country_code CHAR(2) CHARACTER SET ascii COLLATE ascii_bin NULL,
                 region_code VARCHAR(32) NULL,
                 region_name VARCHAR(128) NULL,
-                city_name VARCHAR(128) NULL,
+                city_name VARCHAR({DMyCount.CITY_NAME_LENGTH}) NULL,
                 browser_family VARCHAR(64) NULL,
                 os_family VARCHAR(64) NULL,
                 device_category VARCHAR(16) NULL,
@@ -51,6 +52,12 @@ class VisitorSchema:
                 CONSTRAINT fk_view_page FOREIGN KEY (page_id) REFERENCES pages(page_id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
         """)
+        width = self._db.query("""
+            SELECT CHARACTER_MAXIMUM_LENGTH AS width FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'page_views' AND COLUMN_NAME = 'city_name'
+        """)[0]["width"]
+        if width < DMyCount.CITY_NAME_LENGTH:
+            self._db.execute(f"ALTER TABLE page_views MODIFY city_name VARCHAR({DMyCount.CITY_NAME_LENGTH}) NULL")
         self._db.execute("""
             CREATE TABLE IF NOT EXISTS page_view_languages (
                 page_view_id BIGINT UNSIGNED NOT NULL,

@@ -12,7 +12,8 @@ and other teams.
 
 This page describes the intended project. An initial
 [browser client and live example]({% link pages/client.md %}) are available;
-the visitor collection service is not yet implemented.
+the collector skeleton and installation scripts are available. Public-endpoint
+deployment and fingerprinting remain unfinished.
 
 ## Two components
 
@@ -36,5 +37,5 @@ Fingerprinting is not yet implemented in the example client.
 
 MyCount will use no cookies or client-side tracking storage. Fingerprinting
 introduces a retained pseudonymous identifier; the design does not promise
-anonymous collection. IP addresses will not be retained, including in
+anonymous collection. Visitor IP addresses will not be retained, including in
 application and proxy logs.

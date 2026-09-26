@@ -35,6 +35,8 @@ exclude:
   - LICENSE
   - mycount
   - scripts
+  - systemd
+  - requirements.txt
   - tests
   - vendor
   - .venv

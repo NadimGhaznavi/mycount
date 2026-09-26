@@ -1,0 +1,21 @@
+[Unit]
+Description=MyCount visitor collection service
+After=network.target mariadb.service
+Wants=mariadb.service
+
+[Service]
+Type=simple
+User=@USER@
+Group=@USER@
+WorkingDirectory=@APP@
+EnvironmentFile=@DATABASE_ENV@
+ExecStart=@APP@/.venv/bin/python -B -u -m mycount.server
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target

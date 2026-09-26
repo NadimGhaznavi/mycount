@@ -45,10 +45,10 @@ current payload. The planned fingerprinting support described in the
 
 ## Service requirements and manual verification
 
-The service implementation is still pending. The configured root URL is the
-initial collection target; update it if the service defines a different path.
-It must accept the client's JSON payload, validate incoming data, and return a
-successful HTTP status such as `204` after accepting an event.
+The collector skeleton accepts the client's JSON payload at `/` and returns
+`204` after storing an event. See [installation]({% link pages/installation.md %})
+for setup. Public HTTPS routing and trusted visitor-IP forwarding remain
+deployment work.
 
 Because the site and service have different origins, the service must handle
 the browser's CORS preflight (`OPTIONS`) for JSON requests. Allow the origin
