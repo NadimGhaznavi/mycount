@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-26 @ 16:20
+
 ### Summary
 
 Establish the MyCount documentation website and development foundation, with
