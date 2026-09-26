@@ -16,39 +16,25 @@ the visitor collection service is not yet implemented.
 
 ## Two components
 
-The browser component will run in a GitHub Pages page on a Jekyll site.
-JavaScript is the proposed language. When a visitor loads the page, it will
-send a payload containing browser information to the MyCount service.
+The JavaScript browser component runs in a GitHub Pages page on a Jekyll site
+and sends an event to the MyCount service when a visitor loads the page.
 
-The service will run on one of the project owner's machines. It will receive
-the payload, use available request information such as the visitor's IP
-address to derive metadata, and store visitor records in MariaDB. Personal
-information used during processing will be discarded rather than stored.
+The service will run on one of the project owner's machines, process incoming
+events, and store reporting data in MariaDB.
 
-## Useful visitor metadata
+## Audience reporting
 
-Geolocation is a core metric. MyCount will use IP-derived approximate location
-to help teams understand where their audience is. The geographic detail to
-retain remains an architecture decision.
+MyCount will help teams understand traffic, geographic reach, and audience
+preferences to inform marketing, sales, localization, design, and customer
+service decisions.
 
-Other metadata of interest includes:
-
-- Browser language preferences.
-- Device category, such as desktop, phone, or tablet.
-- Operating system.
-- Browser family.
-
-These metrics will help teams understand their audience and inform
-localization, design, marketing, sales, and customer service decisions.
+The planned design uses browser fingerprinting to associate page views and
+estimate unique browsers. These are estimates, not exact counts of people.
+Fingerprinting is not yet implemented in the example client.
 
 ## Privacy boundaries
 
-MyCount will retain useful metadata without storing personal information such
-as IP addresses. An IP address may be used transiently to derive location,
-then must be discarded. This boundary must also apply to application and
-proxy logs.
-
-The browser component will use no cookies or other client-side tracking
-storage. The purpose is to understand the audience, not to identify individual
-visitors. The retained fields and their level of detail must respect that
-purpose.
+MyCount will use no cookies or client-side tracking storage. Fingerprinting
+introduces a retained pseudonymous identifier; the design does not promise
+anonymous collection. IP addresses will not be retained, including in
+application and proxy logs.

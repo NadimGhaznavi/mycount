@@ -130,8 +130,10 @@ defensive scaffolding around trusted internal calls.
 Apply this guidance if the application needs database access; do not introduce
 a database before there is a requirement for one.
 
-Application components that access MariaDB should use a shared data access
-layer. Separate application-specific operations from database mechanics.
+Application components that access MariaDB must use the shared data access
+layer. `DbMgr` alone owns connections, cursors, SQL execution, and transactions.
+Domain database interfaces own application queries and call its generic SQL
+methods; application code calls named operations on those interfaces.
 
 The application interface owns:
 
@@ -143,7 +145,7 @@ The database helper owns:
 
 - MariaDB connection creation, credentials, timeouts, and connection cleanup.
 - Cursor creation, use, and cleanup. Cursors never escape this layer.
-- SQL construction, identifier validation and quoting, and bound values.
+- Generic SQL execution and bound values; application queries and any dynamic identifier validation remain in the owning database interface.
 - Transaction execution: begin, commit, rollback, and read-only transactions.
 - Consistent result handling and database errors that preserve their causes.
 
