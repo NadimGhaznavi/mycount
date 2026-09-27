@@ -22,8 +22,18 @@ then URL for ties. Multiple sites can remain expanded together. Site and page
 metrics are read in one read-only database transaction when the page loads;
 expanding a row does not reload the report. Reloading collapses the rows.
 
-The right side of the title bar shows `Last refresh: HH:MM` in browser-local
-time. Reload the page to refresh the table and timestamp. Empty databases show
+The title bar has **Metrics** (`/`) and **Reference** (`/reference`) links.
+Reference displays the [collection tables]({% link pages/collected-data.md %}),
+including optional browser details, as static documentation without querying
+the database. Last refresh appears on its own row below the title bar in
+browser-local time.
+
+Click a Metrics column header to sort by site/page name, numeric visit count,
+or last-visited time. Click again to reverse the order. Expanded page tables
+stay with their site when sorted, and each page table can be sorted independently.
+Column buttons also work with Enter or Space.
+
+Reload the page to refresh the metrics and timestamp. Empty databases show
 “No visits recorded yet.” Database failures return HTTP 503 with a short message;
 details are logged to the service journal.
 

@@ -22,5 +22,10 @@ class ControlPages:
             pages_by_site.setdefault(page["site"], []).append(page)
         return self._templates.get_template("control.html").render(
             sites=sites, pages_by_site=pages_by_site,
-            error=error, refreshed_at=datetime.now(timezone.utc),
+            error=error, refreshed_at=datetime.now(timezone.utc), active_page="metrics",
+        ).encode("utf-8")
+
+    def reference(self) -> bytes:
+        return self._templates.get_template("reference.html").render(
+            refreshed_at=datetime.now(timezone.utc), active_page="reference",
         ).encode("utf-8")
