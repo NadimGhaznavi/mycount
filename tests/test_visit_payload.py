@@ -1,4 +1,5 @@
 import unittest
+from uuid import UUID
 
 from mycount.interface.VisitPayload import InvalidVisit, VisitPayload
 
@@ -49,6 +50,23 @@ class VisitPayloadTests(unittest.TestCase):
         visit, _ = VisitPayload().resolve(self.payload, self.origin)
         self.assertIsNone(visit.referrer_host)
         self.assertEqual(visit.client_details, ())
+        self.assertIsNone(visit.visitor_id)
+
+    def test_visitor_id_round_trip_and_missing_id(self):
+        identifier = '3e8073e0-5f15-4f14-bccc-b4b5cb47e330'
+        visit, _ = VisitPayload().resolve({**self.payload, 'visitor_id': identifier}, self.origin)
+        self.assertEqual(visit.visitor_id, UUID(identifier).bytes)
+        visit, _ = VisitPayload().resolve({**self.payload, 'visitor_id': None}, self.origin)
+        self.assertIsNone(visit.visitor_id)
+
+    def test_rejects_malformed_or_non_random_visitor_ids(self):
+        for identifier in ('', [], 1, True, 'x' * 36, '3e8073e05f154f14bcccb4b5cb47e330',
+                           '3E8073E0-5F15-4F14-BCCC-B4B5CB47E330',
+                           '3e8073e0-5f15-1f14-bccc-b4b5cb47e330',
+                           '3e8073e0-5f15-4f14-7ccc-b4b5cb47e330',
+                           '3e8073e0-5f15-4f14-bccc-b4b5cb47e330\n'):
+            with self.subTest(identifier=identifier), self.assertRaises(InvalidVisit):
+                VisitPayload().resolve({**self.payload, 'visitor_id': identifier}, self.origin)
 
     def test_empty_idn_and_ipv6_referrers(self):
         for referrer, host in ((None, None), ('', None),

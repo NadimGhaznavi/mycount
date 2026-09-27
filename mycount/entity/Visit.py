@@ -30,6 +30,7 @@ class Visit:
     device_category: Literal["desktop", "mobile", "tablet", "other"] | None = None
     fingerprint: bytes | None = None
     fingerprint_version: int | None = None
+    visitor_id: bytes | None = None
     referrer_host: str | None = None
     user_agent: str | None = None
     browser_version: str | None = None

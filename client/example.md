@@ -19,9 +19,10 @@ POST stores one page view; the preflight `OPTIONS` request does not count as a v
 If the displayed endpoint is outdated, rebuild and publish the site with the
 current `_config.yml`.
 
-The client uses no cookies. Planned browser fingerprinting is not yet
-implemented in this example. See the [project mission]({% link pages/project-mission.md %})
-for the reporting goals.
+The client uses no cookies. A random ID in first-party local storage lets repeat
+page views count as one browser for this site. If storage is blocked, views
+remain unidentified. See the [project mission]({% link pages/project-mission.md %})
+for the reporting goals and limits.
 
 <script defer src="{{ '/client/mycount.js' | relative_url }}"
         data-endpoint="{{ site.mycount.endpoint | escape }}"

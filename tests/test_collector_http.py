@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import Mock, patch
+from uuid import UUID
 
 from werkzeug.test import Client
 
@@ -90,6 +91,7 @@ class CollectorHttpTests(unittest.TestCase):
             'url': origin + '/', 'languages': ['en-CA'], 'user_agent': 'Example',
             'referrer': 'https://search.example/?private=query',
             'client_details': {'timezone': 'America/Toronto'},
+            'visitor_id': '3e8073e0-5f15-4f14-bccc-b4b5cb47e330',
         }
         with patch('mycount.activity.CollectVisit.DbMgr') as database, \
                 patch('mycount.activity.CollectVisit.GeoIp') as geo, \
@@ -108,6 +110,7 @@ class CollectorHttpTests(unittest.TestCase):
             self.assertEqual(saved.country_code, 'CA')
             self.assertEqual(saved.referrer_host, 'search.example')
             self.assertEqual(dict(saved.client_details), {'timezone': 'America/Toronto'})
+            self.assertEqual(saved.visitor_id, UUID(payload['visitor_id']).bytes)
             database.return_value.close.assert_called_once()
 
             # Malformed optional data is rejected before opening another DB connection.

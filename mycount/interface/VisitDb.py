@@ -24,9 +24,10 @@ class VisitDb:
                     (page_id, received_at, country_code, region_code, region_name,
                      city_name, browser_family, os_family, device_category,
                      fingerprint, fingerprint_version, referrer_host, user_agent,
-                     browser_version, os_version, device_brand, device_model, is_bot, client_details)
+                     browser_version, os_version, device_brand, device_model, is_bot, client_details,
+                     visitor_id)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                        %s, %s, %s, %s, %s, %s, %s, %s)
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 page_id, visit.received_at.astimezone(timezone.utc).replace(tzinfo=None),
                 visit.country_code, visit.region_code, visit.region_name, visit.city_name,
@@ -35,6 +36,7 @@ class VisitDb:
                 visit.referrer_host, visit.user_agent, visit.browser_version, visit.os_version,
                 visit.device_brand, visit.device_model, visit.is_bot,
                 json.dumps(dict(visit.client_details), allow_nan=False) if visit.client_details else None,
+                visit.visitor_id,
             ))
             for position, language in enumerate(visit.languages, start=1):
                 self._db.execute(
@@ -43,3 +45,19 @@ class VisitDb:
                     (view_id, position, language),
                 )
         return view_id
+
+    def totals_by_site(self) -> list[dict[str, object]]:
+        """Count recorded browser IDs separately from views with no identifier.
+
+        IDs are scoped to each site. Browser counts include automated clients;
+        known bot views are reported separately, not treated as people.
+        """
+        return self._db.query("""
+            SELECT p.site, COUNT(*) AS page_views,
+                   COUNT(DISTINCT v.visitor_id) AS unique_browsers,
+                   COUNT(CASE WHEN v.visitor_id IS NULL THEN 1 END) AS unidentified_views,
+                   COUNT(CASE WHEN v.is_bot = 1 THEN 1 END) AS known_bot_views
+            FROM page_views v JOIN pages p ON p.page_id = v.page_id
+            GROUP BY p.site
+            ORDER BY page_views DESC, p.site
+        """)

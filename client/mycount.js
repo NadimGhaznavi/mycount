@@ -17,6 +17,26 @@
         throw new Error("MyCount requires a data-site label.");
     }
 
+    // Reuse a random ID on this origin and site; never mint a per-hit fallback ID.
+    let visitorId = null;
+    const visitorKey = `mycount.visitor_id.${site}`;
+    const visitorPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+    const isVisitorId = (value) => typeof value === "string" && value.length === 36 && visitorPattern.test(value);
+    try {
+        const storage = window.localStorage;
+        let stored = storage.getItem(visitorKey);
+        if (!isVisitorId(stored) && window.crypto?.randomUUID) {
+            stored = window.crypto.randomUUID();
+            storage.setItem(visitorKey, stored);
+        }
+        if (isVisitorId(stored) && storage.getItem(visitorKey) === stored) {
+            visitorId = stored;
+        }
+    } catch (error) {
+        if (error.name !== "SecurityError" && error.name !== "QuotaExceededError") throw error;
+        // Collection still works when browser policy or storage limits prevent persistence.
+    }
+
     // Keep only the referring origin; paths and query strings can contain private data.
     let referrer = null;
     if (document.referrer) {
@@ -42,6 +62,7 @@
         url: window.location.origin + window.location.pathname,
         languages: Array.from(navigator.languages),
         user_agent: navigator.userAgent,
+        visitor_id: visitorId,
         referrer,
         client_details: {
             screen_width: window.screen?.width,
