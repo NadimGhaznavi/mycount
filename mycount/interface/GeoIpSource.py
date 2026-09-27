@@ -36,19 +36,19 @@ class GeoIpSource:
                         raise ValueError(f"Invalid GeoIP range at line {line}.")
                     zip_code = row["zip"] or None
                     timezone = row["timezone"] or None
-                    continent = row["continent"] or None
+                    country_name = row["country"] or None
                     country = row["country_code"] or None
                     region, city = row["state"] or None, row["city"] or None
                     if (country is not None and (len(country) != 2 or not country.isascii())
+                            or len(country_name or "") > DGeoIp.COUNTRY_NAME_LENGTH
                             or len(zip_code or "") > DGeoIp.ZIP_LENGTH
                             or len(timezone or "") > DGeoIp.TIMEZONE_LENGTH
-                            or len(continent or "") > DGeoIp.CONTINENT_LENGTH
                             or len(region or "") > DGeoIp.REGION_NAME_LENGTH
                             or len(city or "") > DMyCount.CITY_NAME_LENGTH):
                         raise ValueError(f"Invalid GeoIP location at line {line}.")
                     yield GeoIpRange(version, int(start).to_bytes(16, "big"),
                                      int(end).to_bytes(16, "big"),
-                                     GeoLocation(continent=continent, country_code=country,
+                                     GeoLocation(country_code=country, country_name=country_name,
                                                  region_name=region, city_name=city,
                                                  latitude=self._coordinate(row["latitude"], 90, line),
                                                  longitude=self._coordinate(row["longitude"], 180, line),

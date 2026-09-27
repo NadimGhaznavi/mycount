@@ -1,6 +1,7 @@
 """Explicit visitor schema setup for installation and upgrades."""
 
 from mycount.interface.DbMgr import DbMgr
+from mycount.interface.CountryNameMigration import CountryNameMigration
 from mycount.constants.DMyCount import DMyCount
 from mycount.constants.DGeoIp import DGeoIp
 from mycount.constants.DVisitorDetails import DVisitorDetails
@@ -72,7 +73,8 @@ class VisitorSchema:
             ALTER TABLE page_views
                 ADD COLUMN IF NOT EXISTS search TEXT NULL,
                 ADD COLUMN IF NOT EXISTS referrer TEXT NULL,
-                ADD COLUMN IF NOT EXISTS continent VARCHAR(64) NULL,
+                ADD COLUMN IF NOT EXISTS country_name VARCHAR({DGeoIp.COUNTRY_NAME_LENGTH}) NULL,
+                DROP COLUMN IF EXISTS continent,
                 ADD COLUMN IF NOT EXISTS latitude DOUBLE NULL,
                 ADD COLUMN IF NOT EXISTS longitude DOUBLE NULL,
                 ADD COLUMN IF NOT EXISTS zip VARCHAR({DGeoIp.ZIP_LENGTH}) NULL,
@@ -95,6 +97,7 @@ class VisitorSchema:
                     REFERENCES page_views(page_view_id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
         """)
+        CountryNameMigration(self._db).apply("page_views")
 
 
 if __name__ == "__main__":

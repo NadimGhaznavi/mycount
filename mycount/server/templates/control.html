@@ -40,21 +40,20 @@
 <div class="table-wrap">
   <table aria-label="Visits by Location">
     <caption>Visits by Location</caption>
-    <thead><tr><th scope="col">Continent</th><th scope="col">Country</th><th scope="col">State/Province</th><th scope="col">City</th><th scope="col" class="visits">Visits</th></tr></thead>
+    <thead><tr><th scope="col">Country</th><th scope="col">State/Province</th><th scope="col">City</th><th scope="col" class="visits">Visits</th></tr></thead>
     <tbody>
       {% for location in locations %}
       <tr>
-        <td>{{ location.continent or '---' }}</td>
-        <td>{{ location.country_code or '---' }}</td>
+        <td>{{ location.country_name or '---' }}</td>
         <td>{{ location.region_name or '---' }}</td>
         <td>{{ location.city_name or '---' }}</td>
         <td class="visits">{{ location.page_views }}</td>
       </tr>
       {% else %}
-      <tr><td colspan="5">No visits recorded yet.</td></tr>
+      <tr><td colspan="4">No visits recorded yet.</td></tr>
       {% endfor %}
     </tbody>
-    <tfoot><tr><th scope="row" colspan="4">Total:</th><td class="visits">{{ locations | sum(attribute='page_views') }}</td></tr></tfoot>
+    <tfoot><tr><th scope="row" colspan="3">Total:</th><td class="visits">{{ locations | sum(attribute='page_views') }}</td></tr></tfoot>
   </table>
 </div>
 </div>
