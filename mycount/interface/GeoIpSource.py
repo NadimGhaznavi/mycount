@@ -34,12 +34,34 @@ class GeoIpSource:
                     if (row["ip_version"] != str(version) or start.version != version
                             or end.version != version or int(start) > int(end)):
                         raise ValueError(f"Invalid GeoIP range at line {line}.")
+                    zip_code = row["zip"] or None
+                    timezone = row["timezone"] or None
+                    continent = row["continent"] or None
                     country = row["country_code"] or None
                     region, city = row["state"] or None, row["city"] or None
                     if (country is not None and (len(country) != 2 or not country.isascii())
+                            or len(zip_code or "") > DGeoIp.ZIP_LENGTH
+                            or len(timezone or "") > DGeoIp.TIMEZONE_LENGTH
+                            or len(continent or "") > DGeoIp.CONTINENT_LENGTH
                             or len(region or "") > DGeoIp.REGION_NAME_LENGTH
                             or len(city or "") > DMyCount.CITY_NAME_LENGTH):
                         raise ValueError(f"Invalid GeoIP location at line {line}.")
                     yield GeoIpRange(version, int(start).to_bytes(16, "big"),
                                      int(end).to_bytes(16, "big"),
-                                     GeoLocation(country_code=country, region_name=region, city_name=city))
+                                     GeoLocation(continent=continent, country_code=country,
+                                                 region_name=region, city_name=city,
+                                                 latitude=self._coordinate(row["latitude"], 90, line),
+                                                 longitude=self._coordinate(row["longitude"], 180, line),
+                                                 zip=zip_code, timezone=timezone))
+
+    @staticmethod
+    def _coordinate(value: str, limit: int, line: int) -> float | None:
+        if not value.strip():
+            return None
+        try:
+            coordinate = float(value)
+        except ValueError as error:
+            raise ValueError(f"Invalid GeoIP coordinate at line {line}.") from error
+        if not -limit <= coordinate <= limit:
+            raise ValueError(f"Invalid GeoIP coordinate at line {line}.")
+        return coordinate

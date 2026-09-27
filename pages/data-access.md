@@ -56,7 +56,7 @@ definition lives in the source code. GeoIP source access, reference-data
 refresh, lookups, and visit persistence each have a separate component using
 the shared database bridge. `VisitDb.totals_by_site()` reports page views,
 unique browser IDs, unidentified views, and known bot views. Browser IDs use
-first-party local storage; fingerprint generation remains unfinished.
+first-party local storage.
 
 ## Focused checks
 

@@ -129,6 +129,7 @@ class DDeployment:
         "mycount/activity/VisitorSchema.py": (
             "mycount/__init__.py",
             "mycount/activity/__init__.py",
+            "mycount/constants/DGeoIp.py",
             "mycount/constants/DMyCount.py",
             "mycount/constants/DVisitorDetails.py",
             "mycount/interface/DbMgr.py",

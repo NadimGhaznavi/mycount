@@ -23,10 +23,12 @@ metrics are read in one read-only database transaction when the page loads;
 expanding a row does not reload the report. Reloading collapses the rows.
 
 The title bar has **Metrics** (`/`) and **Reference** (`/reference`) links.
-Reference displays the [collection tables]({% link pages/collected-data.md %}),
-including optional browser details, as static documentation without querying
-the database. Last refresh appears on its own row below the title bar in
-browser-local time.
+Reference displays one [data inventory table]({% link pages/collected-data.md %})
+with Source, Source Details, Table, Column, and Details. It includes optional browser details,
+all GeoIP source fields, and storage mappings; unretained values show `---` in
+both storage columns. This is static documentation without database queries.
+Last refresh appears on its own row below the title bar in
+browser-local time as `MMM DD - HH:MM` (for example, `Sep 27 - 14:36`).
 
 Click a Metrics column header to sort by site/page name, numeric visit count,
 or last-visited time. Click again to reverse the order. Expanded page tables

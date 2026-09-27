@@ -33,9 +33,11 @@ class GeoIpImportDb:
     def append(self, ranges: Sequence[GeoIpRange]) -> None:
         self._db.execute_many("""
             INSERT INTO geoip_ranges_next
-                (ip_version, start_ip, end_ip, country_code, region_name, city_name)
-            VALUES (%s, %s, %s, %s, %s, %s)
+                (ip_version, start_ip, end_ip, country_code, region_name, city_name,
+                 continent, latitude, longitude, zip, timezone)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, [
             (item.version, item.start, item.end, item.location.country_code,
-             item.location.region_name, item.location.city_name) for item in ranges
+             item.location.region_name, item.location.city_name, item.location.continent,
+             item.location.latitude, item.location.longitude, item.location.zip, item.location.timezone) for item in ranges
         ])

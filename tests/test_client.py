@@ -36,13 +36,13 @@ class ClientTests(unittest.TestCase):
             result = subprocess.run([
                 CHROME, '--headless', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage',
                 '--disable-background-networking', '--no-first-run', '--no-default-browser-check',
-                f'--user-data-dir={root / "profile"}', '--dump-dom', page.as_uri(),
+                f'--user-data-dir={root / "profile"}', '--dump-dom', page.as_uri() + '?q=a%20b&q=two#section',
             ], capture_output=True, text=True, check=True, timeout=30)
             match = re.search(r'<pre id="result">(.*?)</pre>', result.stdout, re.DOTALL)
             self.assertIsNotNone(match, result.stderr)
             return json.loads(html.unescape(match.group(1)))
 
-    def test_referrer_is_reduced_and_browser_payload_passes_validation(self):
+    def test_full_referrer_and_query_pass_payload_validation(self):
         captured = self.run_client('''
             Object.defineProperty(document, 'referrer', {value: 'https://search.example/find?q=private#secret'});
         ''')
@@ -50,14 +50,16 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(captured['options']['credentials'], 'omit')
         self.assertEqual(captured['options']['referrerPolicy'], 'no-referrer')
         payload = json.loads(captured['options']['body'])
-        self.assertEqual(payload['referrer'], 'https://search.example')
-        self.assertNotIn('private', captured['options']['body'])
+        self.assertEqual(payload['referrer'], 'https://search.example/find?q=private#secret')
+        self.assertEqual(payload['search'], '?q=a%20b&q=two')
         self.assertIsInstance(payload['client_details']['viewport_width'], int)
         self.assertIsInstance(payload['client_details']['timezone'], str)
         # The test page is a local file, so substitute only its origin/path.
         payload['url'] = 'https://r3el.osoyalce.com/'
         visit, _ = VisitPayload().resolve(payload, 'https://r3el.osoyalce.com')
         self.assertEqual(visit.referrer_host, 'search.example')
+        self.assertEqual(visit.referrer, payload['referrer'])
+        self.assertEqual(visit.search, payload['search'])
         self.assertIsInstance(dict(visit.client_details)['webdriver'], bool)
 
     def test_missing_browser_apis_still_send_a_valid_visit(self):

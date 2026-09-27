@@ -11,7 +11,7 @@ class Visit:
 
     The receiving interface supplies an aware UTC receipt time and a URL
     containing only the origin and path. Languages retain preference order.
-    Unknown metadata is None; fingerprint and version are supplied together.
+    Unknown metadata is None; query strings are stored separately from page URLs.
     Activities can use dataclasses.replace to return an enriched visit.
     Optional client details are immutable key/value pairs. The validated
     user-agent string is retained; database-generated IDs remain outside this entity.
@@ -22,15 +22,20 @@ class Visit:
     received_at: datetime
     languages: tuple[str, ...] = ()
     country_code: str | None = None
-    region_code: str | None = None
     region_name: str | None = None
     city_name: str | None = None
     browser_family: str | None = None
     os_family: str | None = None
     device_category: Literal["desktop", "mobile", "tablet", "other"] | None = None
-    fingerprint: bytes | None = None
-    fingerprint_version: int | None = None
+    search: str | None = None
+    referrer: str | None = None
+    continent: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    zip: str | None = None
+    timezone: str | None = None
     visitor_id: bytes | None = None
+    ip_address: str | None = None
     referrer_host: str | None = None
     user_agent: str | None = None
     browser_version: str | None = None
