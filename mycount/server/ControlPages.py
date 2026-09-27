@@ -15,7 +15,12 @@ class ControlPages:
         )
         self._templates.filters["utc_iso"] = lambda value: value.replace(tzinfo=timezone.utc).isoformat()
 
-    def render(self, sites: list[dict[str, object]], *, error: str | None = None) -> bytes:
+    def render(self, sites: list[dict[str, object]], pages: list[dict[str, object]],
+               *, error: str | None = None) -> bytes:
+        pages_by_site = {}
+        for page in pages:
+            pages_by_site.setdefault(page["site"], []).append(page)
         return self._templates.get_template("control.html").render(
-            sites=sites, error=error, refreshed_at=datetime.now(timezone.utc),
+            sites=sites, pages_by_site=pages_by_site,
+            error=error, refreshed_at=datetime.now(timezone.utc),
         ).encode("utf-8")
