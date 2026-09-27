@@ -22,6 +22,7 @@ class Visit:
     received_at: datetime
     languages: tuple[str, ...] = ()
     country_code: str | None = None
+    country_name: str | None = None
     region_name: str | None = None
     city_name: str | None = None
     browser_family: str | None = None
@@ -29,7 +30,6 @@ class Visit:
     device_category: Literal["desktop", "mobile", "tablet", "other"] | None = None
     search: str | None = None
     referrer: str | None = None
-    continent: str | None = None
     latitude: float | None = None
     longitude: float | None = None
     zip: str | None = None

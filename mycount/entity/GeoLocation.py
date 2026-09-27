@@ -5,8 +5,8 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class GeoLocation:
-    continent: str | None = None
     country_code: str | None = None
+    country_name: str | None = None
     region_name: str | None = None
     city_name: str | None = None
     latitude: float | None = None

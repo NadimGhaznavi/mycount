@@ -23,20 +23,20 @@ class VisitDb:
                 INSERT INTO page_views
                     (page_id, received_at, country_code, region_name,
                      city_name, browser_family, os_family, device_category,
-                     search, referrer, continent, referrer_host, user_agent,
+                     search, referrer, referrer_host, user_agent,
                      browser_version, os_version, device_brand, device_model, is_bot, client_details,
-                     visitor_id, ip_address, latitude, longitude, zip, timezone)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                     visitor_id, ip_address, latitude, longitude, zip, timezone, country_name)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 page_id, visit.received_at.astimezone(timezone.utc).replace(tzinfo=None),
                 visit.country_code, visit.region_name, visit.city_name,
                 visit.browser_family, visit.os_family, visit.device_category,
-                visit.search, visit.referrer, visit.continent,
+                visit.search, visit.referrer,
                 visit.referrer_host, visit.user_agent, visit.browser_version, visit.os_version,
                 visit.device_brand, visit.device_model, visit.is_bot,
                 json.dumps(dict(visit.client_details), allow_nan=False) if visit.client_details else None,
-                visit.visitor_id, visit.ip_address, visit.latitude, visit.longitude, visit.zip, visit.timezone,
+                visit.visitor_id, visit.ip_address, visit.latitude, visit.longitude, visit.zip, visit.timezone, visit.country_name,
             ))
             for position, language in enumerate(visit.languages, start=1):
                 self._db.execute(
@@ -73,14 +73,14 @@ class VisitDb:
         """)
 
     def totals_by_location(self) -> list[dict[str, object]]:
-        """Rank all recorded views by continent, country, state/province, and city."""
+        """Rank all recorded views by country, state/province, and city."""
         return self._db.query("""
-            SELECT NULLIF(continent, '') AS continent,
-                   NULLIF(country_code, '') AS country_code,
+            SELECT NULLIF(country_code, '') AS country_code,
+                   MAX(NULLIF(country_name, '')) AS country_name,
                    NULLIF(region_name, '') AS region_name,
                    NULLIF(city_name, '') AS city_name, COUNT(*) AS page_views
             FROM page_views
-            GROUP BY NULLIF(continent, ''), NULLIF(country_code, ''),
+            GROUP BY NULLIF(country_code, ''),
                      NULLIF(region_name, ''), NULLIF(city_name, '')
-            ORDER BY page_views DESC, continent, country_code, region_name, city_name
+            ORDER BY page_views DESC, country_name, country_code, region_name, city_name
         """)

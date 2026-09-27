@@ -9,6 +9,11 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-09-27 @ 16:06
+
+- Store CSV country names in GeoIP ranges and visits; backfill missing historical names from ISO codes using pycountry. Display full country names while retaining country codes for grouping.
+- Remove Continent from the location report, collection, and both database schemas; upgrades drop the old columns while preserving visits and ranges.
+
 ## [0.7.0] - 2026-09-27 @ 15:56
 
 - Add bold, right-aligned total rows to the site and location tables, kept at the bottom when sorting.

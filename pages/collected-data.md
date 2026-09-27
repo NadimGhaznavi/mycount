@@ -49,8 +49,8 @@ Table and Column name the storage destinations. --- means no value is stored. Op
 | Browser | screen.width | `page_views` | `client_details` | Optional browser details: JSON key `screen_width`. Screen width. |
 | GeoIP CSV | accuracy | --- | --- | Upstream accuracy value; discarded during import, not interpreted by MyCount. |
 | GeoIP CSV | city | `geoip_ranges`, `page_views` | `city_name` | City name; empty values become NULL. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits. |
-| GeoIP CSV | continent | `geoip_ranges`, `page_views` | `continent` | Upstream continent value, retained as supplied; empty becomes NULL. Existing ranges gain values on the next GeoIP refresh. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits. |
-| GeoIP CSV | country | --- | --- | Full country name; discarded during import. |
+| GeoIP CSV | continent | --- | --- | Discarded during import. |
+| GeoIP CSV | country | `geoip_ranges`, `page_views` | `country_name` | Full country name from the CSV; empty becomes NULL. Copied into new visits as a location snapshot. Existing records are backfilled from recognized ISO country codes without replacing stored names. |
 | GeoIP CSV | country_code | `geoip_ranges`, `page_views` | `country_code` | Two-character country code; empty values become NULL. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits. |
 | GeoIP CSV | end_ip | `geoip_ranges` | `end_ip` | Range end, converted to a 16-byte binary value. |
 | GeoIP CSV | ip_version | `geoip_ranges` | `ip_version` | IP family, 4 or 6. |
