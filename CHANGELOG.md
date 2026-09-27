@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-27 @ 09:35
+
 ### Summary
 
 Record referring sites and richer visitor details alongside existing city,
