@@ -414,6 +414,25 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(visits.totals_by_page(exclude_bots=True)[0]['last_visited'],
                          visit.received_at.replace(tzinfo=None))
 
+    def test_recent_visits_filter_before_limit_and_break_timestamp_ties(self):
+        visits = VisitDb(self.db)
+        self.assertEqual(visits.recent_visits(), [])
+        timestamp = datetime(2026, 9, 27, 12, tzinfo=timezone.utc)
+        visit = Visit(site='example', url='https://example.com/', received_at=timestamp)
+        for index in range(25):
+            visits.record(replace(visit, url=f'https://example.com/{index}'))
+        visits.record(replace(visit, url='https://example.com/bot', is_bot=True,
+                             received_at=datetime(2026, 9, 28, tzinfo=timezone.utc)))
+        visits.record(replace(visit, url='https://example.com/google-other', browser_family='GoogleOther'))
+        filtered = visits.recent_visits(exclude_bots=True)
+        self.assertEqual([row['url'] for row in filtered],
+                         [f'https://example.com/{index}' for index in range(24, 4, -1)])
+        self.assertEqual(filtered[0]['received_at'], timestamp.replace(tzinfo=None))
+        all_visits = visits.recent_visits()
+        self.assertEqual(len(all_visits), 20)
+        self.assertEqual(all_visits[0]['url'], 'https://example.com/bot')
+        self.assertEqual(all_visits[1]['url'], 'https://example.com/google-other')
+
     def test_location_totals_include_unknowns_and_combine_sites(self):
         visits = VisitDb(self.db)
         self.assertEqual(visits.totals_by_location(), [])

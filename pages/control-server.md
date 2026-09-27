@@ -32,6 +32,13 @@ Column headers allow sorting. Both tables end with a bold, right-aligned
 Total row showing the sum of Visits (zero when empty), which stays at the
 bottom when sorting. The tables stack on narrow screens.
 
+Recent Visits appears below Visits by Site in the left column. It shows the
+latest 20 visits matching the bot filter, newest first (newest record first
+when timestamps tie), with Date (`YYYY-MM-DD`), Time (`HH:MM AM/PM`), and URL.
+Dates and times use the browser timezone. Visits by Location and Last refresh
+keep their positions. Recent visits are read in the same transaction as the
+other metrics.
+
 Click a site row to expand or collapse its page table. The site-name button
 also works with Enter or Space. Each page shows its full recorded URL, visit
 count, and browser-local last-visited time. Pages are sorted by visits descending,
