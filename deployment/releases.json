@@ -75,7 +75,7 @@
       ]
     },
     "mycount/activity/BrowserMetadata.py": {
-      "digest": "d45b1aaa76a45af5d1355dea6cb33d121a0aeff23d75fc089414346723e2aa07",
+      "digest": "6973c47bd7a950b7329e93ca94e05cef7e4c2bdb846eaeb1d318011a9e7baffa",
       "targets": [
         "listener"
       ]
@@ -137,6 +137,12 @@
         "report-server"
       ]
     },
+    "mycount/constants/DCountryNameMigration.py": {
+      "digest": "24eff32b9106465a3e9a686bc2872171b717247e57a914dc1732bfc8750eb781",
+      "targets": [
+        "filesystem"
+      ]
+    },
     "mycount/constants/DDbMgr.py": {
       "digest": "f4e8b594dcfcdace8119c2edca90aa266dbc47b67ba7246c042d0a5fce2d44d6",
       "targets": [
@@ -146,7 +152,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "705344f7a54e659ba21e262ae9718fa3e8856e62250b2d882f48dff7eb1477c2",
+      "digest": "7038953c967ecc770e10f2a4861a86bc398b40d662db2d2839261a9428de006f",
       "targets": [
         "filesystem"
       ]
@@ -166,10 +172,11 @@
       ]
     },
     "mycount/constants/DVisitorDetails.py": {
-      "digest": "fb0ec9daaf05f15304379faff77f05caa2ae6399c3ae74d7d9836622050351d8",
+      "digest": "7071f0a0f883e4e962dec9b59652b16b592d4737dc089fdc60ab30f8298f0c78",
       "targets": [
         "filesystem",
-        "listener"
+        "listener",
+        "report-server"
       ]
     },
     "mycount/constants/__init__.py": {
@@ -215,7 +222,7 @@
       ]
     },
     "mycount/interface/CountryNameMigration.py": {
-      "digest": "e2d797559c9e2202de68a38e648ade56a0d57d71ff67e57e6bc4f15ebdfe5790",
+      "digest": "db1060b58b0efdd14ef0846cf02b1f39712243054b26fa989fb8f3d44e21bef1",
       "targets": [
         "filesystem"
       ]
@@ -277,7 +284,7 @@
       ]
     },
     "mycount/interface/VisitDb.py": {
-      "digest": "f9e3912e3735fe20b0560f618f7af8d2d6c9033f17debc613bfab0aa816c78d5",
+      "digest": "9d86d3b4d02847dbc3be9a3d17f176604a2bc60c11ee4c0677b17d8aa3fd05ce",
       "targets": [
         "listener",
         "report-server"
@@ -310,13 +317,13 @@
       ]
     },
     "mycount/server/ControlHandler.py": {
-      "digest": "8008760e2d0cb6b3946a825570af586a1855423bf268632be59464b9dc1404a7",
+      "digest": "e9672cb25cfe2f12c794cdbc6b39d7a87aca133f75381dc5beb2a32ecea00a51",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/ControlPages.py": {
-      "digest": "ea6485e1669c3983d216d66c31428500c752dfa4d8c2b1eb4c64ab7f76ef4f6b",
+      "digest": "fbf7a89bed75a749cf825a81e3db236540fc6d510519081f58c9bd47ad5dad96",
       "targets": [
         "report-server"
       ]
@@ -353,7 +360,7 @@
       ]
     },
     "mycount/server/templates/control.html": {
-      "digest": "1e744f420699b75a32208dbf956247bb816e57f306447865b086585d2026f3c4",
+      "digest": "855859ddc023004a7bc6387fefb3472ab58f83ad772523bafc5077a2ca6653c4",
       "targets": [
         "report-server"
       ]
@@ -371,7 +378,7 @@
       ]
     },
     "mycount/server/templates/styles.html": {
-      "digest": "948e85e32def50f85136d891a3f2240eaca9665a4874167077ef2db36dacbb15",
+      "digest": "8218cd71b98bde4bb6f29f2e21d9176063b07d1c2dc20742a7637d6d4b587dff",
       "targets": [
         "report-server"
       ]
@@ -397,7 +404,7 @@
       ]
     },
     "scripts/install-services.sh": {
-      "digest": "0fedc24de389e56e07fc0dbbccd2fca44b802cacd8e9f50089e2e02028fc1117",
+      "digest": "d44f37e9c1df06647558758b20073384ef3f2be8ca4261d319c95e375168ae3d",
       "targets": [
         "filesystem"
       ]
@@ -505,6 +512,14 @@
         "report-server"
       ],
       "version": "0.7.2"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "0.7.3"
     }
   ]
 }

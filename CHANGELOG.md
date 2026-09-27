@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-09-27 @ 16:24
+
 - Add a Filters box with Exclude bots enabled by default, consistently filtering site/page/location counts, last-visited times, and totals. Include historical GoogleOther/Googlebot records in exclusion and correctly flag new GoogleOther visits as bots.
 
 - Fix country-name backfill timeouts by scanning primary keys in bounded batches and committing each batch independently. Log progress and preserve completed updates on retry.
