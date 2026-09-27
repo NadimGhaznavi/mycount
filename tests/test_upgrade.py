@@ -37,11 +37,30 @@ class UpgradeTests(unittest.TestCase):
 input=$(cat)
 if [[ $input == *'print(DMyCount.BASE_DIR)'* ]]; then
     printf '%s\\n' "$TEST_APP" "$TEST_CREDENTIALS" mycount mycount-server.service mycount-control.service
+elif [[ $input == *'upgrade_targets(previous'* ]]; then
+    echo flags >> "$TEST_LOG"
+    if [[ ${TEST_FLAGS_FAILURE:-0} != 0 ]]; then exit 1; fi
+    printf '%s\\n' "${TEST_FLAGS-filesystem
+listener
+report-server}"
 elif [[ $input == *'Credentials do not belong'* ]]; then
     echo credentials >> "$TEST_LOG"
     exit "${TEST_CREDENTIAL_FAILURE:-0}"
 else
-    echo python-step >> "$TEST_LOG"
+    if [[ $input == *'Applying database schemas'* || $input == *'VisitorSchema(db).apply()'* ]]; then
+        echo schema >> "$TEST_LOG"
+    elif [[ $input == *'.complete(DMyCount.VERSION)'* ]]; then
+        echo version-committed >> "$TEST_LOG"
+    elif [[ $input == *'files.copy_application(targets)'* ]]; then
+        echo "copy $*" >> "$TEST_LOG"
+    elif [[ $input == *'opener = build_opener'* ]]; then
+        echo "health $*" >> "$TEST_LOG"
+        exit "${TEST_HEALTH_FAILURE:-0}"
+    elif [[ $input == *"target = Path('/etc/systemd/system', name)"* ]]; then
+        echo "definitions $*" >> "$TEST_LOG"
+    else
+        echo python-step >> "$TEST_LOG"
+    fi
 fi
 ''')
         shutil.copy2(python, self.app / '.venv/bin/python')
@@ -72,6 +91,56 @@ fi
         self.assertIn('Upgraded MyCount', result.stdout)
         self.assertEqual(self.credentials.read_text(), 'retained credentials')
 
+    def test_display_only_skips_listener_and_shared_setup(self):
+        self.env['TEST_FLAGS'] = 'report-server'
+        result = self.run_script()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        commands = self.log.read_text().splitlines()
+        self.assertIn('systemctl enable --now mycount-control.service', commands)
+        self.assertNotIn('systemctl enable --now mycount-server.service', commands)
+        self.assertNotIn('systemctl stop mycount-server.service', commands)
+        self.assertNotIn('schema', commands)
+        self.assertNotIn('caddy', commands)
+        self.assertNotIn('systemctl enable --now cron.service', commands)
+        self.assertIn('version-committed', commands)
+        self.assertTrue(any(line.startswith('copy ') and line.endswith('report-server') for line in commands))
+        self.assertTrue(any(line.startswith('health ') and line.endswith('mycount-control.service') for line in commands))
+
+    def test_no_impact_does_not_restart_services(self):
+        self.env['TEST_FLAGS'] = ''
+        result = self.run_script()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        commands = self.log.read_text().splitlines()
+        self.assertFalse(any(line.startswith(('systemctl', 'copy ', 'health ', 'definitions ')) for line in commands))
+        self.assertNotIn('schema', commands)
+        self.assertIn('version-committed', commands)
+
+    def test_listener_only_skips_report_and_setup(self):
+        self.env['TEST_FLAGS'] = 'listener'
+        result = self.run_script()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        commands = self.log.read_text().splitlines()
+        self.assertIn('systemctl enable --now mycount-server.service', commands)
+        self.assertNotIn('systemctl enable --now mycount-control.service', commands)
+        self.assertNotIn('schema', commands)
+        self.assertNotIn('caddy', commands)
+        self.assertTrue(any(line.startswith('health ') and line.endswith('mycount-server.service') for line in commands))
+
+    def test_health_failure_does_not_publish_release_metadata(self):
+        self.env['TEST_FLAGS'] = 'report-server'
+        self.env['TEST_HEALTH_FAILURE'] = '1'
+        result = self.run_script()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertNotIn('version-committed', self.log.read_text())
+        self.assertNotIn('Upgraded MyCount', result.stdout)
+
+    def test_invalid_release_stops_before_deployment(self):
+        self.env['TEST_FLAGS_FAILURE'] = '1'
+        result = self.run_script()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertNotIn('systemctl', self.log.read_text())
+        self.assertNotIn('version-committed', self.log.read_text())
+
     def test_install_still_refreshes_geoip(self):
         result = self.run_script('install-services.sh')
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -96,6 +165,7 @@ fi
         result = self.run_script()
         self.assertNotEqual(result.returncode, 0)
         self.assertNotIn('Upgraded MyCount', result.stdout)
+        self.assertNotIn('version-committed', self.log.read_text())
 
     def test_help_and_invalid_arguments_do_not_deploy(self):
         self.assertEqual(self.run_script('upgrade.sh', '--help').returncode, 0)

@@ -1,0 +1,83 @@
+{
+  "exclude": [],
+  "extra": {
+    "deployment/rules.json": [
+      "deployment/DDeployment.py.in"
+    ],
+    "mycount/server/ControlPages.py": [
+      "mycount/server/templates/control.html"
+    ],
+    "scripts/install-caddy.sh": [
+      "caddy/mycount.caddy"
+    ],
+    "scripts/install-services.sh": [
+      "requirements.txt",
+      "scripts/install-caddy.sh",
+      "scripts/update-geoip.sh"
+    ],
+    "scripts/install.sh": [
+      "scripts/install-services.sh"
+    ],
+    "scripts/new-release.sh": [
+      "scripts/update-deployment-dependencies.py"
+    ],
+    "scripts/update-deployment-dependencies.py": [
+      "deployment/rules.json"
+    ],
+    "scripts/update-geoip.sh": [
+      "mycount/activity/UpdateGeoIp.py"
+    ],
+    "scripts/upgrade.sh": [
+      "scripts/install-services.sh"
+    ],
+    "systemd/mycount-control.service": [
+      "mycount/server/ControlServer.py",
+      "mycount/constants/DMyCount.py"
+    ],
+    "systemd/mycount-server.service": [
+      "mycount/server/__main__.py",
+      "mycount/constants/DMyCount.py"
+    ]
+  },
+  "output": "mycount/constants/DDeployment.py",
+  "python_roots": [
+    "mycount",
+    "deployment_tools"
+  ],
+  "scan": [
+    "mycount/**/*.py",
+    "mycount/server/templates/*.html",
+    "deployment_tools/**/*.py",
+    "scripts/*.sh",
+    "scripts/update-deployment-dependencies.py",
+    "systemd/*.service",
+    "caddy/*",
+    "requirements.txt"
+  ],
+  "targets": {
+    "filesystem": [
+      "mycount/activity/DeploymentImpact.py",
+      "mycount/activity/ReleaseDeployment.py",
+      "scripts/new-release.sh",
+      "scripts/install.sh",
+      "scripts/upgrade.sh",
+      "scripts/uninstall.sh",
+      "scripts/update-geoip.sh",
+      "mycount/constants/DDeployment.py",
+      "scripts/update-deployment-dependencies.py",
+      "deployment_tools/__main__.py"
+    ],
+    "listener": [
+      "systemd/mycount-server.service",
+      "requirements.txt"
+    ],
+    "report-server": [
+      "systemd/mycount-control.service",
+      "requirements.txt"
+    ]
+  },
+  "template": "deployment/DDeployment.py.in",
+  "template_roots": [
+    "mycount/server/templates"
+  ]
+}

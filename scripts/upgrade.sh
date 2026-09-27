@@ -6,9 +6,10 @@ usage() {
     cat <<'HELP'
 Usage: sudo scripts/upgrade.sh
 
-Deploy this checkout to DMyCount.BASE_DIR and restart the collector.
+Deploy a prepared release to DMyCount.BASE_DIR using its recorded impact flags.
 Preserves databases, credentials, accounts, and existing GeoIP data.
-Applies schema updates, checks collector health, and refreshes Caddy and router setup.
+Combines flags since the installed version; restarts affected services only.
+Filesystem/setup changes run the full deployment workflow.
 Run install.sh first. Does not pull Git changes or require MariaDB administrator access.
 HELP
 }

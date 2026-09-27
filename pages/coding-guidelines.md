@@ -11,6 +11,14 @@ should have a clear responsibility, an obvious home, and a defined interface.
 These guidelines describe the design goals; existing modules may still need
 to be brought into this structure.
 
+**Keep deployment dependencies current.** After changes to imports, assets, or
+entry points, run `python3 -B scripts/update-deployment-dependencies.py` and
+commit the generated `DDeployment.py`. Maintain project-specific relationships
+in `deployment/rules.json`, not in the generated file. Run the script with
+`--check` before release. Keep `deployment_tools/` free of MyCount-specific
+imports, paths, and service names. See
+[Deployment dependencies]({% link pages/deployment-dependencies.md %}).
+
 The code should be as lean as possible. Build for the requirements and behaviour that exist now, not for hypothetical future cases. Prefer the simplest design that cleanly supports the current workflow, make runtime behaviour observable, and let real usage reveal what needs to change next. Do not add abstractions, fallback paths, compatibility layers, configuration knobs, or defensive complexity unless there is a demonstrated requirement for them; when new needs emerge, extend or refactor the system then, using evidence from actual operation rather than speculation about what might someday happen.
 
 ## Respect development and release ownership
