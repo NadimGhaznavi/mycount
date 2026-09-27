@@ -211,6 +211,7 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(VisitDb(self.db).totals_by_site(), [{
             'site': 'mycount', 'page_views': 1, 'unique_browsers': 0,
             'unidentified_views': 1, 'known_bot_views': 0,
+            'last_visited': self.db.query('SELECT received_at FROM page_views WHERE page_view_id=%s', (old_id,))[0]['received_at'],
         }])
 
     def test_unique_browsers_deduplicate_reloads_and_pages_with_site_scoping(self):
@@ -229,10 +230,23 @@ class DatabaseTests(unittest.TestCase):
                                       (first,))[0]['visitor_id'], identifier)
         self.assertEqual(visits.totals_by_site(), [
             {'site': 'r3el', 'page_views': 5, 'unique_browsers': 2,
-             'unidentified_views': 1, 'known_bot_views': 1},
+             'unidentified_views': 1, 'known_bot_views': 1,
+             'last_visited': visit.received_at.replace(tzinfo=None)},
             {'site': 'ax3l', 'page_views': 1, 'unique_browsers': 1,
-             'unidentified_views': 0, 'known_bot_views': 0},
+             'unidentified_views': 0, 'known_bot_views': 0,
+             'last_visited': visit.received_at.replace(tzinfo=None)},
         ])
+
+    def test_site_last_visit_uses_latest_time_across_pages(self):
+        visits = VisitDb(self.db)
+        latest = datetime(2026, 9, 27, 15, 5, tzinfo=timezone.utc)
+        visits.record(Visit(site='example', url='https://example.com/new', received_at=latest))
+        visits.record(Visit(site='example', url='https://example.com/old',
+                            received_at=datetime(2026, 9, 26, tzinfo=timezone.utc)))
+        rows = visits.totals_by_site()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]['page_views'], 2)
+        self.assertEqual(rows[0]['last_visited'], latest.replace(tzinfo=None))
 
     def page(self, url="https://example.com/products/", site="mycount"):
         return self.db.insert("INSERT INTO pages(site, url) VALUES (%s, %s)", (site, url))
