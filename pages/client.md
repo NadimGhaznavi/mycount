@@ -46,14 +46,15 @@ must not contain credentials. The endpoint URL is public; do not embed secrets.
 
 The client sends JSON using `POST` to the configured URL without cookies.
 The [client source]({{ '/client/mycount.js' | relative_url }}) defines the
-current payload. The planned fingerprinting support described in the
-[project mission]({% link pages/project-mission.md %}) is not yet implemented.
+current payload. A random browser ID saved in first-party local storage
+supports per-site unique-browser estimates.
 
 Each visit can store the following information:
 
 | Information | Source |
 | --- | --- |
 | Site, page origin/path, receipt time in UTC | Client and collector |
+| Persistent per-site browser ID | Random UUIDv4 saved in first-party local storage |
 | Referring hostname | `document.referrer`, reduced to a hostname |
 | Country, region, city | Server-side IP geolocation |
 | Preferred languages, user-agent string | Browser |
@@ -76,7 +77,7 @@ Paths, query strings, fragments, and credentials from referrers are not retained
 Browser [referrer policies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy)
 control what `document.referrer` exposes; collection does not bypass them.
 The existing page URL still excludes queries and fragments. Collection uses
-no cookies or local storage, does not retain visitor IP addresses, and does
+no cookies, does not retain visitor IP addresses, and does
 not read page contents or form input. Reported privacy preference signals are
 stored as metadata; they do not currently change collection behavior.
 
@@ -85,6 +86,41 @@ Deploy the collector and apply its schema upgrade **before** copying the updated
 `assets/js/mycount.js`). Older cached clients remain accepted and leave the new
 client fields empty. Historical rows cannot have missing details reconstructed.
 An older collector rejects the new optional fields, so upgrade order matters.
+
+### Unique visitors
+
+The client saves a random UUIDv4 under `mycount.visitor_id.<site>` in the page's
+first-party `localStorage`. It reuses the ID on reloads and later visits.
+Storage is scoped to the page origin, and the key separates site labels on the
+same origin. The collector validates IDs and stores them as `visitor_id` in
+`page_views`. No browser fingerprint is generated.
+
+If storage is blocked, full, or the browser cannot create a secure UUID, the
+page view is still sent without an ID. Old clients and historical records
+also have no ID. Report these views as unidentified, not as zero visitors or
+one new visitor per hit. Existing hits cannot be deduplicated retroactively.
+
+These counts represent browsers, not people: clearing site data or changing
+browser/device creates another ID; shared browsers share an ID. Private browsing
+can discard the ID when the private session ends. IDs are not shared across
+sites, so summing site totals does not give globally unique people. Automated
+browsers can also receive IDs; known bot views are reported separately.
+
+For all-time totals, `VisitDb.totals_by_site()` provides the same report as:
+
+```sql
+SELECT p.site, COUNT(*) AS page_views,
+       COUNT(DISTINCT v.visitor_id) AS unique_browsers,
+       COUNT(CASE WHEN v.visitor_id IS NULL THEN 1 END) AS unidentified_views,
+       COUNT(CASE WHEN v.is_bot = 1 THEN 1 END) AS known_bot_views
+FROM page_views v JOIN pages p ON p.page_id = v.page_id
+GROUP BY p.site
+ORDER BY page_views DESC, p.site;
+```
+
+To verify after deployment, load two pages on the same site and reload one.
+Page views should increase by three and unique browsers by at most one.
+Check the POST payload's `visitor_id` remains the same each time.
 
 ### View referrers and cities
 

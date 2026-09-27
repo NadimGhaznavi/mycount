@@ -65,6 +65,11 @@ class VisitorSchema:
                 ADD COLUMN IF NOT EXISTS is_bot BOOLEAN NULL,
                 ADD COLUMN IF NOT EXISTS client_details JSON NULL
         """)
+        self._db.execute("""
+            ALTER TABLE page_views
+                ADD COLUMN IF NOT EXISTS visitor_id BINARY(16) NULL,
+                ADD INDEX IF NOT EXISTS idx_view_visitor_time (visitor_id, received_at)
+        """)
         width = self._db.query("""
             SELECT CHARACTER_MAXIMUM_LENGTH AS width FROM information_schema.COLUMNS
             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'page_views' AND COLUMN_NAME = 'city_name'
