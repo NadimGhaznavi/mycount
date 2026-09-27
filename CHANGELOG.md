@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-09-27 @ 08:39
+
+- Allow `https://r3el.osoyalce.com` to submit page views to the collector.
+
 ## [0.4.0] - 2026-09-27 @ 08:01
 
 - Added a bunch of allowed sites.

@@ -4,7 +4,7 @@ from typing import Final
 
 
 class DMyCount:
-    VERSION: Final[str] = "0.4.0"
+    VERSION: Final[str] = "0.4.2"
     BASE_DIR: Final[str] = "/opt/prod/mycount"
     DATABASE_ENV: Final[str] = "/etc/mycount/database.env"
     DATABASE_NAME: Final[str] = "mycount"
@@ -16,6 +16,7 @@ class DMyCount:
     ORIGINS: Final[tuple[str, ...]] = (
         "https://mycount.osoyalce.com",
         "https://ax3l.osoyalce.com",
+        "https://r3el.osoyalce.com",
         "https://blog.osoyalce.com",
         "https://snakelab.osoyalce.com",
         "https://snakelabserver.osoyalce.com",

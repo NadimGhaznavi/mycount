@@ -43,9 +43,10 @@ class CollectorHttpTests(unittest.TestCase):
         self.assertEqual(self.client.get('/health').status_code, 204)
         self.collector.record.assert_not_called()
 
-    def test_both_sites_pass_preflight_and_payload_validation(self):
+    def test_sites_pass_preflight_and_payload_validation(self):
         self.collector.record.side_effect = lambda payload, address, origin: VisitPayload().resolve(payload, origin)
-        for site, origin in zip(('mycount', 'ax3l'), DMyCount.ORIGINS):
+        for site in ('mycount', 'ax3l', 'r3el'):
+            origin = f'https://{site}.osoyalce.com'
             with self.subTest(site=site):
                 response = self.client.options('/count', headers={
                     'Origin': origin, 'Access-Control-Request-Method': 'POST',
