@@ -92,6 +92,17 @@ class VisitDb:
             ORDER BY page_views DESC, country_name, country_code, region_name, city_name
         """, params)
 
+    def recent_visits(self, *, exclude_bots: bool = False) -> list[dict[str, object]]:
+        """Return the latest 20 matching visits, newest ID first for time ties."""
+        where, params = self._bot_filter(exclude_bots)
+        return self._db.query(f"""
+            SELECT v.received_at, p.url
+            FROM page_views v JOIN pages p ON p.page_id = v.page_id
+            {where}
+            ORDER BY v.received_at DESC, v.page_view_id DESC
+            LIMIT 20
+        """, params)
+
     def count_by_site(self, site: str) -> int:
         """Read the bot-filtered page-view count without recording a visit."""
         where, params = self._bot_filter(True)

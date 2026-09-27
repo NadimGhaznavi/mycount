@@ -3,7 +3,15 @@
     const date = new Date(element.dateTime);
     const pad = value => String(value).padStart(2, '0');
     const time = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
-    element.textContent = element.dataset.localTime === 'date'
+    if (element.dataset.localTime === 'date-only') {
+      element.textContent = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+      continue;
+    }
+    if (element.dataset.localTime === 'time-12') {
+      element.textContent = `${pad(date.getHours() % 12 || 12)}:${pad(date.getMinutes())} ${date.getHours() < 12 ? 'AM' : 'PM'}`;
+      continue;
+    }
+    element.textContent = element.dataset.localTime === 'date' 
       ? `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${time}`
       : `${date.toLocaleString('en-US', {month: 'short'})} ${pad(date.getDate())} - ${time}`;
   }

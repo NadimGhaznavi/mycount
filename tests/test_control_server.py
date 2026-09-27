@@ -28,6 +28,7 @@ class ControlServerTests(unittest.TestCase):
               "last_visited": datetime(2026, 9, 27, 15, 5)}],
             [{"country_name": "Canada", "country_code": "CA", "region_name": "Ontario", "city_name": "<city>", "page_views": 9},
              {"country_name": None, "country_code": "", "region_name": None, "city_name": None, "page_views": 3}],
+            [{"received_at": datetime(2026, 9, 27, 15, 5), "url": "https://example.com/<recent>"}],
         ]
         with ThreadingHTTPServer(("127.0.0.1", 0), ControlHandler) as server:
             thread = Thread(target=server.serve_forever)
@@ -49,6 +50,10 @@ class ControlServerTests(unittest.TestCase):
                     self.assertIn(b'aria-expanded="false"', body)
                     self.assertIn(b'aria-controls="site-pages-1"', body)
                     self.assertIn(b'class="site-pages" hidden', body)
+                    self.assertIn(b'<caption>Recent Visits</caption>', body)
+                    self.assertIn(b'https://example.com/&lt;recent&gt;', body)
+                    self.assertIn(b'data-local-time="date-only"', body)
+                    self.assertIn(b'data-local-time="time-12"', body)
                     self.assertIn(b'>Visits by Site</th>', body)
                     self.assertIn(b'<caption>Visits by Location</caption>', body)
                     self.assertIn(b'&lt;city&gt;', body)
@@ -66,7 +71,7 @@ class ControlServerTests(unittest.TestCase):
                         self.assertIn('COALESCE(v.is_bot, 0) = 0', call.args[0])
                     for query, excluded in [('exclude_bots=0', False), ('exclude_bots=0&exclude_bots=1', True)]:
                         factory.reset_mock()
-                        factory.return_value.query.side_effect = [[], [], []]
+                        factory.return_value.query.side_effect = [[], [], [], []]
                         connection.request("GET", "/?" + query)
                         response = connection.getresponse()
                         self.assertEqual(response.status, 200)
@@ -128,7 +133,7 @@ class ControlServerTests(unittest.TestCase):
             subprocess.run(
                 [sys.executable, "-B", "-c",
                  "from mycount.server.ControlPages import ControlPages; "
-                 "assert b'MyCount <span>Control</span>' in ControlPages().render([], [], []); "
+                 "assert b'MyCount <span>Control</span>' in ControlPages().render([], [], [], []); "
                  "assert b'Optional browser details' in ControlPages().reference()"],
                 cwd=directory, check=True,
             )
