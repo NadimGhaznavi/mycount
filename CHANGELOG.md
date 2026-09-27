@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-27 @ 08:01
+
 - Added a bunch of allowed sites.
 
 ### Added
