@@ -42,6 +42,31 @@ GitHub Pages does not read Python constants.
 An empty or omitted endpoint disables collection. Configured endpoints must use HTTPS and
 must not contain credentials. The endpoint URL is public; do not embed secrets.
 
+## Display a site counter
+
+With the shared deferred script already loaded once, add this HTML to any
+Jekyll Markdown page:
+
+```html
+Visits: <span data-mycount-counter>…</span>
+```
+
+The script uses its existing `data-site` label and collector hostname. It waits
+for the tracking request to finish, then reads `GET /get_count?site=<label>`.
+The JSON response is `{"site":"mycount","visits":123}`. Counts cover all pages
+for that site and exclude bots using the dashboard's default filter, including
+historical GoogleOther records. Unknown sites return zero.
+
+This GET never records a visit. Multiple counter elements share one request;
+pages without counters make no count request. Neither request is retried.
+A successful tracking request lets the count include the current eligible
+visit. If tracking fails, the script still attempts to read the existing total.
+Unavailable or invalid count responses display `—`.
+
+The endpoint accepts allowed website origins, uses no cookies, and disables
+caching. Deploy the collector and updated Caddy route before distributing the
+updated JavaScript to your shared theme. No extra script is needed on the page.
+
 ## Collection
 
 The client sends JSON using `POST` to the configured URL without cookies.
@@ -56,7 +81,7 @@ Each visit can store the following information:
 | Site, page origin/path, separate query string, receipt time in UTC | Client and collector |
 | Persistent per-site browser ID | Random UUIDv4 saved in first-party local storage |
 | Full referrer and normalized referring hostname | `document.referrer`, as exposed by the browser |
-| Continent, country, region, city, approximate latitude/longitude, ZIP/postal code, GeoIP timezone | Server-side IP geolocation |
+| Country, region, city, approximate latitude/longitude, ZIP/postal code, GeoIP timezone | Server-side IP geolocation |
 | Preferred languages, user-agent string | Browser |
 | Browser/OS family and version, device category/brand/model, bot classification | User-agent parsing |
 | Screen and available dimensions, viewport size, pixel ratio, color/pixel depth | Browser |

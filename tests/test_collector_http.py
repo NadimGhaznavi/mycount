@@ -128,3 +128,31 @@ class CollectorHttpTests(unittest.TestCase):
             response = client.post('/count', json=payload, headers={'Origin': origin})
             self.assertEqual(response.status_code, 400)
             database.assert_called_once()
+
+    @patch('mycount.activity.CountVisits.DbMgr')
+    def test_read_only_site_counter(self, factory):
+        factory.return_value.query.return_value = [{'visits': 42}]
+        origin = DMyCount.ORIGINS[0]
+        response = self.client.get('/get_count?site=r3el', headers={'Origin': origin})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, {'site': 'r3el', 'visits': 42})
+        self.assertEqual(response.headers['Access-Control-Allow-Origin'], origin)
+        self.assertEqual(response.headers['Cache-Control'], 'no-store')
+        factory.return_value.close.assert_called_once()
+        factory.return_value.insert.assert_not_called()
+        factory.return_value.execute.assert_not_called()
+        self.collector.record.assert_not_called()
+        factory.reset_mock()
+        for query in ('', '?site=', '?site=a&site=b', '?site=bad%20site', '?site=' + 'a'*101):
+            self.assertEqual(self.client.get('/get_count' + query, headers={'Origin': origin}).status_code, 400)
+        self.assertEqual(self.client.get('/get_count?site=r3el').status_code, 403)
+        self.assertEqual(self.client.get('/get_count?site=r3el', headers={'Origin': 'https://bad.example'}).status_code, 403)
+        self.assertEqual(self.client.post('/get_count?site=r3el', headers={'Origin': origin}).status_code, 405)
+        factory.assert_not_called()
+        import pymysql
+        factory.return_value.query.side_effect = pymysql.OperationalError(2003, 'private details')
+        with self.assertLogs(level='ERROR'):
+            response = self.client.get('/get_count?site=r3el', headers={'Origin': origin})
+        self.assertEqual(response.status_code, 503)
+        self.assertNotIn(b'private details', response.data)
+        factory.return_value.close.assert_called_once()

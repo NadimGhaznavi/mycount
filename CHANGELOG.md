@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Add a read-only, bot-filtered `/get_count?site=...` endpoint and optional `data-mycount-counter` elements in the shared client. Fetch once after tracking, reuse the count across elements, and show an em dash on failure without retrying or recording extra visits. Route the endpoint through Caddy.
+
 ## [0.7.3] - 2026-09-27 @ 16:24
 
 - Add a Filters box with Exclude bots enabled by default, consistently filtering site/page/location counts, last-visited times, and totals. Include historical GoogleOther/Googlebot records in exclusion and correctly flag new GoogleOther visits as bots.

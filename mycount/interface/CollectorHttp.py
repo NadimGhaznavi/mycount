@@ -1,12 +1,15 @@
 """HTTP and CORS boundary for the visitor collector."""
 
+import json
 import logging
+import re
 
 import pymysql
 from werkzeug.exceptions import HTTPException
 from werkzeug.wrappers import Request, Response
 
 from mycount.activity.CollectVisit import CollectVisit
+from mycount.activity.CountVisits import CountVisits
 from mycount.constants.DMyCount import DMyCount
 from mycount.interface.VisitPayload import InvalidVisit
 from mycount.interface.VisitorAddress import VisitorAddress
@@ -33,6 +36,8 @@ class CollectorHttp:
     def _respond(self, request: Request) -> Response:
         if request.path == DMyCount.HEALTH_PATH and request.method in ("GET", "HEAD"):
             return Response(status=204)
+        if request.path == DMyCount.COUNT_PATH:
+            return self._count(request)
         if request.path != DMyCount.COLLECTION_PATH:
             return Response(status=404)
         if request.headers.get("Origin") not in self._origins:
@@ -58,3 +63,20 @@ class CollectorHttp:
             logging.getLogger(__name__).error("Database unavailable (code %s).", error.args[0])
             return Response(status=503)
         return Response(status=204)
+
+    def _count(self, request: Request) -> Response:
+        if request.headers.get("Origin") not in self._origins:
+            return Response(status=403)
+        if request.method != "GET":
+            return Response(status=405, headers={"Allow": "GET"})
+        sites = request.args.getlist("site")
+        if (len(sites) != 1 or not 1 <= len(sites[0]) <= DMyCount.MAX_SITE_LENGTH
+                or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", sites[0]) is None):
+            return Response(status=400)
+        site = sites[0]
+        try:
+            visits = CountVisits().count(site)
+        except pymysql.OperationalError as error:
+            logging.getLogger(__name__).error("Counter database unavailable (code %s).", error.args[0])
+            return Response(status=503)
+        return Response(json.dumps({"site": site, "visits": visits}), mimetype="application/json")

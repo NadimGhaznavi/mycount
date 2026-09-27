@@ -98,6 +98,12 @@ class DDeployment:
             "mycount/interface/VisitDb.py",
             "mycount/interface/VisitPayload.py",
         ),
+        "mycount/activity/CountVisits.py": (
+            "mycount/__init__.py",
+            "mycount/activity/__init__.py",
+            "mycount/interface/DbMgr.py",
+            "mycount/interface/VisitDb.py",
+        ),
         "mycount/activity/DeploymentImpact.py": (
             "deployment_tools/DeploymentImpact.py",
             "mycount/__init__.py",
@@ -195,6 +201,7 @@ class DDeployment:
         "mycount/interface/CollectorHttp.py": (
             "mycount/__init__.py",
             "mycount/activity/CollectVisit.py",
+            "mycount/activity/CountVisits.py",
             "mycount/constants/DMyCount.py",
             "mycount/interface/VisitPayload.py",
             "mycount/interface/VisitorAddress.py",
