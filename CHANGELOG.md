@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-27 @ 07:19
+
 ### Added
 
 - Add an upgrade script that reuses deployment, validates retained credentials before stopping the collector, and preserves GeoIP data instead of repeating the import.
