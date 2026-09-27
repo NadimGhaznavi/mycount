@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-09-27 @ 11:52
+
 - Add a standalone `mycount-control` service on port 61777 with a dark orange banner styled after R3el. Install and upgrade deploy and health-check both services; uninstall removes both.
 
 ## [0.6.0] - 2026-09-27 @ 09:46
