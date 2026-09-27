@@ -13,9 +13,9 @@ from mycount.interface.VisitorAddress import VisitorAddress
 
 
 class CollectorHttp:
-    def __init__(self, collector: CollectVisit, origin: str) -> None:
+    def __init__(self, collector: CollectVisit, origins: tuple[str, ...]) -> None:
         self._collector = collector
-        self._origin = origin
+        self._origins = origins
 
     def __call__(self, environ, start_response):
         request = Request(environ)
@@ -26,8 +26,8 @@ class CollectorHttp:
             response = Response(status=error.code)
         response.headers["Cache-Control"] = "no-store"
         response.headers["Vary"] = "Origin"
-        if request.headers.get("Origin") == self._origin:
-            response.headers["Access-Control-Allow-Origin"] = self._origin
+        if request.headers.get("Origin") in self._origins:
+            response.headers["Access-Control-Allow-Origin"] = request.headers["Origin"]
         return response(environ, start_response)
 
     def _respond(self, request: Request) -> Response:
@@ -35,7 +35,7 @@ class CollectorHttp:
             return Response(status=204)
         if request.path != DMyCount.COLLECTION_PATH:
             return Response(status=404)
-        if request.headers.get("Origin") != self._origin:
+        if request.headers.get("Origin") not in self._origins:
             return Response(status=403)
         if request.method == "OPTIONS":
             method = request.headers.get("Access-Control-Request-Method")
@@ -51,7 +51,7 @@ class CollectorHttp:
             return Response(status=405, headers={"Allow": "POST, OPTIONS"})
         payload = request.get_json()
         try:
-            self._collector.record(payload, VisitorAddress.resolve(request))
+            self._collector.record(payload, VisitorAddress.resolve(request), request.headers["Origin"])
         except InvalidVisit:
             return Response(status=400)
         except pymysql.OperationalError as error:

@@ -2,10 +2,14 @@
 # Deploy the application after provisioning and prepare its weekly refresh.
 set -euo pipefail
 umask 022
-[[ $# == 0 && $EUID == 0 ]] || { printf 'Run scripts/install-services.sh as root, without arguments.\n' >&2; exit 1; }
+[[ $EUID == 0 && ( $# == 0 || ( $# == 1 && $1 == --upgrade ) ) ]] || { printf 'Usage: sudo scripts/install-services.sh [--upgrade]\n' >&2; exit 1; }
+upgrade=false
+if [[ ${1:-} == --upgrade ]]; then
+    upgrade=true
+fi
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 checkout=$PWD
-mapfile -t settings < <(python3 -B - <<'PY'
+settings_output=$(python3 -B - <<'PY'
 from mycount.constants.DMyCount import DMyCount
 print(DMyCount.BASE_DIR)
 print(DMyCount.DATABASE_ENV)
@@ -13,10 +17,24 @@ print(DMyCount.SERVICE_USER)
 print(DMyCount.SERVICE_UNIT)
 PY
 )
+mapfile -t settings <<< "$settings_output"
 install_dir=${settings[0]}
 [[ -d $install_dir && -f ${settings[1]} ]] || { printf 'Run install.sh first.\n' >&2; exit 1; }
 getent passwd "${settings[2]}" >/dev/null
 [[ $checkout != "$install_dir" ]] || { printf 'Run deployment from a separate checkout.\n' >&2; exit 1; }
+# Validate retained credentials before stopping a working deployment.
+python3 -B - <<'PY'
+from pathlib import Path
+from mycount.constants.DMyCount import DMyCount
+from mycount.interface.DatabaseEnvironment import DatabaseEnvironment
+
+path = Path(DMyCount.DATABASE_ENV)
+if path.is_symlink() or path.stat().st_uid != 0 or path.stat().st_mode & 0o777 != 0o600:
+    raise SystemExit('Credentials must be a root-owned regular file with mode 600.')
+values = DatabaseEnvironment.read(path)
+if values['DB_NAME'] != DMyCount.DATABASE_NAME or values['DB_USER'] != DMyCount.DATABASE_USER:
+    raise SystemExit('Credentials do not belong to MyCount; run install.sh first.')
+PY
 if [[ -e /etc/systemd/system/${settings[3]} ]]; then
     systemctl stop "${settings[3]}"
 fi
@@ -24,6 +42,7 @@ if [[ ! -x $install_dir/.venv/bin/python ]]; then
     python3 -m venv "$install_dir/.venv"
 fi
 "$install_dir/.venv/bin/python" -m pip install -r requirements.txt
+printf 'Copying MyCount application files...\n'
 python3 -B - "$install_dir" <<'PY'
 from pathlib import Path
 import shutil
@@ -37,6 +56,7 @@ shutil.copy2('scripts/update-geoip.sh', target / 'scripts/update-geoip.sh')
 shutil.copy2('scripts/uninstall.sh', target / 'scripts/uninstall.sh')
 PY
 cd -- "$install_dir"
+printf 'Applying database schemas...\n'
 .venv/bin/python -B - <<'PY'
 import os
 from pathlib import Path
@@ -53,7 +73,12 @@ try:
 finally:
     db.close()
 PY
-scripts/update-geoip.sh
+if [[ $upgrade == false ]]; then
+    printf 'Downloading and importing GeoIP datasets; this may take several minutes...\n'
+    scripts/update-geoip.sh
+else
+    printf 'Keeping existing GeoIP data; weekly refresh remains scheduled.\n'
+fi
 
 # Render installation paths from the same constants as the application.
 .venv/bin/python -B - "$checkout" <<'PY'
@@ -71,6 +96,7 @@ Path(DGeoIp.CRON_FILE).write_text(
     f'{DGeoIp.CRON_SCHEDULE} root {command}\n')
 Path(DGeoIp.CRON_FILE).chmod(0o644)
 PY
+printf 'Validating and starting MyCount services...\n'
 systemd-analyze verify "/etc/systemd/system/${settings[3]}"
 systemctl daemon-reload
 systemctl enable --now cron.service
@@ -94,5 +120,6 @@ for attempt in range(30):
 else:
     raise SystemExit('Collector health check failed; inspect journalctl -u ' + DMyCount.SERVICE_UNIT)
 PY
+printf 'Configuring Caddy and router forwarding...\n'
 "$checkout/scripts/install-caddy.sh"
 printf 'Installed %s and scheduled weekly GeoIP updates.\n' "${settings[3]}"

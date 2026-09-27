@@ -9,6 +9,16 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Added
+
+- Add an upgrade script that reuses deployment, validates retained credentials before stopping the collector, and preserves GeoIP data instead of repeating the import.
+
+- Allow MyCount and Ax3l through a configurable origin allowlist; accept validated client site labels and require page URLs to match the requesting origin.
+
+### Changed
+
+- Update the client example to display its configured `/count` endpoint and explain how to verify that a page view was stored.
+
 ## [0.2.0] - 2026-09-27 @ 07:03
 
 ### Added
@@ -17,6 +27,8 @@ permalink: /CHANGELOG/
 - Add isolated deployment tests for repeated installation/removal, Caddy preservation, validation failures, and reload rollback.
 
 ### Changed
+
+- Show installation stages and GeoIP download/import progress so the initial data load no longer appears stuck after dependency installation.
 
 - Check Python and deployment prerequisites, stop the collector before dependency updates, and verify collector health before configuring HTTPS.
 - Validate Caddy with relative imports anchored to its configuration directory and restore previous configuration files if service activation or reload fails.
