@@ -15,6 +15,10 @@
   th[aria-sort="ascending"] .column-sort::after { content: ' ↑'; }
   th[aria-sort="descending"] .column-sort::after { content: ' ↓'; }
   .metrics-tables { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+  .metrics-site-column { min-width: 0; display: grid; gap: 1.5rem; }
+  .metrics-filters fieldset { margin: 0; min-width: 0; padding: 1rem; border: 1px solid #62412b; border-radius: .4rem; }
+  .metrics-filters legend { font-weight: 700; }
+  .metrics-filters label, .metrics-filters input { cursor: pointer; }
   caption { padding: .8rem; font-weight: 700; text-align: left; background: #291d15; }
   @media (max-width: 1000px) { .metrics-tables { grid-template-columns: 1fr; } }
   .table-wrap { overflow-x: auto; border: 1px solid #62412b; border-radius: .4rem; }

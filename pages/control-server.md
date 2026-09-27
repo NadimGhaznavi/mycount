@@ -11,11 +11,19 @@ the visitor collector. Open `http://<server>:61777/` to see the MyCount Control
 banner, using R3el's masthead layout with a dark orange palette.
 
 The site table shows Visits by Site, Visits, and Last Visited, ordered by visit count
-(highest first), then site name. Visits counts all recorded page views, including
-known bots, across all pages for that site. Last Visited is the latest received
+(highest first), then site name. Visits counts recorded page views across all pages for that site, subject to
+the active filter. Last Visited is the latest received
 visit, displayed in browser-local time as `YYYY-MM-DD HH:MM`.
 
-Beside it, Visits by Location groups all recorded page views across sites by
+The Filters box above Visits by Site has **Exclude bots** checked by default.
+Visits by Location stays at the top of the right column. Changing it reloads the page and filters site totals, expanded pages, locations,
+last-visited timestamps, and total rows together. Uncheck it to include bots.
+The filter excludes visits flagged as bots and historical Googlebot/GoogleOther
+records identified by browser family, including older missing or incorrect bot
+flags. Other unknown bot statuses remain included. The choice is retained in
+the page URL; opening `/` starts with bots excluded.
+
+Beside it, Visits by Location groups matching page views across sites by
 Country, State/Province, and City, with a Visits column. Unknown
 or empty fields display `---` and remain included in the counts. Rows start
 with the highest visit count, then country name/code, state/province, and city for ties;
@@ -45,7 +53,7 @@ stay with their site when sorted, and each page table can be sorted independentl
 Column buttons also work with Enter or Space.
 
 Reload the page to refresh the metrics and timestamp. Empty databases show
-“No visits recorded yet.” Database failures return HTTP 503 with a short message;
+“No visits match the current filters.” Database failures return HTTP 503 with a short message;
 details are logged to the service journal.
 
 The control service loads `/etc/mycount/database.env` and reads through the shared

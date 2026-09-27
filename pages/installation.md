@@ -159,7 +159,9 @@ backfilled on historical visits.
 
 Upgrades add nullable `country_name` columns to reference ranges and visits,
 backfill missing names from recognized ISO country codes using `pycountry`,
-and drop the obsolete `continent` columns. Unknown codes remain unnamed.
+and drop the obsolete `continent` columns. Backfills scan primary keys in
+batches of 1,000 rows, log progress, and commit each batch separately. Retrying
+an interrupted upgrade preserves completed names and fills remaining gaps. Unknown codes remain unnamed.
 New imports retain the CSV country name; later refreshes do not rewrite names
 on existing visits.
 
