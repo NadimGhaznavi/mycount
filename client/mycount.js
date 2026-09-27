@@ -37,13 +37,13 @@
         // Collection still works when browser policy or storage limits prevent persistence.
     }
 
-    // Keep only the referring origin; paths and query strings can contain private data.
+    // Retain the full referrer exposed by the browser.
     let referrer = null;
     if (document.referrer) {
         try {
             const address = new URL(document.referrer);
             if (address.protocol === "https:" || address.protocol === "http:") {
-                referrer = address.origin;
+                referrer = document.referrer;
             }
         } catch (error) {
             if (!(error instanceof TypeError)) throw error;
@@ -60,6 +60,7 @@
         event: "page_view",
         site,
         url: window.location.origin + window.location.pathname,
+        search: window.location.search,
         languages: Array.from(navigator.languages),
         user_agent: navigator.userAgent,
         visitor_id: visitorId,

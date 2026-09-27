@@ -9,25 +9,38 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Added
+
+- Store the request's full IPv4 or IPv6 address with each new page view. Add a nullable IP column for existing databases, preserving unknown historical addresses.
+- Retain page query strings separately from page URLs, store the full browser-provided HTTP(S) referrer, and import/copy GeoIP continent values with nullable schema migrations.
+- Import optional GeoIP latitude/longitude, ZIP/postal code, and timezone and retain them with new visits. Validate coordinates and field lengths, preserve postal-code leading zeros, keep the browser timezone separate, and add nullable schema migrations.
+
+### Changed
+
+- Format Last refresh as `MMM DD - HH:MM` in browser-local time.
+- Consolidate Reference into one Visitor Data inventory with Source, Source Details, Table, Column, and Details; include optional browser fields, all GeoIP CSV fields, and explicit markers for values not stored.
+- Limit Visitor Data to external browser, request, and GeoIP inputs, sorted by Source and then Source Details.
+- Update the collection documentation and Reference storage mappings for the new fields.
+
+### Removed
+
+- Remove the unused region-code field from collection and reference documentation; upgrades drop its database column while preserving visits and region names.
+- Remove internal identifiers, derived values, protocol metadata, and the hypothetical IP-hash entry from the Reference inventory.
+- Remove obsolete tracking placeholders and the browser identity documentation section.
+
 ## [0.6.9] - 2026-09-27 @ 13:50
 
 - Add Metrics and Reference navigation to the report server, show the collection tables and optional browser fields on Reference, move Last refresh below the header, and enable column sorting for metrics.
-
 - Document collected page-view data, optional browser details, storage locations, and browser ID behavior in a linked data inventory.
 
 ## [0.6.8] - 2026-09-27 @ 13:06
 
 - Extract portable, standard-library deployment tooling with project-supplied configuration. Generate `DDeployment.py` from source scans and explicit MyCount rules; require a nonmutating freshness check during release preparation. Document the reusable boundary and maintenance workflow.
-
 - Shorten the deployment dependency guide for DevOps and document the portability boundary and planned dependency generator.
-
 - Refactor deployment into explicit stages selected by impact flags. Limit service-only file copies and removals to affected targets, skip deployment stages for no-impact releases, and publish installed release metadata only after successful completion.
-
 - Record deployment-impact flags during release preparation and combine them across skipped releases during upgrades. Report-only releases restart only the control service; filesystem/setup changes use the full deployment workflow.
 - Add an initial installed-artifact baseline and preserve the last successful deployed version for retrying failed upgrades. Reject unprepared deployment files before stopping services.
-
 - Add `DeploymentImpact` to check whether an artifact affects a deployment target through direct or transitive dependencies, and list all affected targets.
-
 - Require deployment dependency updates alongside relevant code and asset changes, prominently in the Coding Guidelines.
 - Define static file dependency graphs for the report server, listener, and filesystem/setup targets in `DDeployment`, as the foundation for selective deployment decisions.
 
@@ -76,7 +89,6 @@ region, country, and language data. Preserve historical visits and accept older 
 ### Added
 
 - Add an upgrade script that reuses deployment, validates retained credentials before stopping the collector, and preserves GeoIP data instead of repeating the import.
-
 - Allow MyCount and Ax3l through a configurable origin allowlist; accept validated client site labels and require page URLs to match the requesting origin.
 
 ### Changed
@@ -93,14 +105,10 @@ region, country, and language data. Preserve historical visits and accept older 
 ### Changed
 
 - Show installation stages and GeoIP download/import progress so the initial data load no longer appears stuck after dependency installation.
-
 - Check Python and deployment prerequisites, stop the collector before dependency updates, and verify collector health before configuring HTTPS.
 - Validate Caddy with relative imports anchored to its configuration directory and restore previous configuration files if service activation or reload fails.
-
 - Add Caddy setup preserving existing sites, public certificate automation, and UPnP forwarding; accept validated visitor addresses from the local proxy for geolocation.
-
 - Use standard HTTPS port 443 with `/count` for collection; keep port 36666 local, forward router ports 80/443, and update the browser endpoint and installation guide.
-
 - Document the complete Caddy configuration, import placement alongside the LAN-only site, validation and reload commands, and public HTTPS verification.
 
 ## [0.1.0] - 2026-09-26 @ 16:20
@@ -135,7 +143,6 @@ reference-data updates.
 ### Changed
 
 - Replace the preliminary MaxMind integration with local ipapi.is reference data; widen city names to accommodate verified upstream values.
-- Update the planned reporting design to use browser fingerprinting for estimated unique-browser counts; simplify collection documentation and remove outdated privacy claims. Fingerprinting implementation remains pending.
 - Use `index.md` as the sole documentation root, require every documentation page to be reachable from it, and simplify the README to a website pointer; record these conventions in the coding guidelines.
 - Document development ownership: the AI assistant handles implementation, tests, and documentation; the project owner owns architecture, all Git operations, and release scripts.
 - Extend `.gitignore` for Jekyll output, caches, and local Bundler dependencies.

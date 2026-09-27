@@ -53,10 +53,10 @@ Each visit can store the following information:
 
 | Information | Source |
 | --- | --- |
-| Site, page origin/path, receipt time in UTC | Client and collector |
+| Site, page origin/path, separate query string, receipt time in UTC | Client and collector |
 | Persistent per-site browser ID | Random UUIDv4 saved in first-party local storage |
-| Referring hostname | `document.referrer`, reduced to a hostname |
-| Country, region, city | Server-side IP geolocation |
+| Full referrer and normalized referring hostname | `document.referrer`, as exposed by the browser |
+| Continent, country, region, city, approximate latitude/longitude, ZIP/postal code, GeoIP timezone | Server-side IP geolocation |
 | Preferred languages, user-agent string | Browser |
 | Browser/OS family and version, device category/brand/model, bot classification | User-agent parsing |
 | Screen and available dimensions, viewport size, pixel ratio, color/pixel depth | Browser |
@@ -73,18 +73,24 @@ Missing optional values remain unknown rather than being reported as false or ze
 
 Referrers identify the immediately preceding site, including same-site navigation.
 Direct visits and suppressed referrers are indistinguishable and stored as null.
-Paths, query strings, fragments, and credentials from referrers are not retained.
+The full HTTP(S) referrer exposed by the browser is retained, including any
+path, query, or fragment it supplies. Referrers containing URL credentials are rejected.
 Browser [referrer policies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy)
 control what `document.referrer` exposes; collection does not bypass them.
-The existing page URL still excludes queries and fragments. Collection uses
-no cookies, does not retain visitor IP addresses, and does
-not read page contents or form input. Reported privacy preference signals are
+The page URL used for metrics still excludes queries and fragments. The query
+string is stored separately in `page_views.search`, preserving its leading `?`
+and encoding. Empty means no query; NULL means the client did not supply it.
+The current page fragment is excluded. Collection uses
+no cookies and does not read page contents or form input. The collector stores
+the request's full IPv4 or IPv6 address in `page_views.ip_address` alongside its
+GeoIP result. Historical visits retain `NULL`; existing IPs cannot be reconstructed.
+Reported privacy preference signals are
 stored as metadata; they do not currently change collection behavior.
 
 Deploy the collector and apply its schema upgrade **before** copying the updated
 `client/mycount.js` to each website (for Ax3l/R3el, the deployed copy is at
-`assets/js/mycount.js`). Older cached clients remain accepted and leave the new
-client fields empty. Historical rows cannot have missing details reconstructed.
+`assets/js/mycount.js`). Older cached clients remain accepted; they omit `search` and send only the
+referring origin, so full referrer details require the updated client. Historical rows cannot have missing details reconstructed.
 An older collector rejects the new optional fields, so upgrade order matters.
 
 ### Unique visitors
@@ -93,7 +99,7 @@ The client saves a random UUIDv4 under `mycount.visitor_id.<site>` in the page's
 first-party `localStorage`. It reuses the ID on reloads and later visits.
 Storage is scoped to the page origin, and the key separates site labels on the
 same origin. The collector validates IDs and stores them as `visitor_id` in
-`page_views`. No browser fingerprint is generated.
+`page_views`.
 
 If storage is blocked, full, or the browser cannot create a secure UUID, the
 page view is still sent without an ID. Old clients and historical records

@@ -37,6 +37,7 @@ class VisitPayloadTests(unittest.TestCase):
                    'client_details': details}
         visit, agent = VisitPayload().resolve(payload, self.origin)
         self.assertEqual(visit.referrer_host, 'www.example.com')
+        self.assertEqual(visit.referrer, payload['referrer'])
         self.assertEqual(visit.user_agent, agent)
         self.assertEqual(dict(visit.client_details), {
             'timezone': 'America/Toronto', 'viewport_width': 1920,
@@ -51,6 +52,17 @@ class VisitPayloadTests(unittest.TestCase):
         self.assertIsNone(visit.referrer_host)
         self.assertEqual(visit.client_details, ())
         self.assertIsNone(visit.visitor_id)
+        self.assertIsNone(visit.search)
+        self.assertIsNone(visit.referrer)
+
+    def test_search_retains_exact_query_separately_from_page(self):
+        for search in ('', '?q=a%20b&q=two&empty=', '?q=é'):
+            visit, _ = VisitPayload().resolve({**self.payload, 'search': search}, self.origin)
+            self.assertEqual(visit.search, search)
+            self.assertEqual(visit.url, self.origin + '/page')
+        for search in (1, [], 'q=x', '?x#fragment', '?x\n', '?\ud800'):
+            with self.subTest(search=search), self.assertRaises(InvalidVisit):
+                VisitPayload().resolve({**self.payload, 'search': search}, self.origin)
 
     def test_visitor_id_round_trip_and_missing_id(self):
         identifier = '3e8073e0-5f15-4f14-bccc-b4b5cb47e330'

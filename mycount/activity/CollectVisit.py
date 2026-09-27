@@ -20,9 +20,11 @@ class CollectVisit:
         db = DbMgr()
         try:
             location = GeoIp(db).locate(address)
-            visit = replace(visit, country_code=location.country_code,
-                            region_code=location.region_code, region_name=location.region_name,
-                            city_name=location.city_name)
+            visit = replace(visit, ip_address=address, country_code=location.country_code,
+                            region_name=location.region_name,
+                            city_name=location.city_name, continent=location.continent,
+                            latitude=location.latitude, longitude=location.longitude,
+                            zip=location.zip, timezone=location.timezone)
             return VisitDb(db).record(visit)
         finally:
             db.close()

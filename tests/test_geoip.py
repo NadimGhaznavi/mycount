@@ -39,7 +39,9 @@ class FixtureGeoIpSource(GeoIpSource):
         }
         archive(destination, version, [
             {"ip_version": str(version), "start_ip": start, "end_ip": end,
-             "country_code": "CA", "state": "Ontario", "city": city}
+             "continent": "North America", "country_code": "CA", "state": "Ontario", "city": city,
+             "latitude": "43.2557", "longitude": "-79.8711",
+             "zip": "00123", "timezone": "America/Toronto"}
             for start, end, city in ranges[version]
         ])
 
@@ -79,8 +81,10 @@ class GeoIpSourceTests(unittest.TestCase):
         FixtureGeoIpSource(city=city).download(4, self.path)
         rows = list(GeoIpSource().rows(self.path, 4))
         self.assertEqual(rows[0].location.city_name, city)
+        self.assertEqual(rows[0].location.continent, 'North America')
+        self.assertEqual(rows[0].location.zip, '00123')
+        self.assertEqual(rows[0].location.timezone, 'America/Toronto')
         self.assertEqual(len(rows[0].start), 16)
-        self.assertIsNone(rows[0].location.region_code)
 
     def test_ipv6_nested_ranges_are_accepted(self):
         FixtureGeoIpSource().download(6, self.path)
@@ -93,6 +97,50 @@ class GeoIpSourceTests(unittest.TestCase):
         archive(self.path, 4, [], ("unexpected",))
         with self.assertRaisesRegex(ValueError, "header"):
             list(GeoIpSource().rows(self.path, 4))
+
+    def test_coordinates_allow_missing_zero_and_boundaries(self):
+        for latitude, longitude, expected in (
+            ('', '', (None, None)), (' ', '0', (None, 0.0)),
+            ('0', '', (0.0, None)), ('90', '-180', (90.0, -180.0)),
+            ('-90', '180', (-90.0, 180.0)), ('43.2557', '-79.8711', (43.2557, -79.8711)),
+        ):
+            with self.subTest(latitude=latitude, longitude=longitude):
+                archive(self.path, 4, [{'ip_version': '4', 'start_ip': '8.8.8.0',
+                    'end_ip': '8.8.8.255', 'latitude': latitude, 'longitude': longitude}])
+                location = next(GeoIpSource().rows(self.path, 4)).location
+                self.assertEqual((location.latitude, location.longitude), expected)
+
+    def test_invalid_coordinates_are_rejected(self):
+        for field, values in (('latitude', ('91', '-91', 'nan', 'inf', 'text')),
+                              ('longitude', ('181', '-181', 'NaN', '-inf', 'text'))):
+            for value in values:
+                with self.subTest(field=field, value=value):
+                    archive(self.path, 4, [{'ip_version': '4', 'start_ip': '8.8.8.0',
+                        'end_ip': '8.8.8.255', field: value}])
+                    with self.assertRaisesRegex(ValueError, 'coordinate at line 2'):
+                        list(GeoIpSource().rows(self.path, 4))
+
+    def test_optional_zip_timezone_and_length_limits(self):
+        base = {'ip_version': '4', 'start_ip': '8.8.8.0', 'end_ip': '8.8.8.255'}
+        archive(self.path, 4, [base])
+        location = next(GeoIpSource().rows(self.path, 4)).location
+        self.assertIsNone(location.zip)
+        self.assertIsNone(location.timezone)
+        for field, limit in (('zip', DGeoIp.ZIP_LENGTH), ('timezone', DGeoIp.TIMEZONE_LENGTH)):
+            with self.subTest(field=field):
+                archive(self.path, 4, [{**base, field: 'x' * (limit + 1)}])
+                with self.assertRaisesRegex(ValueError, 'location'):
+                    list(GeoIpSource().rows(self.path, 4))
+
+    def test_optional_continent_and_invalid_length(self):
+        for continent in ('', 'x' * (DGeoIp.CONTINENT_LENGTH + 1)):
+            archive(self.path, 4, [{'ip_version': '4', 'start_ip': '8.8.8.0',
+                                   'end_ip': '8.8.8.255', 'continent': continent}])
+            if continent:
+                with self.assertRaisesRegex(ValueError, 'location'):
+                    list(GeoIpSource().rows(self.path, 4))
+            else:
+                self.assertIsNone(next(GeoIpSource().rows(self.path, 4)).location.continent)
 
     def test_invalid_range_and_address_family_are_rejected(self):
         for version, start, end in (("6", "8.8.8.0", "8.8.8.255"),

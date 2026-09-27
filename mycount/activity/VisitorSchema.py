@@ -2,6 +2,7 @@
 
 from mycount.interface.DbMgr import DbMgr
 from mycount.constants.DMyCount import DMyCount
+from mycount.constants.DGeoIp import DGeoIp
 from mycount.constants.DVisitorDetails import DVisitorDetails
 
 
@@ -31,28 +32,20 @@ class VisitorSchema:
                 page_id BIGINT UNSIGNED NOT NULL,
                 received_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
                 country_code CHAR(2) CHARACTER SET ascii COLLATE ascii_bin NULL,
-                region_code VARCHAR(32) NULL,
                 region_name VARCHAR(128) NULL,
                 city_name VARCHAR({DMyCount.CITY_NAME_LENGTH}) NULL,
                 browser_family VARCHAR(64) NULL,
                 os_family VARCHAR(64) NULL,
                 device_category VARCHAR(16) NULL,
-                fingerprint BINARY(32) NULL,
-                fingerprint_version SMALLINT UNSIGNED NULL,
-                CONSTRAINT ck_fingerprint_pair CHECK (
-                    (fingerprint IS NULL AND fingerprint_version IS NULL) OR
-                    (fingerprint IS NOT NULL AND fingerprint_version IS NOT NULL
-                     AND fingerprint_version > 0)
-                ),
                 CONSTRAINT ck_device_category CHECK (
                     device_category IN ('desktop', 'mobile', 'tablet', 'other')
                 ),
                 INDEX idx_view_time (received_at, page_view_id),
                 INDEX idx_view_page_time (page_id, received_at),
-                INDEX idx_view_fingerprint_time (fingerprint_version, fingerprint, received_at),
                 CONSTRAINT fk_view_page FOREIGN KEY (page_id) REFERENCES pages(page_id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
         """)
+        self._db.execute("ALTER TABLE page_views DROP COLUMN IF EXISTS region_code")
         # Nullable additions preserve historical rows and support cached older clients.
         self._db.execute(f"""
             ALTER TABLE page_views
@@ -69,6 +62,21 @@ class VisitorSchema:
             ALTER TABLE page_views
                 ADD COLUMN IF NOT EXISTS visitor_id BINARY(16) NULL,
                 ADD INDEX IF NOT EXISTS idx_view_visitor_time (visitor_id, received_at)
+        """)
+        self._db.execute("""
+            ALTER TABLE page_views
+                ADD COLUMN IF NOT EXISTS ip_address VARCHAR(45)
+                    CHARACTER SET ascii COLLATE ascii_bin NULL
+        """)
+        self._db.execute(f"""
+            ALTER TABLE page_views
+                ADD COLUMN IF NOT EXISTS search TEXT NULL,
+                ADD COLUMN IF NOT EXISTS referrer TEXT NULL,
+                ADD COLUMN IF NOT EXISTS continent VARCHAR(64) NULL,
+                ADD COLUMN IF NOT EXISTS latitude DOUBLE NULL,
+                ADD COLUMN IF NOT EXISTS longitude DOUBLE NULL,
+                ADD COLUMN IF NOT EXISTS zip VARCHAR({DGeoIp.ZIP_LENGTH}) NULL,
+                ADD COLUMN IF NOT EXISTS timezone VARCHAR({DGeoIp.TIMEZONE_LENGTH}) NULL
         """)
         width = self._db.query("""
             SELECT CHARACTER_MAXIMUM_LENGTH AS width FROM information_schema.COLUMNS
