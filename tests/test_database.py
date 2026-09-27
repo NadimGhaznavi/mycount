@@ -217,6 +217,36 @@ class DatabaseTests(unittest.TestCase):
         rows = self.db.query('SELECT page_id FROM page_views WHERE page_view_id IN (%s,%s)', (first, second))
         self.assertEqual(rows[0]['page_id'], rows[1]['page_id'])
 
+    def test_country_backfill_batches_resume_after_failure(self):
+        from mycount.interface.CountryNameMigration import CountryNameMigration
+        from mycount.constants.DCountryNameMigration import DCountryNameMigration
+
+        UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()
+        self.db.execute('UPDATE geoip_ranges SET country_name=NULL')
+        execute = self.db.execute
+        batches = 0
+
+        def fail_second_batch(sql, params=()):
+            nonlocal batches
+            if 'UPDATE geoip_ranges' in sql:
+                batches += 1
+                if batches == 2:
+                    raise RuntimeError('interrupted batch')
+            return execute(sql, params)
+
+        with patch.object(DCountryNameMigration, 'BATCH_SIZE', 1):
+            with patch.object(self.db, 'execute', side_effect=fail_second_batch):
+                with self.assertRaisesRegex(RuntimeError, 'interrupted batch'):
+                    CountryNameMigration(self.db).apply('geoip_ranges')
+            self.assertEqual(self.db.query(
+                'SELECT COUNT(*) AS total FROM geoip_ranges WHERE country_name IS NOT NULL'
+            )[0]['total'], 1)
+            CountryNameMigration(self.db).apply('geoip_ranges')
+            self.assertEqual(self.db.query(
+                "SELECT COUNT(*) AS total FROM geoip_ranges WHERE country_name='Canada'"
+            )[0]['total'], 3)
+            CountryNameMigration(self.db).apply('geoip_ranges')
+
     def test_country_name_migration_and_continent_removal(self):
         UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()
         visits = VisitDb(self.db)
@@ -356,6 +386,29 @@ class DatabaseTests(unittest.TestCase):
         ])
         self.assertEqual(rows[0]['last_visited'], latest.replace(tzinfo=None))
         self.assertEqual(rows[-1]['last_visited'], old.replace(tzinfo=None))
+
+    def test_bot_filter_applies_to_all_metrics_and_last_visited(self):
+        visits = VisitDb(self.db)
+        visit = Visit(site='example', url='https://example.com/',
+                      received_at=datetime(2026, 9, 27, 12, tzinfo=timezone.utc),
+                      country_code='CA', country_name='Canada', city_name='Hamilton')
+        visits.record(replace(visit, is_bot=False, browser_family='Chrome'))
+        visits.record(visit)  # Unknown does not mean bot.
+        for flag, family in [(True, 'Other'), (False, 'GoogleOther'),
+                             (None, 'GoogleOther'), (None, 'Googlebot')]:
+            visits.record(replace(visit, is_bot=flag, browser_family=family,
+                                 received_at=datetime(2026, 9, 27, 18, tzinfo=timezone.utc)))
+        visits.record(replace(visit, site='bot-only', url='https://example.com/bot',
+                             city_name='Mountain View', is_bot=True))
+        for query in (visits.totals_by_site, visits.totals_by_page, visits.totals_by_location):
+            self.assertEqual(sum(row['page_views'] for row in query(exclude_bots=False)), 7)
+            filtered = query(exclude_bots=True)
+            self.assertEqual(len(filtered), 1)
+            self.assertEqual(filtered[0]['page_views'], 2)
+        self.assertEqual(visits.totals_by_site(exclude_bots=True)[0]['last_visited'],
+                         visit.received_at.replace(tzinfo=None))
+        self.assertEqual(visits.totals_by_page(exclude_bots=True)[0]['last_visited'],
+                         visit.received_at.replace(tzinfo=None))
 
     def test_location_totals_include_unknowns_and_combine_sites(self):
         visits = VisitDb(self.db)

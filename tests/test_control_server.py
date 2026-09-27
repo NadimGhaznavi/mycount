@@ -61,6 +61,20 @@ class ControlServerTests(unittest.TestCase):
                     self.assertIn(b'>3</td>', body)
                     factory.return_value.transaction.assert_called_once_with(read_only=True)
                     factory.return_value.close.assert_called_once()
+                    self.assertIn(b'value="1" checked', body)
+                    for call in factory.return_value.query.call_args_list:
+                        self.assertIn('COALESCE(v.is_bot, 0) = 0', call.args[0])
+                    for query, excluded in [('exclude_bots=0', False), ('exclude_bots=0&exclude_bots=1', True)]:
+                        factory.reset_mock()
+                        factory.return_value.query.side_effect = [[], [], []]
+                        connection.request("GET", "/?" + query)
+                        response = connection.getresponse()
+                        self.assertEqual(response.status, 200)
+                        filtered = response.read()
+                        self.assertEqual(b'value="1" checked' in filtered, excluded)
+                        self.assertEqual(filtered.count(b'class="visits">0</td>'), 2)
+                        for call in factory.return_value.query.call_args_list:
+                            self.assertEqual('COALESCE(v.is_bot, 0) = 0' in call.args[0], excluded)
                     factory.reset_mock()
                     connection.request("GET", "/reference")
                     response = connection.getresponse()

@@ -107,6 +107,7 @@ PYFILES
 apply_schemas() {
     printf 'Applying database schemas...\n'
 "$install_dir/.venv/bin/python" -B - <<'PY'
+import logging
 import os
 from pathlib import Path
 from mycount.activity.GeoIpSchema import GeoIpSchema
@@ -114,6 +115,7 @@ from mycount.activity.VisitorSchema import VisitorSchema
 from mycount.constants.DMyCount import DMyCount
 from mycount.interface.DatabaseEnvironment import DatabaseEnvironment
 from mycount.interface.DbMgr import DbMgr
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
 os.environ.update(DatabaseEnvironment.read(Path(DMyCount.DATABASE_ENV)))
 db = DbMgr()
 try:
