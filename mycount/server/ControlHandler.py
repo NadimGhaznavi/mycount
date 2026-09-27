@@ -23,15 +23,18 @@ class ControlHandler(BaseHTTPRequestHandler):
             try:
                 db = DbMgr()
                 try:
-                    sites = VisitDb(db).totals_by_site()
+                    with db.transaction(read_only=True):
+                        visits = VisitDb(db)
+                        sites = visits.totals_by_site()
+                        pages = visits.totals_by_page()
                 finally:
                     db.close()
             except pymysql.MySQLError:
                 logging.exception("Unable to read site visits")
-                self.respond(503, ControlPages().render([], error="Site visits unavailable."),
+                self.respond(503, ControlPages().render([], [], error="Site visits unavailable."),
                              "text/html; charset=utf-8")
                 return
-            self.respond(200, ControlPages().render(sites), "text/html; charset=utf-8")
+            self.respond(200, ControlPages().render(sites, pages), "text/html; charset=utf-8")
         elif path == "/health":
             self.respond(200, b'{"status":"ok","service":"mycount-control"}', "application/json")
         else:

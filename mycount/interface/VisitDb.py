@@ -46,6 +46,16 @@ class VisitDb:
                 )
         return view_id
 
+    def totals_by_page(self) -> list[dict[str, object]]:
+        """Rank visited pages within each site by views, breaking ties by URL."""
+        return self._db.query("""
+            SELECT p.site, p.url, COUNT(*) AS page_views,
+                   MAX(v.received_at) AS last_visited
+            FROM page_views v JOIN pages p ON p.page_id = v.page_id
+            GROUP BY p.page_id, p.site, p.url
+            ORDER BY p.site, page_views DESC, p.url
+        """)
+
     def totals_by_site(self) -> list[dict[str, object]]:
         """Count recorded browser IDs separately from views with no identifier.
 

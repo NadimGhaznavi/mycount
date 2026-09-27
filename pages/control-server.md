@@ -15,6 +15,13 @@ The site table shows Sites, Visits, and Last Visited, ordered by visit count
 known bots, across all pages for that site. Last Visited is the latest received
 visit, displayed in browser-local time as `YYYY-MM-DD HH:MM`.
 
+Click a site row to expand or collapse its page table. The site-name button
+also works with Enter or Space. Each page shows its full recorded URL, visit
+count, and browser-local last-visited time. Pages are sorted by visits descending,
+then URL for ties. Multiple sites can remain expanded together. Site and page
+metrics are read in one read-only database transaction when the page loads;
+expanding a row does not reload the report. Reloading collapses the rows.
+
 The right side of the title bar shows `Last refresh: HH:MM` in browser-local
 time. Reload the page to refresh the table and timestamp. Empty databases show
 “No visits recorded yet.” Database failures return HTTP 503 with a short message;

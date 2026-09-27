@@ -22,8 +22,10 @@ from mycount.server.ControlHandler import ControlHandler
 class ControlServerTests(unittest.TestCase):
     @patch("mycount.server.ControlHandler.DbMgr")
     def test_banner_health_and_missing_page(self, factory):
-        factory.return_value.query.return_value = [
-            {"site": "<example>", "page_views": 12, "last_visited": datetime(2026, 9, 27, 15, 5)},
+        factory.return_value.query.side_effect = [
+            [{"site": "<example>", "page_views": 12, "last_visited": datetime(2026, 9, 27, 15, 5)}],
+            [{"site": "<example>", "url": "https://example.com/<page>", "page_views": 12,
+              "last_visited": datetime(2026, 9, 27, 15, 5)}],
         ]
         with ThreadingHTTPServer(("127.0.0.1", 0), ControlHandler) as server:
             thread = Thread(target=server.serve_forever)
@@ -41,6 +43,11 @@ class ControlServerTests(unittest.TestCase):
                     self.assertIn(b">12</td>", body)
                     self.assertIn(b'2026-09-27T15:05:00+00:00', body)
                     self.assertIn(b"Last refresh:", body)
+                    self.assertIn(b'https://example.com/&lt;page&gt;', body)
+                    self.assertIn(b'aria-expanded="false"', body)
+                    self.assertIn(b'aria-controls="site-pages-1"', body)
+                    self.assertIn(b'class="site-pages" hidden', body)
+                    factory.return_value.transaction.assert_called_once_with(read_only=True)
                     factory.return_value.close.assert_called_once()
                     factory.reset_mock()
                     connection.request("GET", "/health")
@@ -81,6 +88,6 @@ class ControlServerTests(unittest.TestCase):
             subprocess.run(
                 [sys.executable, "-B", "-c",
                  "from mycount.server.ControlPages import ControlPages; "
-                 "assert b'MyCount <span>Control</span>' in ControlPages().render([])"],
+                 "assert b'MyCount <span>Control</span>' in ControlPages().render([], [])"],
                 cwd=directory, check=True,
             )

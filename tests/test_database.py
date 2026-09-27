@@ -248,6 +248,29 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(rows[0]['page_views'], 2)
         self.assertEqual(rows[0]['last_visited'], latest.replace(tzinfo=None))
 
+    def test_page_metrics_rank_views_and_keep_sites_separate(self):
+        visits = VisitDb(self.db)
+        self.assertEqual(visits.totals_by_page(), [])
+        latest = datetime(2026, 9, 27, 15, 5, tzinfo=timezone.utc)
+        old = datetime(2026, 9, 26, tzinfo=timezone.utc)
+        for site, url, times in (
+            ('first', 'https://example.com/z', [old, latest, old]),
+            ('first', 'https://example.com/b', [old]),
+            ('first', 'https://example.com/a', [latest]),
+            ('second', 'https://example.com/z', [old]),
+        ):
+            for timestamp in times:
+                visits.record(Visit(site=site, url=url, received_at=timestamp))
+        rows = visits.totals_by_page()
+        self.assertEqual([(row['site'], row['url'], row['page_views']) for row in rows], [
+            ('first', 'https://example.com/z', 3),
+            ('first', 'https://example.com/a', 1),
+            ('first', 'https://example.com/b', 1),
+            ('second', 'https://example.com/z', 1),
+        ])
+        self.assertEqual(rows[0]['last_visited'], latest.replace(tzinfo=None))
+        self.assertEqual(rows[-1]['last_visited'], old.replace(tzinfo=None))
+
     def page(self, url="https://example.com/products/", site="mycount"):
         return self.db.insert("INSERT INTO pages(site, url) VALUES (%s, %s)", (site, url))
 
