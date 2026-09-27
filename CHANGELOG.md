@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-09-27 @ 17:38
+
 - Add Recent Visits below Visits by Site with the latest 20 matching visits, newest first, browser-local dates, 12-hour times, and URLs. Apply the existing bot filter.
 
 ## [0.8.0] - 2026-09-27 @ 16:36
