@@ -96,7 +96,7 @@ class VisitDb:
         """Return the latest 20 matching visits, newest ID first for time ties."""
         where, params = self._bot_filter(exclude_bots)
         return self._db.query(f"""
-            SELECT v.received_at, p.url
+            SELECT v.received_at, v.country_code, v.city_name, p.url
             FROM page_views v JOIN pages p ON p.page_id = v.page_id
             {where}
             ORDER BY v.received_at DESC, v.page_view_id DESC

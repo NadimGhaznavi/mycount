@@ -3,6 +3,8 @@
 from pathlib import Path
 from datetime import datetime, timezone
 
+import pycountry
+
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 
 
@@ -13,6 +15,7 @@ class ControlPages:
             autoescape=select_autoescape(["html"]),
             undefined=StrictUndefined,
         )
+        self._templates.filters["country_flag"] = self._country_flag
         self._templates.filters["utc_iso"] = lambda value: value.replace(tzinfo=timezone.utc).isoformat()
 
     def render(self, sites: list[dict[str, object]], pages: list[dict[str, object]],
@@ -29,3 +32,10 @@ class ControlPages:
         return self._templates.get_template("reference.html").render(
             refreshed_at=datetime.now(timezone.utc), active_page="reference",
         ).encode("utf-8")
+
+    @staticmethod
+    def _country_flag(code: str | None) -> str:
+        code = (code or "").upper()
+        if pycountry.countries.get(alpha_2=code) is None:
+            return ""
+        return "".join(chr(ord(character) - ord("A") + 0x1F1E6) for character in code)

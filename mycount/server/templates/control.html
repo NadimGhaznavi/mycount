@@ -49,16 +49,17 @@
 <div class="table-wrap">
   <table class="recent-visits" aria-label="Recent Visits">
     <caption>Recent Visits</caption>
-    <thead><tr><th scope="col">Date</th><th scope="col">Time</th><th scope="col">URL</th></tr></thead>
+    <thead><tr><th scope="col">Date</th><th scope="col">Time</th><th scope="col">City</th><th scope="col">URL</th></tr></thead>
     <tbody>
       {% for visit in recent %}
       <tr>
         <td><time datetime="{{ visit.received_at | utc_iso }}" data-local-time="date-only">{{ visit.received_at.strftime('%Y-%m-%d') }} UTC</time></td>
         <td><time datetime="{{ visit.received_at | utc_iso }}" data-local-time="time-12">{{ visit.received_at.strftime('%I:%M %p') }} UTC</time></td>
+        <td data-sort-value="{{ visit.city_name or '---' }}">{% set flag = visit.country_code | country_flag %}{% if flag %}<span role="img" aria-label="Country: {{ visit.country_code }}">{{ flag }}</span> {% endif %}{{ visit.city_name or '---' }}</td>
         <td>{{ visit.url }}</td>
       </tr>
       {% else %}
-      <tr><td colspan="3">No visits match the current filters.</td></tr>
+      <tr><td colspan="4">No visits match the current filters.</td></tr>
       {% endfor %}
     </tbody>
   </table>
@@ -71,7 +72,7 @@
     <tbody>
       {% for location in locations %}
       <tr>
-        <td>{{ location.country_name or '---' }}</td>
+        <td data-sort-value="{{ location.country_name or '---' }}">{% set flag = location.country_code | country_flag %}{% if flag %}<span role="img" aria-label="Country: {{ location.country_code }}">{{ flag }}</span> {% endif %}{{ location.country_name or '---' }}</td>
         <td>{{ location.region_name or '---' }}</td>
         <td>{{ location.city_name or '---' }}</td>
         <td class="visits">{{ location.page_views }}</td>

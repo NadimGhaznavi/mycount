@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Prefix country names in Visits by Location with Unicode flags while preserving country-name sorting.
+- Prefix cities in Recent Visits with Unicode country flags, retaining city-name sorting and omitting flags for unknown countries.
+- Add City between Time and URL in Recent Visits, displaying `---` for unknown cities.
+
 ## [0.9.0] - 2026-09-27 @ 17:38
 
 - Add Recent Visits below Visits by Site with the latest 20 matching visits, newest first, browser-local dates, 12-hour times, and URLs. Apply the existing bot filter.
@@ -20,7 +24,6 @@ permalink: /CHANGELOG/
 ## [0.7.3] - 2026-09-27 @ 16:24
 
 - Add a Filters box with Exclude bots enabled by default, consistently filtering site/page/location counts, last-visited times, and totals. Include historical GoogleOther/Googlebot records in exclusion and correctly flag new GoogleOther visits as bots.
-
 - Fix country-name backfill timeouts by scanning primary keys in bounded batches and committing each batch independently. Log progress and preserve completed updates on retry.
 
 ## [0.7.2] - 2026-09-27 @ 16:06
