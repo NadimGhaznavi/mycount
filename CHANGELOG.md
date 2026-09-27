@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.6.8] - 2026-09-27 @ 13:06
+
 - Extract portable, standard-library deployment tooling with project-supplied configuration. Generate `DDeployment.py` from source scans and explicit MyCount rules; require a nonmutating freshness check during release preparation. Document the reusable boundary and maintenance workflow.
 
 - Shorten the deployment dependency guide for DevOps and document the portability boundary and planned dependency generator.
