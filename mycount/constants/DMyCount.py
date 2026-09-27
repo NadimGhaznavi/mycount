@@ -4,7 +4,7 @@ from typing import Final
 
 
 class DMyCount:
-    VERSION: Final[str] = "0.1.0"
+    VERSION: Final[str] = "0.2.0"
     BASE_DIR: Final[str] = "/opt/prod/mycount"
     DATABASE_ENV: Final[str] = "/etc/mycount/database.env"
     DATABASE_NAME: Final[str] = "mycount"
@@ -24,7 +24,7 @@ class DMyCount:
     CITY_NAME_LENGTH: Final[int] = 255
     SCHEMA_VERSION: Final[int] = 1
     EVENT: Final[str] = "page_view"
-    COLLECTION_PATH: Final[str] = "/"
+    COLLECTION_PATH: Final[str] = "/count"
     HEALTH_PATH: Final[str] = "/health"
     HTTPS_PORT: Final[int] = 443
     PAYLOAD_FIELDS: Final[frozenset[str]] = frozenset({

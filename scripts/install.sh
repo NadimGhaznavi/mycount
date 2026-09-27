@@ -12,6 +12,14 @@ cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 command -v mariadb >/dev/null
 command -v systemctl >/dev/null
 command -v cron >/dev/null
+command -v systemd-analyze >/dev/null
+python3 -B - <<'PY'
+import sys
+import venv
+import ensurepip
+if sys.version_info < (3, 11):
+    raise SystemExit('MyCount requires Python 3.11 or later.')
+PY
 mariadb --protocol=socket --user=root --batch --skip-column-names -e 'SELECT 1' >/dev/null
 
 mapfile -t settings < <(python3 -B - <<'PY'

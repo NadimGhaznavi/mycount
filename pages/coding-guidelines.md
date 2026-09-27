@@ -18,7 +18,7 @@ The code should be as lean as possible. Build for the requirements and behaviour
 The AI coding assistant is the lead developer and handles implementation,
 tests, and documentation within the architecture and standards set by the
 project owner. The project owner is the architect and release manager and
-owns all Git operations and releases.
+owns all Git operations and releases. Read-only git commands are fine.
 
 The assistant must never run Git commands or release scripts. This includes
 read-only Git commands and invoking release scripts indirectly through tests.
