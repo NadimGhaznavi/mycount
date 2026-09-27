@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-27 @ 09:46
+
 - Count unique browsers per site using a persistent random first-party local-storage ID. Keep collecting unidentified page views when storage is blocked, and preserve historical rows without inventing visitor identities.
 - Add per-site totals for page views, unique browser IDs, unidentified views, and known bot views; document rollout and counting limits.
 
