@@ -66,6 +66,16 @@ class VisitPayload:
         except ValueError as error:
             raise InvalidVisit(str(error)) from error
 
+        search = payload.get("search")
+        if search is not None:
+            if (not isinstance(search, str) or (search and not search.startswith("?"))
+                    or "#" in search or any(ord(c) < 32 or ord(c) == 127 for c in search)):
+                raise InvalidVisit("Invalid search.")
+            try:
+                search.encode("utf-8")
+            except UnicodeError as error:
+                raise InvalidVisit("Invalid search.") from error
+
         visitor_id = payload.get("visitor_id")
         if visitor_id is not None:
             if (not isinstance(visitor_id, str)
@@ -79,6 +89,8 @@ class VisitPayload:
             received_at=datetime.now(timezone.utc),
             languages=tuple(languages),
             referrer_host=referrer_host,
+            referrer=payload.get("referrer") or None,
+            search=search,
             user_agent=agent or None,
             client_details=client_details,
             visitor_id=visitor_id,

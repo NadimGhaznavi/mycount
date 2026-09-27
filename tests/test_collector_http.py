@@ -90,6 +90,7 @@ class CollectorHttpTests(unittest.TestCase):
             'schema_version': 1, 'event': 'page_view', 'site': 'r3el',
             'url': origin + '/', 'languages': ['en-CA'], 'user_agent': 'Example',
             'referrer': 'https://search.example/?private=query',
+            'search': '?campaign=example',
             'client_details': {'timezone': 'America/Toronto'},
             'visitor_id': '3e8073e0-5f15-4f14-bccc-b4b5cb47e330',
         }
@@ -97,7 +98,8 @@ class CollectorHttpTests(unittest.TestCase):
                 patch('mycount.activity.CollectVisit.GeoIp') as geo, \
                 patch('mycount.activity.CollectVisit.VisitDb') as visits:
             geo.return_value.locate.return_value = GeoLocation(
-                country_code='CA', region_name='Ontario', city_name='Hamilton')
+                continent='North America', country_code='CA', region_name='Ontario', city_name='Hamilton',
+                latitude=43.2557, longitude=-79.8711, zip='00123', timezone='America/New_York')
             response = client.post('/count', json=payload, headers={
                 'Origin': origin, DCaddy.VISITOR_HEADER: '8.8.8.8',
             }, environ_overrides={'REMOTE_ADDR': '127.0.0.1'})
@@ -109,8 +111,16 @@ class CollectorHttpTests(unittest.TestCase):
             self.assertEqual(saved.region_name, 'Ontario')
             self.assertEqual(saved.country_code, 'CA')
             self.assertEqual(saved.referrer_host, 'search.example')
+            self.assertEqual(saved.referrer, payload['referrer'])
+            self.assertEqual(saved.search, payload['search'])
+            self.assertEqual(saved.continent, 'North America')
+            self.assertEqual(saved.latitude, 43.2557)
+            self.assertEqual(saved.longitude, -79.8711)
+            self.assertEqual(saved.zip, '00123')
+            self.assertEqual(saved.timezone, 'America/New_York')
             self.assertEqual(dict(saved.client_details), {'timezone': 'America/Toronto'})
             self.assertEqual(saved.visitor_id, UUID(payload['visitor_id']).bytes)
+            self.assertEqual(saved.ip_address, '8.8.8.8')
             database.return_value.close.assert_called_once()
 
             # Malformed optional data is rejected before opening another DB connection.

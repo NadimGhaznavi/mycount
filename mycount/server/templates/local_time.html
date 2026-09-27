@@ -5,6 +5,6 @@
     const time = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
     element.textContent = element.dataset.localTime === 'date'
       ? `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${time}`
-      : time;
+      : `${date.toLocaleString('en-US', {month: 'short'})} ${pad(date.getDate())} - ${time}`;
   }
 </script>

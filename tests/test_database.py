@@ -106,6 +106,11 @@ class DatabaseTests(unittest.TestCase):
             geo = GeoIp(reader)
             for ip in ("8.8.8.0", "8.8.8.255", "::ffff:8.8.8.8", "2606:4700::1"):
                 self.assertEqual(geo.locate(ip).city_name, "Example")
+                self.assertEqual(geo.locate(ip).continent, 'North America')
+                self.assertAlmostEqual(geo.locate(ip).latitude, 43.2557)
+                self.assertAlmostEqual(geo.locate(ip).longitude, -79.8711)
+                self.assertEqual(geo.locate(ip).zip, '00123')
+                self.assertEqual(geo.locate(ip).timezone, 'America/Toronto')
             self.assertEqual(geo.locate("2606:4700:10::1").city_name, "Specific")
             # A gap after the nested range must still match the enclosing range.
             self.assertEqual(geo.locate("2606:4700:10::100").city_name, "Example")
@@ -191,6 +196,71 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(row['browser_version'], '130.0.0')
         self.assertEqual(row['is_bot'], 0)
         self.assertEqual(json.loads(row['client_details']), payload['client_details'])
+
+    def test_collection_additions_migrate_and_preserve_exact_values(self):
+        self.db.execute('ALTER TABLE page_views DROP COLUMN search, DROP COLUMN referrer, DROP COLUMN continent')
+        old_id = self.view(self.page())
+        VisitorSchema(self.db).apply()
+        VisitorSchema(self.db).apply()
+        self.assertEqual(self.db.query(
+            'SELECT search, referrer, continent FROM page_views WHERE page_view_id=%s', (old_id,)
+        )[0], dict(search=None, referrer=None, continent=None))
+        expected = dict(search='?q=a%20b&q=two&empty=',
+                        referrer='https://example.com/path?q=a%20b#section', continent='North America')
+        visit = Visit(site='mycount', url='https://example.com/page',
+                      received_at=datetime.now(timezone.utc), **expected)
+        first = VisitDb(self.db).record(visit)
+        second = VisitDb(self.db).record(replace(visit, search='?other=yes'))
+        self.assertEqual(self.db.query(
+            'SELECT search, referrer, continent FROM page_views WHERE page_view_id=%s', (first,)
+        )[0], expected)
+        rows = self.db.query('SELECT page_id FROM page_views WHERE page_view_id IN (%s,%s)', (first, second))
+        self.assertEqual(rows[0]['page_id'], rows[1]['page_id'])
+
+    def test_geoip_continent_migration_preserves_existing_ranges(self):
+        UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()
+        self.db.execute('ALTER TABLE geoip_ranges DROP COLUMN continent')
+        GeoIpSchema(self.db).apply()
+        GeoIpSchema(self.db).apply()
+        self.assertIsNone(GeoIp(self.db).locate('8.8.8.8').continent)
+        self.assertEqual(GeoIp(self.db).locate('8.8.8.8').city_name, 'Example')
+        UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()
+        self.assertEqual(GeoIp(self.db).locate('8.8.8.8').continent, 'North America')
+
+    def test_geoip_details_migration_and_visit_round_trip(self):
+        UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()
+        old_id = self.view(self.page())
+        for table in ('geoip_ranges', 'page_views'):
+            self.db.execute(f'ALTER TABLE {table} DROP COLUMN latitude, DROP COLUMN longitude, '
+                            'DROP COLUMN zip, DROP COLUMN timezone')
+        for _ in range(2):
+            GeoIpSchema(self.db).apply()
+            VisitorSchema(self.db).apply()
+        location = GeoIp(self.db).locate('8.8.8.8')
+        self.assertIsNone(location.latitude)
+        self.assertIsNone(location.longitude)
+        self.assertIsNone(location.zip)
+        self.assertIsNone(location.timezone)
+        self.assertEqual(location.city_name, 'Example')
+        UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()
+        location = GeoIp(self.db).locate('8.8.8.8')
+        for latitude, longitude in ((location.latitude, location.longitude), (0.0, None), (None, 0.0)):
+            view_id = VisitDb(self.db).record(Visit(
+                site='mycount', url='https://example.com/', received_at=datetime.now(timezone.utc),
+                latitude=latitude, longitude=longitude, zip=location.zip, timezone=location.timezone,
+                client_details=(('timezone', 'Europe/London'),),
+            ))
+            self.assertEqual(self.db.query(
+                'SELECT latitude, longitude FROM page_views WHERE page_view_id=%s', (view_id,)
+            )[0], dict(latitude=latitude, longitude=longitude))
+            row = self.db.query('SELECT zip, timezone, client_details FROM page_views WHERE page_view_id=%s',
+                                (view_id,))[0]
+            self.assertEqual(row['zip'], '00123')
+            self.assertEqual(row['timezone'], 'America/Toronto')
+            self.assertEqual(json.loads(row['client_details'])['timezone'], 'Europe/London')
+        self.assertEqual(self.db.query(
+            'SELECT latitude, longitude, zip, timezone FROM page_views WHERE page_view_id=%s', (old_id,)
+        )[0], dict(latitude=None, longitude=None, zip=None, timezone=None))
 
     def test_visit_details_roll_back_with_invalid_languages(self):
         visit = Visit(site='r3el', url='https://r3el.osoyalce.com/',
@@ -284,9 +354,42 @@ class DatabaseTests(unittest.TestCase):
         VisitorSchema(self.db).apply()
         row = self.db.query("SELECT * FROM page_views WHERE page_view_id = %s", (view_id,))[0]
         self.assertEqual(row["page_id"], page_id)
-        self.assertIsNone(row["fingerprint"])
         self.assertLess(abs((datetime.now(timezone.utc).replace(tzinfo=None) - row["received_at"]).total_seconds()), 5)
         self.assertEqual(self.db.query("SELECT language_tag FROM page_view_languages"), [{"language_tag": "en-CA"}])
+
+    def test_region_code_removal_preserves_visits_and_region_names(self):
+        self.assertEqual(self.db.query("SHOW COLUMNS FROM page_views LIKE 'region_code'"), [])
+        self.db.execute('ALTER TABLE page_views ADD COLUMN region_code VARCHAR(32) NULL')
+        view_id = VisitDb(self.db).record(Visit(
+            site='mycount', url='https://example.com/',
+            received_at=datetime.now(timezone.utc), region_name='Ontario',
+            languages=('en-CA',),
+        ))
+        VisitorSchema(self.db).apply()
+        VisitorSchema(self.db).apply()
+        self.assertEqual(self.db.query("SHOW COLUMNS FROM page_views LIKE 'region_code'"), [])
+        row = self.db.query('SELECT region_name FROM page_views WHERE page_view_id=%s', (view_id,))[0]
+        self.assertEqual(row['region_name'], 'Ontario')
+        self.assertEqual(self.db.query('SELECT language_tag FROM page_view_languages'),
+                         [{'language_tag': 'en-CA'}])
+
+    def test_ip_address_migration_and_both_address_families(self):
+        self.db.execute('ALTER TABLE page_views DROP COLUMN ip_address')
+        old_id = self.view(self.page())
+        VisitorSchema(self.db).apply()
+        self.assertIsNone(self.db.query(
+            'SELECT ip_address FROM page_views WHERE page_view_id=%s', (old_id,)
+        )[0]['ip_address'])
+        visits = VisitDb(self.db)
+        for address in ('8.8.8.8', '2001:4860:4860::8888', '::ffff:192.0.2.1'):
+            view_id = visits.record(Visit(
+                site='mycount', url='https://example.com/',
+                received_at=datetime.now(timezone.utc), ip_address=address,
+            ))
+            VisitorSchema(self.db).apply()
+            self.assertEqual(self.db.query(
+                'SELECT ip_address FROM page_views WHERE page_view_id=%s', (view_id,)
+            )[0]['ip_address'], address)
 
     def test_full_url_identity_is_case_sensitive_and_site_scoped(self):
         url = "https://example.com/" + "x" * 3000 + "é"
@@ -336,22 +439,6 @@ class DatabaseTests(unittest.TestCase):
             self.db.execute("DELETE FROM pages WHERE page_id = %s", (page_id,))
         self.db.execute("DELETE FROM page_views WHERE page_view_id = %s", (view_id,))
         self.assertEqual(self.db.query("SELECT * FROM page_view_languages"), [])
-
-    def test_fingerprint_pair_and_reporting(self):
-        page_id = self.page()
-        fingerprint = sha256(b"test browser").digest()
-        for digest, version in ((fingerprint, None), (None, 1), (fingerprint, 0)):
-            with self.subTest(version=version, present=digest is not None):
-                with self.assertRaises(pymysql.OperationalError) as raised:
-                    self.db.execute("INSERT INTO page_views(page_id, fingerprint, fingerprint_version) VALUES (%s, %s, %s)",
-                                    (page_id, digest, version))
-                self.assertEqual(raised.exception.args[0], 4025)
-        for version in (1, 1, 2):
-            self.db.execute("INSERT INTO page_views(page_id, fingerprint, fingerprint_version) VALUES (%s, %s, %s)",
-                            (page_id, fingerprint, version))
-        self.view(page_id)
-        counts = self.db.query("SELECT COUNT(*) AS views, COUNT(DISTINCT fingerprint_version, fingerprint) AS browsers FROM page_views")[0]
-        self.assertEqual(counts, {"views": 4, "browsers": 2})
 
     def test_read_only_transaction_rejects_writes_and_recovers(self):
         with self.assertRaises(pymysql.OperationalError):

@@ -24,3 +24,11 @@ class GeoIpSchema:
                 CHECK (start_ip <= end_ip)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
         """)
+        self._db.execute(f"""
+            ALTER TABLE geoip_ranges
+                ADD COLUMN IF NOT EXISTS continent VARCHAR({DGeoIp.CONTINENT_LENGTH}) NULL,
+                ADD COLUMN IF NOT EXISTS latitude DOUBLE NULL,
+                ADD COLUMN IF NOT EXISTS longitude DOUBLE NULL,
+                ADD COLUMN IF NOT EXISTS zip VARCHAR({DGeoIp.ZIP_LENGTH}) NULL,
+                ADD COLUMN IF NOT EXISTS timezone VARCHAR({DGeoIp.TIMEZONE_LENGTH}) NULL
+        """)

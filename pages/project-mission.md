@@ -30,13 +30,13 @@ service decisions.
 The client uses a persistent random browser ID in first-party local storage to
 associate page views and estimate unique browsers per site. These are estimates,
 not exact counts of people, and cannot deduplicate people across websites.
-Browser fingerprinting is not implemented. Views without an ID remain
-unidentified in reports.
+Views without an ID remain unidentified in reports.
 
 ## Privacy boundaries
 
 MyCount uses no cookies. First-party local storage holds a random per-site
 browser ID, which is retained with page views as a pseudonymous identifier;
-collection is not anonymous. Visitor IP addresses are not retained, including
-in application and proxy logs. Collection continues without an identifier
+collection is not anonymous. Full visitor IP addresses are retained with page
+views, but remain excluded from application and proxy logs.
+Collection continues without a browser identifier
 when browser settings prevent storage.
