@@ -1,5 +1,10 @@
 """Verify control HTTP responses and deployed presentation assets."""
 
+from datetime import datetime
+from unittest.mock import patch
+
+import pymysql
+
 from http.client import HTTPConnection
 from http.server import ThreadingHTTPServer
 import json
@@ -15,7 +20,11 @@ from mycount.server.ControlHandler import ControlHandler
 
 
 class ControlServerTests(unittest.TestCase):
-    def test_banner_health_and_missing_page(self):
+    @patch("mycount.server.ControlHandler.DbMgr")
+    def test_banner_health_and_missing_page(self, factory):
+        factory.return_value.query.return_value = [
+            {"site": "<example>", "page_views": 12, "last_visited": datetime(2026, 9, 27, 15, 5)},
+        ]
         with ThreadingHTTPServer(("127.0.0.1", 0), ControlHandler) as server:
             thread = Thread(target=server.serve_forever)
             thread.start()
@@ -26,11 +35,28 @@ class ControlServerTests(unittest.TestCase):
                     response = connection.getresponse()
                     self.assertEqual(response.status, 200)
                     self.assertEqual(response.getheader("Content-Type"), "text/html; charset=utf-8")
-                    self.assertIn(b"MyCount <span>Control</span>", response.read())
+                    body = response.read()
+                    self.assertIn(b"MyCount <span>Control</span>", body)
+                    self.assertIn(b"&lt;example&gt;", body)
+                    self.assertIn(b">12</td>", body)
+                    self.assertIn(b'2026-09-27T15:05:00+00:00', body)
+                    self.assertIn(b"Last refresh:", body)
+                    factory.return_value.close.assert_called_once()
+                    factory.reset_mock()
                     connection.request("GET", "/health")
                     response = connection.getresponse()
                     self.assertEqual(response.status, 200)
                     self.assertEqual(json.loads(response.read()), {"status": "ok", "service": "mycount-control"})
+                    factory.assert_not_called()
+                    factory.return_value.query.side_effect = pymysql.OperationalError("private details")
+                    with self.assertLogs(level="ERROR"):
+                        connection.request("GET", "/")
+                        response = connection.getresponse()
+                        self.assertEqual(response.status, 503)
+                        body = response.read()
+                    self.assertIn(b"Site visits unavailable", body)
+                    self.assertNotIn(b"private details", body)
+                    factory.return_value.close.assert_called_once()
                     connection.request("GET", "/missing")
                     response = connection.getresponse()
                     self.assertEqual(response.status, 404)
@@ -55,6 +81,6 @@ class ControlServerTests(unittest.TestCase):
             subprocess.run(
                 [sys.executable, "-B", "-c",
                  "from mycount.server.ControlPages import ControlPages; "
-                 "assert b'MyCount <span>Control</span>' in ControlPages().render()"],
+                 "assert b'MyCount <span>Control</span>' in ControlPages().render([])"],
                 cwd=directory, check=True,
             )

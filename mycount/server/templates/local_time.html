@@ -1,0 +1,10 @@
+<script>
+  for (const element of document.querySelectorAll('time[data-local-time]')) {
+    const date = new Date(element.dateTime);
+    const pad = value => String(value).padStart(2, '0');
+    const time = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    element.textContent = element.dataset.localTime === 'date'
+      ? `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${time}`
+      : time;
+  }
+</script>

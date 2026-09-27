@@ -1,1 +1,23 @@
 {% extends 'base.html' %}
+{% block content %}
+{% if error %}
+<p role="alert">{{ error }}</p>
+{% else %}
+<div class="table-wrap">
+  <table aria-label="Site visits">
+    <thead><tr><th scope="col">Sites</th><th scope="col" class="visits">Visits</th><th scope="col">Last Visited</th></tr></thead>
+    <tbody>
+      {% for site in sites %}
+      <tr>
+        <td>{{ site.site }}</td>
+        <td class="visits">{{ site.page_views }}</td>
+        <td><time datetime="{{ site.last_visited | utc_iso }}" data-local-time="date">{{ site.last_visited.strftime('%Y-%m-%d %H:%M') }} UTC</time></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3">No visits recorded yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}
