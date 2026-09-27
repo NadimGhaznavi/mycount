@@ -5,7 +5,8 @@
       "deployment/DDeployment.py.in"
     ],
     "mycount/server/ControlPages.py": [
-      "mycount/server/templates/control.html"
+      "mycount/server/templates/control.html",
+      "mycount/server/templates/reference.html"
     ],
     "scripts/install-caddy.sh": [
       "caddy/mycount.caddy"

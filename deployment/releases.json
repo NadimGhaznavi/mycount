@@ -13,7 +13,7 @@
       ]
     },
     "deployment/rules.json": {
-      "digest": "e8c028014f2ee536cd26e3ec58073a0a236cfebdd63320556139eb1937ecb470",
+      "digest": "9482857503accf132fbb71c9dc43101dec22cc59b10ab6c946c95cdd4a9f7eb0",
       "targets": [
         "filesystem"
       ]
@@ -146,7 +146,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "9bc97003b03c278b9ec45ed39102ebd3305a0b68c908f23e9265d6b3d1ec1927",
+      "digest": "24b1a8375e9a167f44dd9c5cbf88149defeeba37fd8eb41cd081a66e6aad6479",
       "targets": [
         "filesystem"
       ]
@@ -304,13 +304,13 @@
       ]
     },
     "mycount/server/ControlHandler.py": {
-      "digest": "30fad058e8ce13378db98183c2081ed5590ea3195caa2b563ed04ca90817875c",
+      "digest": "824b577231c2e0eb1e8f486ec46d5eefa11569dc989844a0182c20d1516e21b9",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/ControlPages.py": {
-      "digest": "cc025031a1ea85b46bd7eeb301bb11d7f2300d72d35edc91b4467bd437932598",
+      "digest": "2b1d07e978a1b9b7ddf6ad049c6fd80319ad3e979dc7ae0564f50f7a086533f2",
       "targets": [
         "report-server"
       ]
@@ -341,7 +341,7 @@
       ]
     },
     "mycount/server/templates/base.html": {
-      "digest": "7cd686a5ed164c06022a01861c4bc9e458f05624745779a7ec6be607427dea91",
+      "digest": "51039a0f596965dbc428e91619d0bf13f0b7e6c1692e70e5f5aaba1f50127604",
       "targets": [
         "report-server"
       ]
@@ -358,8 +358,20 @@
         "report-server"
       ]
     },
+    "mycount/server/templates/reference.html": {
+      "digest": "0cacd60fe5ce0c9a7b6424d864df8b5926f4eac7b9428e1e5d49672d7a80f47c",
+      "targets": [
+        "report-server"
+      ]
+    },
     "mycount/server/templates/styles.html": {
-      "digest": "167373273dc4c01638f0fa5e243e4d31a50a0a93d4511a498397d1801a677a10",
+      "digest": "75b81a3a8fb78fa75a6daa1815128e4a63c64b8afac01b61531c8afde39922ed",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/server/templates/table_sort.html": {
+      "digest": "0b0326ce5f207ea40c65681db0717645d5fd094357d729474a73d3ee00820481",
       "targets": [
         "report-server"
       ]
@@ -457,6 +469,13 @@
         "report-server"
       ],
       "version": "0.6.8"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "report-server"
+      ],
+      "version": "0.6.9"
     }
   ]
 }

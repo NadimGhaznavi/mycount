@@ -18,6 +18,7 @@ components, metrics, and privacy boundaries.
 - [Deployment dependencies]({% link pages/deployment-dependencies.md %})
 - [Uninstall]({% link pages/uninstall.md %})
 - [Browser client and live example]({% link pages/client.md %})
+- [What MyCount collects]({% link pages/collected-data.md %})
 - [Data access]({% link pages/data-access.md %})
 - [Coding guidelines]({% link pages/coding-guidelines.md %})
 - [Release management]({% link pages/releases.md %})

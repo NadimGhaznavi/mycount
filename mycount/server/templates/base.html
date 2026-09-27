@@ -9,9 +9,14 @@
 <body>
   <header class="masthead">
     <a href="/">MyCount <span>Control</span></a>
-    <span class="last-refresh">Last refresh: <time datetime="{{ refreshed_at | utc_iso }}" data-local-time="time">—</time></span>
+    <nav aria-label="Reports">
+      <a href="/"{% if active_page == 'metrics' %} aria-current="page"{% endif %}>[Metrics]</a>
+      <a href="/reference"{% if active_page == 'reference' %} aria-current="page"{% endif %}>[Reference]</a>
+    </nav>
   </header>
+  <div class="refresh-row"><span class="last-refresh">Last refresh: <time datetime="{{ refreshed_at | utc_iso }}" data-local-time="time">—</time></span></div>
   <main>{% block content %}{% endblock %}</main>
   {% include 'local_time.html' %}
+  {% if active_page == 'metrics' %}{% include 'table_sort.html' %}{% endif %}
 </body>
 </html>

@@ -9,6 +9,12 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.6.9] - 2026-09-27 @ 13:50
+
+- Add Metrics and Reference navigation to the report server, show the collection tables and optional browser fields on Reference, move Last refresh below the header, and enable column sorting for metrics.
+
+- Document collected page-view data, optional browser details, storage locations, and browser ID behavior in a linked data inventory.
+
 ## [0.6.8] - 2026-09-27 @ 13:06
 
 - Extract portable, standard-library deployment tooling with project-supplied configuration. Generate `DDeployment.py` from source scans and explicit MyCount rules; require a nonmutating freshness check during release preparation. Document the reusable boundary and maintenance workflow.

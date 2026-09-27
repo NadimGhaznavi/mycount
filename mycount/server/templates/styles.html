@@ -6,7 +6,14 @@
   .masthead { padding: 1.2rem 2rem; background: #291d15; border-bottom: 1px solid #62412b; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
   .masthead > a { font-size: 1.3rem; font-weight: 700; text-decoration: none; }
   .masthead span { color: #d8b89d; }
-  .last-refresh { margin-left: auto; align-self: center; font-size: .85rem; }
+  .masthead nav { display: flex; align-items: center; gap: 1rem; }
+  nav [aria-current="page"] { font-weight: 700; color: #f3e7db; }
+  .refresh-row { padding: .65rem 2rem; text-align: right; border-bottom: 1px solid #62412b; }
+  .last-refresh { font-size: .85rem; color: #d8b89d; }
+  .column-sort { font: inherit; font-weight: 700; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: inherit; width: 100%; }
+  .column-sort::after { content: ' ↕'; color: #d8b89d; }
+  th[aria-sort="ascending"] .column-sort::after { content: ' ↑'; }
+  th[aria-sort="descending"] .column-sort::after { content: ' ↓'; }
   .table-wrap { overflow-x: auto; border: 1px solid #62412b; border-radius: .4rem; }
   table { border-collapse: collapse; width: 100%; text-align: left; font-size: .9rem; }
   th, td { padding: .8rem; border-bottom: 1px solid #62412b; }
@@ -23,5 +30,5 @@
   time { white-space: nowrap; }
   main { padding: 1rem 2rem 3rem; }
   :focus-visible { outline: 2px solid #ffac63; outline-offset: 3px; }
-  @media (max-width: 600px) { main, .masthead { padding: 1rem; } }
+  @media (max-width: 600px) { main, .masthead, .refresh-row { padding: 1rem; } }
 </style>
