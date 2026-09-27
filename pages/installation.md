@@ -23,10 +23,10 @@ The installer creates the `mycount` database and database account, a Linux
 service account, and `/etc/mycount/database.env` with root-only permissions.
 It reuses existing credentials without resetting the database password.
 It copies the application to `/opt/prod/mycount`, creates its `.venv`, applies
-the schema, imports GeoIP data, and installs and starts `mycount-server.service`.
-It checks the local collector's health endpoint before configuring Caddy.
-Upgrades stop the collector before updating its dependencies and code; an
-installation failure can leave it stopped. Correct the reported error and
+the schema, imports GeoIP data, and installs and starts `mycount-server.service`
+and `mycount-control.service`. It checks both local health endpoints before
+configuring Caddy. Upgrades stop both services before updating dependencies
+and code; an installation failure can leave them stopped. Correct the reported error and
 rerun the installer. Installation is not a transactional rollback mechanism.
 
 See [Uninstall]({% link pages/uninstall.md %}) for removal that preserves data.
@@ -38,6 +38,9 @@ on `127.0.0.1:36666`. Caddy serves public HTTPS on port `443`, routing `/count`
 and `/health` to the collector and forwarding visitor addresses. The
 separate mydynip service provides dynamic-IP updates and is not modified by
 this installer.
+
+The [Control server]({% link pages/control-server.md %}) displays a dark orange
+MyCount banner at `http://<server>:61777/`.
 
 ## HTTPS and router forwarding
 

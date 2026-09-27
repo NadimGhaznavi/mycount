@@ -11,10 +11,12 @@ cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 checkout=$PWD
 settings_output=$(python3 -B - <<'PY'
 from mycount.constants.DMyCount import DMyCount
+from mycount.constants.DControl import DControl
 print(DMyCount.BASE_DIR)
 print(DMyCount.DATABASE_ENV)
 print(DMyCount.SERVICE_USER)
 print(DMyCount.SERVICE_UNIT)
+print(DControl.SERVICE_UNIT)
 PY
 )
 mapfile -t settings <<< "$settings_output"
@@ -35,9 +37,11 @@ values = DatabaseEnvironment.read(path)
 if values['DB_NAME'] != DMyCount.DATABASE_NAME or values['DB_USER'] != DMyCount.DATABASE_USER:
     raise SystemExit('Credentials do not belong to MyCount; run install.sh first.')
 PY
-if [[ -e /etc/systemd/system/${settings[3]} ]]; then
-    systemctl stop "${settings[3]}"
-fi
+for unit in "${settings[@]:3}"; do
+    if [[ -e /etc/systemd/system/$unit ]]; then
+        systemctl stop "$unit"
+    fi
+done
 if [[ ! -x $install_dir/.venv/bin/python ]]; then
     python3 -m venv "$install_dir/.venv"
 fi
@@ -86,10 +90,12 @@ from pathlib import Path
 import sys
 from mycount.constants.DGeoIp import DGeoIp
 from mycount.constants.DMyCount import DMyCount
-source = Path(sys.argv[1]) / 'systemd' / DMyCount.SERVICE_UNIT
-unit = source.read_text().replace('@APP@', DMyCount.BASE_DIR)
-unit = unit.replace('@DATABASE_ENV@', DMyCount.DATABASE_ENV).replace('@USER@', DMyCount.SERVICE_USER)
-Path('/etc/systemd/system', DMyCount.SERVICE_UNIT).write_text(unit)
+from mycount.constants.DControl import DControl
+for name in (DMyCount.SERVICE_UNIT, DControl.SERVICE_UNIT):
+    source = Path(sys.argv[1]) / 'systemd' / name
+    unit = source.read_text().replace('@APP@', DMyCount.BASE_DIR)
+    unit = unit.replace('@DATABASE_ENV@', DMyCount.DATABASE_ENV).replace('@USER@', DMyCount.SERVICE_USER)
+    Path('/etc/systemd/system', name).write_text(unit)
 command = f'{DMyCount.BASE_DIR}/scripts/update-geoip.sh'
 Path(DGeoIp.CRON_FILE).write_text(
     'SHELL=/bin/bash\nPATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n'
@@ -97,29 +103,40 @@ Path(DGeoIp.CRON_FILE).write_text(
 Path(DGeoIp.CRON_FILE).chmod(0o644)
 PY
 printf 'Validating and starting MyCount services...\n'
-systemd-analyze verify "/etc/systemd/system/${settings[3]}"
+for unit in "${settings[@]:3}"; do
+    systemd-analyze verify "/etc/systemd/system/$unit"
+done
 systemctl daemon-reload
 systemctl enable --now cron.service
-systemctl enable --now "${settings[3]}"
+for unit in "${settings[@]:3}"; do
+    systemctl enable --now "$unit"
+done
 .venv/bin/python -B - <<'PY'
 import time
 from urllib.error import URLError
 from urllib.request import ProxyHandler, build_opener
 from mycount.constants.DMyCount import DMyCount
 
+from mycount.constants.DControl import DControl
+
 opener = build_opener(ProxyHandler({}))
-url = f'http://{DMyCount.HOST}:{DMyCount.PORT}{DMyCount.HEALTH_PATH}'
-for attempt in range(30):
-    try:
-        with opener.open(url, timeout=1) as response:
-            if response.status == 204:
-                break
-    except (URLError, TimeoutError):
-        pass
-    time.sleep(1)
-else:
-    raise SystemExit('Collector health check failed; inspect journalctl -u ' + DMyCount.SERVICE_UNIT)
+for port, expected, unit in (
+    (DMyCount.PORT, 204, DMyCount.SERVICE_UNIT),
+    (DControl.PORT, 200, DControl.SERVICE_UNIT),
+):
+    url = f'http://127.0.0.1:{port}/health'
+    for attempt in range(30):
+        try:
+            with opener.open(url, timeout=1) as response:
+                if response.status == expected:
+                    break
+        except (URLError, TimeoutError):
+            pass
+        time.sleep(1)
+    else:
+        raise SystemExit('Health check failed; inspect journalctl -u ' + unit)
+print(f'MyCount Control: http://<server>:{DControl.PORT}/')
 PY
 printf 'Configuring Caddy and router forwarding...\n'
 "$checkout/scripts/install-caddy.sh"
-printf 'Installed %s and scheduled weekly GeoIP updates.\n' "${settings[3]}"
+printf 'Installed %s and %s and scheduled weekly GeoIP updates.\n' "${settings[3]}" "${settings[4]}"

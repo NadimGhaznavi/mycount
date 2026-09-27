@@ -32,6 +32,8 @@ class DeploymentTests(unittest.TestCase):
         self.unit_dir.mkdir()
         self.unit = self.unit_dir / DMyCount.SERVICE_UNIT
         self.unit.write_text('unit')
+        self.control_unit = self.unit_dir / 'mycount-control.service'
+        self.control_unit.write_text('unit')
         self.credentials = self.root / 'database.env'
         self.credentials.write_text('preserve credentials')
         self.site.write_text('previous site')
@@ -60,10 +62,11 @@ class DeploymentTests(unittest.TestCase):
         self.execute('uninstall.sh')
         self.assertEqual(self.config.read_text(), self.other_sites)
         self.assertEqual(self.credentials.read_text(), 'preserve credentials')
-        for path in (self.app, self.cron, self.unit, self.site):
+        for path in (self.app, self.cron, self.unit, self.control_unit, self.site):
             self.assertFalse(path.exists())
         commands = [call.args[0] for call in self.run.call_args_list]
         self.assertIn(['systemctl', 'disable', '--now', DMyCount.SERVICE_UNIT], commands)
+        self.assertIn(['systemctl', 'disable', '--now', 'mycount-control.service'], commands)
         self.assertFalse(any(command[0] in ('mariadb', 'userdel', 'groupdel', 'upnpc') for command in commands))
 
     def test_uninstall_validation_failure_leaves_installation_intact(self):
@@ -72,7 +75,7 @@ class DeploymentTests(unittest.TestCase):
         with self.assertRaises(subprocess.CalledProcessError):
             self.execute('uninstall.sh')
         self.assertEqual(self.config.read_text(), original)
-        for path in (self.app, self.cron, self.unit, self.site):
+        for path in (self.app, self.cron, self.unit, self.control_unit, self.site):
             self.assertTrue(path.exists())
 
     def test_uninstall_reload_failure_restores_config(self):
