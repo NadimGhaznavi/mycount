@@ -20,6 +20,7 @@
         }
         const value = row => {
           const cell = row.cells[column];
+          if (cell.dataset.sortValue !== undefined) return cell.dataset.sortValue;
           const time = cell.querySelector('time');
           if (time) return Date.parse(time.dateTime);
           if (cell.classList.contains('visits')) return Number(cell.textContent.trim());

@@ -28,7 +28,7 @@ class ControlServerTests(unittest.TestCase):
               "last_visited": datetime(2026, 9, 27, 15, 5)}],
             [{"country_name": "Canada", "country_code": "CA", "region_name": "Ontario", "city_name": "<city>", "page_views": 9},
              {"country_name": None, "country_code": "", "region_name": None, "city_name": None, "page_views": 3}],
-            [{"received_at": datetime(2026, 9, 27, 15, 5), "url": "https://example.com/<recent>"}],
+            [{"received_at": datetime(2026, 9, 27, 15, 5), "country_code": "CA", "city_name": "Hamilton", "url": "https://example.com/<recent>"}],
         ]
         with ThreadingHTTPServer(("127.0.0.1", 0), ControlHandler) as server:
             thread = Thread(target=server.serve_forever)

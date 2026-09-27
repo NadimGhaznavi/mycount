@@ -290,7 +290,7 @@
       ]
     },
     "mycount/interface/VisitDb.py": {
-      "digest": "712957729c3c3dd88606ddeb55940412272a5a6055f4c494209d5bb59fe75668",
+      "digest": "ba8e39c846b31f9f83ef4ad1bceb7a60ffc557e8e7ed7542d21cb42fb82c685e",
       "targets": [
         "listener",
         "report-server"
@@ -329,7 +329,7 @@
       ]
     },
     "mycount/server/ControlPages.py": {
-      "digest": "0ff07102ec4b2f8ac89f5cc5b82fa7d652baedfdecd9edc4fe28c222bad5df4d",
+      "digest": "399c5e6fa0af15a9e22d6d537a3e3f474c6d8b2aad9586b90d28e34851ed73db",
       "targets": [
         "report-server"
       ]
@@ -366,7 +366,7 @@
       ]
     },
     "mycount/server/templates/control.html": {
-      "digest": "164acae1918a73ede992db1dba1c9a24be794df5dbdb33f7f540c90bea734c58",
+      "digest": "d85687f604772b2bfb21621c4117c7621d7a74f47b82d565a11a5fc2302878fe",
       "targets": [
         "report-server"
       ]
@@ -390,7 +390,7 @@
       ]
     },
     "mycount/server/templates/table_sort.html": {
-      "digest": "0b0326ce5f207ea40c65681db0717645d5fd094357d729474a73d3ee00820481",
+      "digest": "e8f537b020ca3eb88844d7afd3a9df02009af5393772e2f277f5627fcbb57fff",
       "targets": [
         "report-server"
       ]
@@ -541,6 +541,13 @@
         "report-server"
       ],
       "version": "0.9.0"
+    },
+    {
+      "targets": [
+        "listener",
+        "report-server"
+      ],
+      "version": "0.9.1"
     }
   ]
 }
