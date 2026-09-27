@@ -1,11 +1,18 @@
 """Exercise releases using disposable repositories and a local bare remote."""
 
 import os
+import json
+import re
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
 import unittest
+
+
+from mycount.activity.DeploymentImpact import DeploymentImpact
+from mycount.constants.DDeployment import DDeployment
+from mycount.interface.ReleaseFiles import ReleaseFiles
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,13 +33,21 @@ class ReleaseTests(unittest.TestCase):
         self.git("init", "-b", "main")
         self.git("init", "--bare", str(self.root / "remote.git"))
         self.git("remote", "add", "origin", str(self.root / "remote.git"))
-        for name in ("scripts/new-release.sh", CONSTANTS, "CHANGELOG.md"):
+        for name in (*DDeployment.DEPENDENCIES, "CHANGELOG.md"):
             destination = self.repo / name
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, destination)
         # Start every fixture before its first release, independently of this checkout's version.
-        (self.repo / CONSTANTS).write_text(
-            'from typing import Final\n\nclass DMyCount:\n    VERSION: Final[str] = "0.0.1"\n')
+        constants = (self.repo / CONSTANTS).read_text()
+        (self.repo / CONSTANTS).write_text(re.sub(
+            r'(    VERSION: Final\[str\] = )"[^"\n]+"', r'\1"0.0.1"', constants))
+        files = ReleaseFiles(self.repo)
+        impact = DeploymentImpact()
+        files.write({
+            "releases": [{"version": "0.0.1", "targets": []}],
+            "artifacts": {name: {"digest": digest, "targets": sorted(impact.affected_targets(name))}
+                          for name, digest in files.snapshot().items()},
+        })
         (self.repo / "CHANGELOG.md").write_text(
             '# Changelog\n\n## [Unreleased]\n\n### Summary\n\nFirst feature.\n')
         self.git("add", ".")
@@ -73,6 +88,8 @@ class ReleaseTests(unittest.TestCase):
             self.assertEqual(self.git("rev-parse", ref), commit)
         self.assertEqual(self.git("cat-file", "-t", "v0.1.0"), "tag")
         self.assertIn('VERSION: Final[str] = "0.1.0"', (self.repo / CONSTANTS).read_text())
+        metadata = json.loads((self.repo / DDeployment.RELEASE_MANIFEST).read_text())
+        self.assertEqual(metadata['releases'][-1], {'version': '0.1.0', 'targets': []})
         released = (self.repo / "CHANGELOG.md").read_text()
         self.assertIn("## [0.1.0] - ", released)
         self.assertEqual(released.count("## [Unreleased]"), 1)

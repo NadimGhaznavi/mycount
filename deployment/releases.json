@@ -1,0 +1,376 @@
+{
+  "artifacts": {
+    "caddy/mycount.caddy": {
+      "digest": null,
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "mycount/__init__.py": {
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ]
+    },
+    "mycount/activity/BrowserMetadata.py": {
+      "digest": "d45b1aaa76a45af5d1355dea6cb33d121a0aeff23d75fc089414346723e2aa07",
+      "targets": [
+        "listener"
+      ]
+    },
+    "mycount/activity/CollectVisit.py": {
+      "digest": "d6eb5c62c59cc01b364af4e5f18664c97b96596da24f6ccaafa1dcca4f0b3ed1",
+      "targets": [
+        "listener"
+      ]
+    },
+    "mycount/activity/DeploymentImpact.py": {
+      "digest": null,
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "mycount/activity/GeoIpSchema.py": {
+      "digest": "2bd8c1d3412358f935aee587794d05172e87fda72a361ada048350ab8aa5576e",
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "mycount/activity/ReleaseDeployment.py": {
+      "digest": null,
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "mycount/activity/UpdateGeoIp.py": {
+      "digest": "7c090fb1276d6289704780833631f609e3694e2b9161092e9711d792cf43fb3c",
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "mycount/activity/VisitorSchema.py": {
+      "digest": "aeb35be5e5fbac07311bcbba8444f12907f65601307399fb65e8991c8fcac57a",
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "mycount/activity/__init__.py": {
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "targets": [
+        "filesystem",
+        "listener"
+      ]
+    },
+    "mycount/constants/DCaddy.py": {
+      "digest": "a1d76c60f12f2e45f097412faa3fb04ff121c13bfa375097f5df21aae86a1cb6",
+      "targets": [
+        "filesystem",
+        "listener"
+      ]
+    },
+    "mycount/constants/DControl.py": {
+      "digest": "271e6d47c8b587efefe6882ffd17f1b9182ef7735afdaab1d0704a19ab4f2de6",
+      "targets": [
+        "filesystem",
+        "report-server"
+      ]
+    },
+    "mycount/constants/DDbMgr.py": {
+      "digest": "f4e8b594dcfcdace8119c2edca90aa266dbc47b67ba7246c042d0a5fce2d44d6",
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ]
+    },
+    "mycount/constants/DDeployment.py": {
+      "digest": null,
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "mycount/constants/DGeoIp.py": {
+      "digest": "fb61776cb13420dcfa161481675d4d2a8b5533898af5aa7547009de188622575",
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "mycount/constants/DMyCount.py": {
+      "digest": "7e83127e9c94f4a0e5be97882655e1aea975da33f5fad8991f3b39be5e6a01ca",
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ]
+    },
+    "mycount/constants/DVisitorDetails.py": {
+      "digest": "fb0ec9daaf05f15304379faff77f05caa2ae6399c3ae74d7d9836622050351d8",
+      "targets": [
+        "filesystem",
+        "listener"
+      ]
+    },
+    "mycount/constants/__init__.py": {
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ]
+    },
+    "mycount/entity/GeoIpRange.py": {
+      "digest": "3e3051c1358c1d827c732364cc8ce487d359f039277c8d271acd9fff7004dbb9",
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "mycount/entity/GeoLocation.py": {
+      "digest": "2437d0002b4ef5df4a0d80f4ded44150f5906896e1d4b3009614f4f7a7189eee",
+      "targets": [
+        "filesystem",
+        "listener"
+      ]
+    },
+    "mycount/entity/Visit.py": {
+      "digest": "56e2f8bbeed2ceeb0e09bc0da61d5f3c022a5fe082f2f21e0317cdfac87d17b9",
+      "targets": [
+        "listener",
+        "report-server"
+      ]
+    },
+    "mycount/entity/__init__.py": {
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ]
+    },
+    "mycount/interface/CollectorHttp.py": {
+      "digest": "f8eb7ed4f57bebd617c4ef7c5469f8bee44f4cb90cf5f82d5d948586159f48ed",
+      "targets": [
+        "listener"
+      ]
+    },
+    "mycount/interface/DatabaseEnvironment.py": {
+      "digest": "8ef713a12e1c220d22830fbf6cd816811ecba6957967565abb80d7ab1e20349b",
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "mycount/interface/DbMgr.py": {
+      "digest": "243fa207b4bde9d06cd1a39a26515dd084937feedbf82d24e5fc440b30faa32f",
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ]
+    },
+    "mycount/interface/GeoIp.py": {
+      "digest": "618c94a992ee11a83ea6c52c7b89a82a72960edff6fad16e3712996d8cc55e62",
+      "targets": [
+        "listener"
+      ]
+    },
+    "mycount/interface/GeoIpImportDb.py": {
+      "digest": "4506702e3b2c2f3a22470ccf4e788b61d29a6b2abd73b302de7e54eca5461c6b",
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "mycount/interface/GeoIpSource.py": {
+      "digest": "e99b54d7f2447a569a2aad902274c3cbee2fdce6d8d05ce03bd8b16c809dfa56",
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "mycount/interface/ReleaseFiles.py": {
+      "digest": null,
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "mycount/interface/ServiceLogger.py": {
+      "digest": "d81f56d3c7c52eab588e9508dd29d96c938e149a34c9a48b27778eabfac47d64",
+      "targets": [
+        "listener"
+      ]
+    },
+    "mycount/interface/VisitDb.py": {
+      "digest": "505479ffc99bf0d582633776644228af15422d73b34dc17a8437a34ef2161d06",
+      "targets": [
+        "listener",
+        "report-server"
+      ]
+    },
+    "mycount/interface/VisitPayload.py": {
+      "digest": "3109270b2bca90531452135f84f4e6656937cc319fac846d0000d485d2c9f83b",
+      "targets": [
+        "listener"
+      ]
+    },
+    "mycount/interface/VisitorAddress.py": {
+      "digest": "56e845e7e8bed0522d4d0a98f1d964060f57a3a2af496d7395bd1b44cd42a71f",
+      "targets": [
+        "listener"
+      ]
+    },
+    "mycount/interface/VisitorDetails.py": {
+      "digest": "d13cbd0b1424267ba36bd463471d2b6d059da4654c4e459b8f409f8d5ce031df",
+      "targets": [
+        "listener"
+      ]
+    },
+    "mycount/interface/__init__.py": {
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ]
+    },
+    "mycount/server/ControlHandler.py": {
+      "digest": "2a6d52965e067663b1bb44b9897230cada57f36ccd36144eca81fd816c78a19a",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/server/ControlPages.py": {
+      "digest": "96bdbc5390d27234122e65f9c78b6225a94019bcaf771992bbc0e22661849bfa",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/server/ControlServer.py": {
+      "digest": "ecd548bafd90395059d8cdf48d2e7715397388f19c6041a094ccf492af44b28f",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/server/MyCountServer.py": {
+      "digest": "7e536f6a8e92af63fdc82f5845d953b7e1d6e917958bcd222273b153eae27eb0",
+      "targets": [
+        "listener"
+      ]
+    },
+    "mycount/server/__init__.py": {
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "targets": [
+        "listener",
+        "report-server"
+      ]
+    },
+    "mycount/server/__main__.py": {
+      "digest": "19ec3cd2fc925a0e8a13ed2e98a8b09f6f2f7be63fa053d1b2941be7baeaabbc",
+      "targets": [
+        "listener"
+      ]
+    },
+    "mycount/server/templates/base.html": {
+      "digest": "7cd686a5ed164c06022a01861c4bc9e458f05624745779a7ec6be607427dea91",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/server/templates/control.html": {
+      "digest": "03933c271fbcbea467c625a5430908d070326920b0b240b5e5bafb0efaac05df",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/server/templates/local_time.html": {
+      "digest": "4aca268a6d4f401b304dff7c4791e60587e7197bc21197599dccc714139176da",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/server/templates/styles.html": {
+      "digest": "a1540191dcf05d3d867f345175e1e7d8eedfbe4d5ed15ff9e504c3a8daa80ffc",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "requirements.txt": {
+      "digest": "f91295f31d036c726e05b03bac7cf35a27a20d78de5ed25b31e5c2f35c393209",
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ]
+    },
+    "scripts/install-caddy.sh": {
+      "digest": null,
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "scripts/install-services.sh": {
+      "digest": null,
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "scripts/install.sh": {
+      "digest": null,
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "scripts/new-release.sh": {
+      "digest": null,
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "scripts/uninstall.sh": {
+      "digest": "0731d7d8c3412816650e2d2ffa410b6984e58915e71c8094fbe7e6ab61baf2e2",
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "scripts/update-geoip.sh": {
+      "digest": "e7e865fefa0049f3b703be5ccf04498071f88ca7b8bd2ef5661f11256810ef43",
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "scripts/upgrade.sh": {
+      "digest": null,
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "systemd/mycount-control.service": {
+      "digest": null,
+      "targets": [
+        "report-server"
+      ]
+    },
+    "systemd/mycount-server.service": {
+      "digest": null,
+      "targets": [
+        "listener"
+      ]
+    }
+  },
+  "releases": [
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "0.6.5"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "0.6.6"
+    }
+  ]
+}

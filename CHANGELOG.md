@@ -9,6 +9,20 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Extract portable, standard-library deployment tooling with project-supplied configuration. Generate `DDeployment.py` from source scans and explicit MyCount rules; require a nonmutating freshness check during release preparation. Document the reusable boundary and maintenance workflow.
+
+- Shorten the deployment dependency guide for DevOps and document the portability boundary and planned dependency generator.
+
+- Refactor deployment into explicit stages selected by impact flags. Limit service-only file copies and removals to affected targets, skip deployment stages for no-impact releases, and publish installed release metadata only after successful completion.
+
+- Record deployment-impact flags during release preparation and combine them across skipped releases during upgrades. Report-only releases restart only the control service; filesystem/setup changes use the full deployment workflow.
+- Add an initial installed-artifact baseline and preserve the last successful deployed version for retrying failed upgrades. Reject unprepared deployment files before stopping services.
+
+- Add `DeploymentImpact` to check whether an artifact affects a deployment target through direct or transitive dependencies, and list all affected targets.
+
+- Require deployment dependency updates alongside relevant code and asset changes, prominently in the Coding Guidelines.
+- Define static file dependency graphs for the report server, listener, and filesystem/setup targets in `DDeployment`, as the foundation for selective deployment decisions.
+
 ## [0.6.6] - 2026-09-27 @ 12:12
 
 - Expand site rows to show per-page visit counts and last-visited times, ordered by most visits first with URL order breaking ties.
