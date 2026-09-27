@@ -9,6 +9,9 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Add bold, right-aligned total rows to the site and location tables, kept at the bottom when sorting.
+- Rename Sites to Visits by Site and add a sortable Visits by Location table alongside it, with continent, country code, state/province, city, and visit totals. Show unknown locations as `---` and stack the tables on narrow screens.
+
 ## [0.6.11] - 2026-09-27 @ 14:44
 
 ### Added
