@@ -1,5 +1,6 @@
 """Integration checks against a disposable local MariaDB instance only."""
 
+from dataclasses import replace
 from datetime import datetime, timezone
 from hashlib import sha256
 import json
@@ -12,6 +13,7 @@ import tempfile
 import time
 import unittest
 from unittest.mock import patch
+from uuid import uuid4
 
 import pymysql
 
@@ -198,6 +200,39 @@ class DatabaseTests(unittest.TestCase):
             VisitDb(self.db).record(visit)
         self.assertEqual(self.db.query('SELECT * FROM page_views'), [])
         self.assertEqual(self.db.query('SELECT * FROM pages'), [])
+
+    def test_visitor_id_migration_preserves_unknown_history(self):
+        self.db.execute('ALTER TABLE page_views DROP INDEX idx_view_visitor_time, DROP COLUMN visitor_id')
+        old_id = self.view(self.page())
+        VisitorSchema(self.db).apply()
+        VisitorSchema(self.db).apply()
+        row = self.db.query('SELECT visitor_id FROM page_views WHERE page_view_id=%s', (old_id,))[0]
+        self.assertIsNone(row['visitor_id'])
+        self.assertEqual(VisitDb(self.db).totals_by_site(), [{
+            'site': 'mycount', 'page_views': 1, 'unique_browsers': 0,
+            'unidentified_views': 1, 'known_bot_views': 0,
+        }])
+
+    def test_unique_browsers_deduplicate_reloads_and_pages_with_site_scoping(self):
+        visits = VisitDb(self.db)
+        self.assertEqual(visits.totals_by_site(), [])
+        identifier = uuid4().bytes
+        visit = Visit(site='r3el', url='https://r3el.osoyalce.com/',
+                      received_at=datetime.now(timezone.utc), visitor_id=identifier)
+        first = visits.record(visit)
+        visits.record(visit)
+        visits.record(replace(visit, url='https://r3el.osoyalce.com/about'))
+        visits.record(replace(visit, visitor_id=uuid4().bytes))
+        visits.record(replace(visit, visitor_id=None, is_bot=True))
+        visits.record(replace(visit, site='ax3l', url='https://ax3l.osoyalce.com/'))
+        self.assertEqual(self.db.query('SELECT visitor_id FROM page_views WHERE page_view_id=%s',
+                                      (first,))[0]['visitor_id'], identifier)
+        self.assertEqual(visits.totals_by_site(), [
+            {'site': 'r3el', 'page_views': 5, 'unique_browsers': 2,
+             'unidentified_views': 1, 'known_bot_views': 1},
+            {'site': 'ax3l', 'page_views': 1, 'unique_browsers': 1,
+             'unidentified_views': 0, 'known_bot_views': 0},
+        ])
 
     def page(self, url="https://example.com/products/", site="mycount"):
         return self.db.insert("INSERT INTO pages(site, url) VALUES (%s, %s)", (site, url))

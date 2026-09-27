@@ -1,6 +1,7 @@
 """Run the real client in an isolated headless browser with a captured fetch."""
 
 import html
+from contextlib import nullcontext
 import json
 from pathlib import Path
 import re
@@ -8,6 +9,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+from uuid import UUID
 
 from mycount.interface.VisitPayload import VisitPayload
 
@@ -18,8 +20,9 @@ CHROME = shutil.which('google-chrome') or shutil.which('chromium')
 
 @unittest.skipUnless(CHROME, 'Chrome or Chromium is required for client execution tests')
 class ClientTests(unittest.TestCase):
-    def run_client(self, setup='', endpoint='https://count.osoyalce.com/count'):
-        with tempfile.TemporaryDirectory(prefix='mycount-client-test-') as temporary:
+    def run_client(self, setup='', endpoint='https://count.osoyalce.com/count', root=None, site='r3el'):
+        context = nullcontext(root) if root is not None else tempfile.TemporaryDirectory(prefix='mycount-client-test-')
+        with context as temporary:
             root = Path(temporary)
             page = root / 'test.html'
             page.write_text('''<!doctype html><pre id="result">null</pre><script>
@@ -27,7 +30,7 @@ class ClientTests(unittest.TestCase):
                     document.getElementById('result').textContent = JSON.stringify({url, options});
                     return Promise.resolve({ok: true, status: 204});
                 };
-            ''' + setup + '</script><script data-site="r3el" data-endpoint="'
+            ''' + setup + '</script><script data-site="' + html.escape(site, quote=True) + '" data-endpoint="'
                 + html.escape(endpoint, quote=True) + '">'
                 + (ROOT / 'client/mycount.js').read_text() + '</script>')
             result = subprocess.run([
@@ -76,3 +79,31 @@ class ClientTests(unittest.TestCase):
 
     def test_empty_endpoint_disables_collection(self):
         self.assertIsNone(self.run_client(endpoint=''))
+
+    def test_browser_id_persists_across_browser_restarts_and_separates_site_labels(self):
+        with tempfile.TemporaryDirectory(prefix='mycount-identity-test-') as root:
+            first = json.loads(self.run_client(root=root)['options']['body'])['visitor_id']
+            second = json.loads(self.run_client(root=root)['options']['body'])['visitor_id']
+            other = json.loads(self.run_client(root=root, site='ax3l')['options']['body'])['visitor_id']
+            self.assertEqual(UUID(first).version, 4)
+            self.assertEqual(first, second)
+            self.assertNotEqual(first, other)
+
+    def test_blocked_storage_keeps_collecting_without_a_visitor_id(self):
+        for setup in (
+            "Object.defineProperty(window, 'localStorage', {get() { throw new DOMException('blocked', 'SecurityError'); }});",
+            "Storage.prototype.setItem = () => { throw new DOMException('full', 'QuotaExceededError'); };",
+            "Storage.prototype.setItem = () => {};",
+            "Object.defineProperty(window.crypto, 'randomUUID', {value: undefined});",
+        ):
+            with self.subTest(setup=setup):
+                payload = json.loads(self.run_client(setup)['options']['body'])
+                self.assertIsNone(payload['visitor_id'])
+
+    def test_invalid_stored_id_is_replaced(self):
+        for value in ('corrupt', '3e8073e0-5f15-4f14-bccc-b4b5cb47e330\n'):
+            with self.subTest(value=value):
+                setup = "localStorage.setItem('mycount.visitor_id.r3el', " + json.dumps(value) + ");"
+                payload = json.loads(self.run_client(setup)['options']['body'])
+                self.assertEqual(UUID(payload['visitor_id']).version, 4)
+                self.assertEqual(len(payload['visitor_id']), 36)

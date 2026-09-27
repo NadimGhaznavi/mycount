@@ -3,6 +3,7 @@
 from datetime import datetime, timezone
 import re
 from urllib.parse import urlsplit
+from uuid import UUID
 
 from mycount.entity.Visit import Visit
 from mycount.constants.DMyCount import DMyCount
@@ -15,7 +16,7 @@ class InvalidVisit(ValueError):
 
 class VisitPayload:
     def resolve(self, payload: object, origin: str) -> tuple[Visit, str]:
-        """Return validated visit data and a transient user-agent string."""
+        """Return validated visit data and its user-agent string for enrichment."""
         if (not isinstance(payload, dict) or not DMyCount.PAYLOAD_FIELDS <= payload.keys()
                 or payload.keys() - DMyCount.PAYLOAD_FIELDS - DMyCount.OPTIONAL_PAYLOAD_FIELDS):
             raise InvalidVisit("Invalid payload fields.")
@@ -65,6 +66,13 @@ class VisitPayload:
         except ValueError as error:
             raise InvalidVisit(str(error)) from error
 
+        visitor_id = payload.get("visitor_id")
+        if visitor_id is not None:
+            if (not isinstance(visitor_id, str)
+                    or re.fullmatch(DMyCount.VISITOR_ID_PATTERN, visitor_id) is None):
+                raise InvalidVisit("Invalid visitor_id; expected a lowercase UUIDv4.")
+            visitor_id = UUID(visitor_id).bytes
+
         visit = Visit(
             site=site,
             url=origin + (address.path or "/"),
@@ -73,5 +81,6 @@ class VisitPayload:
             referrer_host=referrer_host,
             user_agent=agent or None,
             client_details=client_details,
+            visitor_id=visitor_id,
         )
         return visit, agent
