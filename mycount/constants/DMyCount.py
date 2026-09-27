@@ -16,6 +16,7 @@ class DMyCount:
     ORIGINS: Final[tuple[str, ...]] = (
         "https://mycount.osoyalce.com",
         "https://ax3l.osoyalce.com",
+        "https://r3el.osoyalce.com",
         "https://blog.osoyalce.com",
         "https://snakelab.osoyalce.com",
         "https://snakelabserver.osoyalce.com",
