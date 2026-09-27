@@ -71,3 +71,16 @@ class VisitDb:
             GROUP BY p.site
             ORDER BY page_views DESC, p.site
         """)
+
+    def totals_by_location(self) -> list[dict[str, object]]:
+        """Rank all recorded views by continent, country, state/province, and city."""
+        return self._db.query("""
+            SELECT NULLIF(continent, '') AS continent,
+                   NULLIF(country_code, '') AS country_code,
+                   NULLIF(region_name, '') AS region_name,
+                   NULLIF(city_name, '') AS city_name, COUNT(*) AS page_views
+            FROM page_views
+            GROUP BY NULLIF(continent, ''), NULLIF(country_code, ''),
+                     NULLIF(region_name, ''), NULLIF(city_name, '')
+            ORDER BY page_views DESC, continent, country_code, region_name, city_name
+        """)

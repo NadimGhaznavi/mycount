@@ -26,6 +26,8 @@ class ControlServerTests(unittest.TestCase):
             [{"site": "<example>", "page_views": 12, "last_visited": datetime(2026, 9, 27, 15, 5)}],
             [{"site": "<example>", "url": "https://example.com/<page>", "page_views": 12,
               "last_visited": datetime(2026, 9, 27, 15, 5)}],
+            [{"continent": "North America", "country_code": "CA", "region_name": "Ontario", "city_name": "<city>", "page_views": 9},
+             {"continent": None, "country_code": "", "region_name": None, "city_name": None, "page_views": 3}],
         ]
         with ThreadingHTTPServer(("127.0.0.1", 0), ControlHandler) as server:
             thread = Thread(target=server.serve_forever)
@@ -47,6 +49,14 @@ class ControlServerTests(unittest.TestCase):
                     self.assertIn(b'aria-expanded="false"', body)
                     self.assertIn(b'aria-controls="site-pages-1"', body)
                     self.assertIn(b'class="site-pages" hidden', body)
+                    self.assertIn(b'>Visits by Site</th>', body)
+                    self.assertIn(b'<caption>Visits by Location</caption>', body)
+                    self.assertIn(b'&lt;city&gt;', body)
+                    self.assertIn(b'>State/Province</th>', body)
+                    self.assertIn(b'<td>Ontario</td>', body)
+                    self.assertEqual(body.count(b'<td>---</td>'), 4)
+                    self.assertIn(b'>9</td>', body)
+                    self.assertIn(b'>3</td>', body)
                     factory.return_value.transaction.assert_called_once_with(read_only=True)
                     factory.return_value.close.assert_called_once()
                     factory.reset_mock()
@@ -102,7 +112,7 @@ class ControlServerTests(unittest.TestCase):
             subprocess.run(
                 [sys.executable, "-B", "-c",
                  "from mycount.server.ControlPages import ControlPages; "
-                 "assert b'MyCount <span>Control</span>' in ControlPages().render([], []); "
+                 "assert b'MyCount <span>Control</span>' in ControlPages().render([], [], []); "
                  "assert b'Optional browser details' in ControlPages().reference()"],
                 cwd=directory, check=True,
             )
