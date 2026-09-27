@@ -50,6 +50,16 @@ class ControlServerTests(unittest.TestCase):
                     factory.return_value.transaction.assert_called_once_with(read_only=True)
                     factory.return_value.close.assert_called_once()
                     factory.reset_mock()
+                    connection.request("GET", "/reference")
+                    response = connection.getresponse()
+                    self.assertEqual(response.status, 200)
+                    reference = response.read()
+                    self.assertIn(b'What MyCount Collects', reference)
+                    self.assertIn(b'Optional browser details', reference)
+                    self.assertIn(b'<code>global_privacy_control</code>', reference)
+                    self.assertIn(b'href="/reference" aria-current="page"', reference)
+                    self.assertNotIn(b"document.querySelectorAll('table')", reference)
+                    factory.assert_not_called()
                     connection.request("GET", "/health")
                     response = connection.getresponse()
                     self.assertEqual(response.status, 200)
@@ -88,6 +98,7 @@ class ControlServerTests(unittest.TestCase):
             subprocess.run(
                 [sys.executable, "-B", "-c",
                  "from mycount.server.ControlPages import ControlPages; "
-                 "assert b'MyCount <span>Control</span>' in ControlPages().render([], [])"],
+                 "assert b'MyCount <span>Control</span>' in ControlPages().render([], []); "
+                 "assert b'Optional browser details' in ControlPages().reference()"],
                 cwd=directory, check=True,
             )

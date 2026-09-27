@@ -1,0 +1,41 @@
+<script>
+  for (const table of document.querySelectorAll('table')) {
+    const headers = Array.from(table.tHead.rows[0].cells);
+    headers.forEach((header, column) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'column-sort';
+      button.textContent = header.textContent;
+      header.replaceChildren(button);
+      button.addEventListener('click', () => {
+        const ascending = header.getAttribute('aria-sort') !== 'ascending';
+        const body = table.tBodies[0];
+        const groups = [];
+        for (const row of Array.from(body.rows)) {
+          if (row.classList.contains('site-pages')) {
+            groups[groups.length - 1].push(row);
+          } else if (row.cells.length === headers.length) {
+            groups.push([row]);
+          }
+        }
+        const value = row => {
+          const cell = row.cells[column];
+          const time = cell.querySelector('time');
+          if (time) return Date.parse(time.dateTime);
+          if (cell.classList.contains('visits')) return Number(cell.textContent.trim());
+          return (cell.querySelector('.site-toggle')?.textContent ?? cell.textContent)
+            .replace(/^[▸▾]\s*/, '').trim();
+        };
+        groups.sort((left, right) => {
+          const a = value(left[0]);
+          const b = value(right[0]);
+          const order = typeof a === 'number' ? a - b : a.localeCompare(b, undefined, {numeric: true});
+          return ascending ? order : -order;
+        });
+        for (const group of groups) body.append(...group);
+        for (const other of headers) other.removeAttribute('aria-sort');
+        header.setAttribute('aria-sort', ascending ? 'ascending' : 'descending');
+      });
+    });
+  }
+</script>

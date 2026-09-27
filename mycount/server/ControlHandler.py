@@ -35,6 +35,8 @@ class ControlHandler(BaseHTTPRequestHandler):
                              "text/html; charset=utf-8")
                 return
             self.respond(200, ControlPages().render(sites, pages), "text/html; charset=utf-8")
+        elif path == "/reference":
+            self.respond(200, ControlPages().reference(), "text/html; charset=utf-8")
         elif path == "/health":
             self.respond(200, b'{"status":"ok","service":"mycount-control"}', "application/json")
         else:
