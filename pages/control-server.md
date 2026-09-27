@@ -27,14 +27,16 @@ Beside it, Visits by Location groups matching page views across sites by
 Country, State/Province, and City, with a Visits column. Unknown
 or empty fields display `---` and remain included in the counts. Rows start
 with the highest visit count, then country name/code, state/province, and city for ties;
-Country displays the stored full name; grouping uses its country code.
+Country displays a Unicode flag before the stored full name when its code is
+recognized; grouping uses the country code and sorting uses the country name.
 Column headers allow sorting. Both tables end with a bold, right-aligned
 Total row showing the sum of Visits (zero when empty), which stays at the
 bottom when sorting. The tables stack on narrow screens.
 
 Recent Visits appears below Visits by Site in the left column. It shows the
 latest 20 visits matching the bot filter, newest first (newest record first
-when timestamps tie), with Date (`YYYY-MM-DD`), Time (`HH:MM AM/PM`), and URL.
+when timestamps tie), with Date (`YYYY-MM-DD`), Time (`HH:MM AM/PM`), City, and URL. Cities are prefixed with a Unicode country flag when the stored country code
+is recognized. Unknown cities display `---`; unknown countries have no flag.
 Dates and times use the browser timezone. Visits by Location and Last refresh
 keep their positions. Recent visits are read in the same transaction as the
 other metrics.
