@@ -30,6 +30,8 @@ installation failure can leave it stopped. Correct the reported error and
 rerun the installer. Installation is not a transactional rollback mechanism.
 
 See [Uninstall]({% link pages/uninstall.md %}) for removal that preserves data.
+For an existing installation, use the [upgrade script]({% link pages/upgrading.md %})
+to deploy changes without repeating the GeoIP import.
 
 Runtime defaults are in `mycount/constants/DMyCount.py`. The collector listens
 on `127.0.0.1:36666`. Caddy serves public HTTPS on port `443`, routing `/count`
@@ -151,6 +153,11 @@ MyCount uses the free ipapi.is
 and [IPv6](https://github.com/ipapi-is/ipapi/blob/main/databases/geolocationDatabaseIPv6.csv.zip)
 datasets. Public reference data is imported into MariaDB for local lookups.
 The archives are temporary and removed after processing.
+The initial download and import can take several minutes after Python dependency
+installation. The installer reports each stage; GeoIP imports report row counts
+about every ten seconds while batches complete, followed by publication of both
+datasets. Download stages report their start and completion through the transition
+to importing.
 
 Installation creates `/etc/cron.d/mycount-geoip`. Its default schedule is
 Sunday at 03:17 in the machine's timezone. The download URLs and schedule are

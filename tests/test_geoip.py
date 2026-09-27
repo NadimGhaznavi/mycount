@@ -1,13 +1,16 @@
 """GeoIP source validation using small local archives."""
 
 import csv
+from contextlib import nullcontext
 from io import StringIO
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import Mock, patch
 from zipfile import ZipFile
 
 from mycount.constants.DGeoIp import DGeoIp
+from mycount.activity.UpdateGeoIp import UpdateGeoIp
 from mycount.interface.GeoIpSource import GeoIpSource
 
 
@@ -39,6 +42,30 @@ class FixtureGeoIpSource(GeoIpSource):
              "country_code": "CA", "state": "Ontario", "city": city}
             for start, end, city in ranges[version]
         ])
+
+
+class GeoIpProgressTests(unittest.TestCase):
+    def test_reports_stages_and_batch_progress(self):
+        database = Mock()
+        database.refresh.return_value = nullcontext()
+        with patch('mycount.activity.UpdateGeoIp.monotonic', side_effect=[0, 11, 11, 12, 23, 23]):
+            with self.assertLogs('mycount.activity.UpdateGeoIp', level='INFO') as logs:
+                counts = UpdateGeoIp(FixtureGeoIpSource(), database).run()
+        self.assertEqual(counts, {4: 1, 6: 2})
+        self.assertEqual(database.append.call_count, 2)
+        output = '\n'.join(logs.output)
+        self.assertIn('Downloading IPv4', output)
+        self.assertIn('IPv4: imported 1 ranges', output)
+        self.assertIn('IPv6: imported 2 ranges', output)
+        self.assertIn('Publishing GeoIP datasets', output)
+
+    def test_failed_download_does_not_report_publication(self):
+        database = Mock()
+        database.refresh.return_value = nullcontext()
+        with self.assertLogs('mycount.activity.UpdateGeoIp', level='INFO') as logs:
+            with self.assertRaises(OSError):
+                UpdateGeoIp(FixtureGeoIpSource(fail_version=6), database).run()
+        self.assertNotIn('Publishing GeoIP datasets', '\n'.join(logs.output))
 
 
 class GeoIpSourceTests(unittest.TestCase):

@@ -13,8 +13,11 @@ class DMyCount:
     SERVICE_UNIT: Final[str] = "mycount-server.service"
     HOST: Final[str] = "127.0.0.1"
     PORT: Final[int] = 36666
-    SITE: Final[str] = "mycount"
-    ORIGIN: Final[str] = "https://mycount.osoyalce.com"
+    ORIGINS: Final[tuple[str, ...]] = (
+        "https://mycount.osoyalce.com",
+        "https://ax3l.osoyalce.com",
+    )
+    MAX_SITE_LENGTH: Final[int] = 100
     WORKERS: Final[int] = 2
     REQUEST_TIMEOUT: Final[int] = 30
     MAX_BODY_BYTES: Final[int] = 16384

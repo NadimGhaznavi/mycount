@@ -31,7 +31,9 @@ Add this script once to a page with Jekyll front matter, or to its layout:
 ```
 {% endraw %}
 
-Use a fixed, non-personal label for `data-site`.
+Use a fixed, non-personal label for `data-site`, such as `mycount` or `ax3l`.
+Labels may contain ASCII letters, digits, underscores, and hyphens, must start
+with a letter or digit, and must be at most 100 characters long.
 
 The endpoint uses standard HTTPS port 443 and the path `DMyCount.COLLECTION_PATH`.
 Keep this static Jekyll setting in sync when changing the hostname or path;
@@ -57,8 +59,12 @@ addresses through the local proxy connection.
 Because the site and service have different origins, the service must handle
 the browser's CORS preflight (`OPTIONS`) for JSON requests. Allow the origin
 `https://mycount.osoyalce.com`, method `POST`, and header `Content-Type`.
-Include `Access-Control-Allow-Origin` on the actual response too. Add other
-test origins explicitly as needed. CORS is not authentication or protection
+The allowlist is `DMyCount.ORIGINS` in `mycount/constants/DMyCount.py` and includes
+`https://mycount.osoyalce.com` and `https://ax3l.osoyalce.com`. Add exact origins
+without paths or trailing slashes, then redeploy the collector. Each allowed
+request receives its own origin in `Access-Control-Allow-Origin`; the submitted
+page URL must match that request origin. The client supplies the site label.
+CORS is not authentication or protection
 against forged visitor events.
 
 Open the live example with browser developer tools, then inspect the Network
