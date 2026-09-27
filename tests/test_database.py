@@ -341,6 +341,27 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(rows[0]['last_visited'], latest.replace(tzinfo=None))
         self.assertEqual(rows[-1]['last_visited'], old.replace(tzinfo=None))
 
+    def test_location_totals_include_unknowns_and_combine_sites(self):
+        visits = VisitDb(self.db)
+        self.assertEqual(visits.totals_by_location(), [])
+        visit = Visit(site='first', url='https://example.com/',
+                      received_at=datetime.now(timezone.utc), continent='North America',
+                      country_code='CA', region_name='Ontario', city_name='Hamilton')
+        visits.record(visit)
+        visits.record(replace(visit, site='second'))
+        visits.record(replace(visit, continent=None, country_code=None, region_name=None, city_name=None))
+        visits.record(replace(visit, continent='', country_code='', region_name='', city_name=''))
+        visits.record(replace(visit, city_name='Toronto'))
+        visits.record(replace(visit, region_name='Alberta'))
+        visits.record(replace(visit, city_name=None))
+        self.assertEqual(visits.totals_by_location(), [
+            dict(continent=None, country_code=None, region_name=None, city_name=None, page_views=2),
+            dict(continent='North America', country_code='CA', region_name='Ontario', city_name='Hamilton', page_views=2),
+            dict(continent='North America', country_code='CA', region_name='Alberta', city_name='Hamilton', page_views=1),
+            dict(continent='North America', country_code='CA', region_name='Ontario', city_name=None, page_views=1),
+            dict(continent='North America', country_code='CA', region_name='Ontario', city_name='Toronto', page_views=1),
+        ])
+
     def page(self, url="https://example.com/products/", site="mycount"):
         return self.db.insert("INSERT INTO pages(site, url) VALUES (%s, %s)", (site, url))
 

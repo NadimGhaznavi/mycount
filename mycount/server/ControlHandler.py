@@ -27,14 +27,15 @@ class ControlHandler(BaseHTTPRequestHandler):
                         visits = VisitDb(db)
                         sites = visits.totals_by_site()
                         pages = visits.totals_by_page()
+                        locations = visits.totals_by_location()
                 finally:
                     db.close()
             except pymysql.MySQLError:
                 logging.exception("Unable to read site visits")
-                self.respond(503, ControlPages().render([], [], error="Site visits unavailable."),
+                self.respond(503, ControlPages().render([], [], [], error="Site visits unavailable."),
                              "text/html; charset=utf-8")
                 return
-            self.respond(200, ControlPages().render(sites, pages), "text/html; charset=utf-8")
+            self.respond(200, ControlPages().render(sites, pages, locations), "text/html; charset=utf-8")
         elif path == "/reference":
             self.respond(200, ControlPages().reference(), "text/html; charset=utf-8")
         elif path == "/health":

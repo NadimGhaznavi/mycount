@@ -10,15 +10,23 @@ Installation and upgrade enable and start `mycount-control.service` alongside
 the visitor collector. Open `http://<server>:61777/` to see the MyCount Control
 banner, using R3el's masthead layout with a dark orange palette.
 
-The site table shows Sites, Visits, and Last Visited, ordered by visit count
+The site table shows Visits by Site, Visits, and Last Visited, ordered by visit count
 (highest first), then site name. Visits counts all recorded page views, including
 known bots, across all pages for that site. Last Visited is the latest received
 visit, displayed in browser-local time as `YYYY-MM-DD HH:MM`.
 
+Beside it, Visits by Location groups all recorded page views across sites by
+Continent, Country (two-letter code), State/Province, and City, with a Visits column. Unknown
+or empty fields display `---` and remain included in the counts. Rows start
+with the highest visit count, then continent, country, state/province, and city for ties;
+column headers allow sorting. Both tables end with a bold, right-aligned
+Total row showing the sum of Visits (zero when empty), which stays at the
+bottom when sorting. The tables stack on narrow screens.
+
 Click a site row to expand or collapse its page table. The site-name button
 also works with Enter or Space. Each page shows its full recorded URL, visit
 count, and browser-local last-visited time. Pages are sorted by visits descending,
-then URL for ties. Multiple sites can remain expanded together. Site and page
+then URL for ties. Multiple sites can remain expanded together. Site, page, and location
 metrics are read in one read-only database transaction when the page loads;
 expanding a row does not reload the report. Reloading collapses the rows.
 
