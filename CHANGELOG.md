@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Add a standalone `mycount-control` service on port 61777 with a dark orange banner styled after R3el. Install and upgrade deploy and health-check both services; uninstall removes both.
+
 ## [0.6.0] - 2026-09-27 @ 09:46
 
 - Count unique browsers per site using a persistent random first-party local-storage ID. Keep collecting unidentified page views when storage is blocked, and preserve historical rows without inventing visitor identities.
