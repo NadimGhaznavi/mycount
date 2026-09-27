@@ -15,6 +15,7 @@ components, metrics, and privacy boundaries.
 - [Installation and GeoIP updates]({% link pages/installation.md %})
 - [Control server]({% link pages/control-server.md %})
 - [Upgrading]({% link pages/upgrading.md %})
+- [Deployment dependencies]({% link pages/deployment-dependencies.md %})
 - [Uninstall]({% link pages/uninstall.md %})
 - [Browser client and live example]({% link pages/client.md %})
 - [Data access]({% link pages/data-access.md %})

@@ -96,6 +96,8 @@ if grep -Fq "## [${version}]" CHANGELOG.md; then
     fail "Version ${version} is already in CHANGELOG.md."
 fi
 
+python3 -B scripts/update-deployment-dependencies.py --check
+
 git fetch --prune --tags origin
 git show-ref --verify --quiet "refs/tags/${tag}" && fail "Tag ${tag} already exists."
 git show-ref --verify --quiet "refs/remotes/origin/${next_branch}" &&
@@ -112,11 +114,23 @@ git merge-base --is-ancestor dev "${source_branch}" || fail "Merge dev into the 
 git switch dev
 git merge --no-ff "${source_branch}" -m "Merge ${source_branch} for ${tag}"
 
+# Record impact before the automatic version bump; no deployment runs here.
+python3 -B - "$version" <<'PYRELEASE'
+from pathlib import Path
+import sys
+from mycount.activity.ReleaseDeployment import ReleaseDeployment
+from mycount.constants.DMyCount import DMyCount
+from mycount.interface.ReleaseFiles import ReleaseFiles
+
+targets = ReleaseDeployment(ReleaseFiles(Path.cwd())).prepare(DMyCount.VERSION, sys.argv[1])
+print('Release deployment targets: ' + (', '.join(sorted(targets)) or 'none'))
+PYRELEASE
+
 sed -i -E "s/^(    VERSION: Final\[str\] = ).*/\1\"${version}\"/" "${constants_file}"
 sed -i "/^## \[Unreleased\]$/a\\
 \\
 ## [${version}] - ${release_date}" CHANGELOG.md
-git add -- "${constants_file}" CHANGELOG.md
+git add -- "${constants_file}" CHANGELOG.md deployment/releases.json
 git commit -m "${message}"
 
 git switch main
