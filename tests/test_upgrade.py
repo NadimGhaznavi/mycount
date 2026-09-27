@@ -36,7 +36,7 @@ class UpgradeTests(unittest.TestCase):
         self.executable(python, '''#!/bin/bash
 input=$(cat)
 if [[ $input == *'print(DMyCount.BASE_DIR)'* ]]; then
-    printf '%s\\n' "$TEST_APP" "$TEST_CREDENTIALS" mycount mycount-server.service
+    printf '%s\\n' "$TEST_APP" "$TEST_CREDENTIALS" mycount mycount-server.service mycount-control.service
 elif [[ $input == *'Credentials do not belong'* ]]; then
     echo credentials >> "$TEST_LOG"
     exit "${TEST_CREDENTIAL_FAILURE:-0}"
@@ -67,6 +67,7 @@ fi
         commands = self.log.read_text().splitlines()
         self.assertNotIn('geoip', commands)
         self.assertIn('systemctl enable --now mycount-server.service', commands)
+        self.assertIn('systemctl enable --now mycount-control.service', commands)
         self.assertIn('caddy', commands)
         self.assertIn('Upgraded MyCount', result.stdout)
         self.assertEqual(self.credentials.read_text(), 'retained credentials')

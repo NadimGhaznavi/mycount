@@ -17,6 +17,7 @@ from tempfile import NamedTemporaryFile
 from mycount.constants.DCaddy import DCaddy
 from mycount.constants.DGeoIp import DGeoIp
 from mycount.constants.DMyCount import DMyCount
+from mycount.constants.DControl import DControl
 
 application = Path(DMyCount.BASE_DIR)
 if application.is_symlink() or application.parent != Path('/opt/prod') or application.name != 'mycount':
@@ -44,13 +45,14 @@ site.unlink(missing_ok=True)
 
 # Remove the schedule first so no new refresh is launched during removal.
 Path(DGeoIp.CRON_FILE).unlink(missing_ok=True)
-unit = Path('/etc/systemd/system') / DMyCount.SERVICE_UNIT
-if unit.exists():
-    subprocess.run(['systemctl', 'disable', '--now', DMyCount.SERVICE_UNIT], check=True)
-    unit.unlink()
-    subprocess.run(['systemctl', 'daemon-reload'], check=True)
+for name in (DControl.SERVICE_UNIT, DMyCount.SERVICE_UNIT):
+    unit = Path('/etc/systemd/system') / name
+    if unit.exists():
+        subprocess.run(['systemctl', 'disable', '--now', name], check=True)
+        unit.unlink()
+subprocess.run(['systemctl', 'daemon-reload'], check=True)
 if application.exists():
     shutil.rmtree(application)
-print('Removed MyCount application, service, GeoIP schedule, and Caddy site.')
+print('Removed MyCount application, services, GeoIP schedule, and Caddy site.')
 print('Preserved databases, credentials, Linux accounts, Caddy, cron, and router mappings.')
 PY

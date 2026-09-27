@@ -16,10 +16,10 @@ Run [installation]({% link pages/installation.md %}) first on a new machine.
 The upgrade script deploys the current checkout; it does not fetch or merge Git
 changes. Use a checkout separate from `/opt/prod/mycount`.
 
-The upgrade validates the retained database credentials, stops the collector,
+The upgrade validates the retained database credentials, stops the collector and control server,
 updates Python dependencies and application files, applies database schema
-updates, refreshes the service and cron definitions, and starts the collector.
-It checks local health before running Caddy and router setup. This also deploys
+updates, refreshes the service and cron definitions, and starts both services.
+It checks both local health endpoints before running Caddy and router setup. This also deploys
 changes to `DMyCount.ORIGINS`.
 
 Existing visits, database credentials, database and Linux accounts, and GeoIP
