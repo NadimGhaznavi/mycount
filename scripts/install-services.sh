@@ -16,13 +16,14 @@ PY
 install_dir=${settings[0]}
 [[ -d $install_dir && -f ${settings[1]} ]] || { printf 'Run install.sh first.\n' >&2; exit 1; }
 getent passwd "${settings[2]}" >/dev/null
+[[ $checkout != "$install_dir" ]] || { printf 'Run deployment from a separate checkout.\n' >&2; exit 1; }
+if [[ -e /etc/systemd/system/${settings[3]} ]]; then
+    systemctl stop "${settings[3]}"
+fi
 if [[ ! -x $install_dir/.venv/bin/python ]]; then
     python3 -m venv "$install_dir/.venv"
 fi
 "$install_dir/.venv/bin/python" -m pip install -r requirements.txt
-if [[ -e /etc/systemd/system/${settings[3]} ]]; then
-    systemctl stop "${settings[3]}"
-fi
 python3 -B - "$install_dir" <<'PY'
 from pathlib import Path
 import shutil
@@ -33,6 +34,7 @@ shutil.copytree('mycount', target / 'mycount', dirs_exist_ok=True,
 shutil.copy2('requirements.txt', target / 'requirements.txt')
 (target / 'scripts').mkdir(exist_ok=True)
 shutil.copy2('scripts/update-geoip.sh', target / 'scripts/update-geoip.sh')
+shutil.copy2('scripts/uninstall.sh', target / 'scripts/uninstall.sh')
 PY
 cd -- "$install_dir"
 .venv/bin/python -B - <<'PY'
@@ -73,4 +75,24 @@ systemd-analyze verify "/etc/systemd/system/${settings[3]}"
 systemctl daemon-reload
 systemctl enable --now cron.service
 systemctl enable --now "${settings[3]}"
+.venv/bin/python -B - <<'PY'
+import time
+from urllib.error import URLError
+from urllib.request import ProxyHandler, build_opener
+from mycount.constants.DMyCount import DMyCount
+
+opener = build_opener(ProxyHandler({}))
+url = f'http://{DMyCount.HOST}:{DMyCount.PORT}{DMyCount.HEALTH_PATH}'
+for attempt in range(30):
+    try:
+        with opener.open(url, timeout=1) as response:
+            if response.status == 204:
+                break
+    except (URLError, TimeoutError):
+        pass
+    time.sleep(1)
+else:
+    raise SystemExit('Collector health check failed; inspect journalctl -u ' + DMyCount.SERVICE_UNIT)
+PY
+"$checkout/scripts/install-caddy.sh"
 printf 'Installed %s and scheduled weekly GeoIP updates.\n' "${settings[3]}"
