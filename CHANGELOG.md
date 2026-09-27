@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.6.6] - 2026-09-27 @ 12:12
+
 - Expand site rows to show per-page visit counts and last-visited times, ordered by most visits first with URL order breaking ties.
 
 ## [0.6.5] - 2026-09-27 @ 12:02
