@@ -1,6 +1,7 @@
 """Render the control server's presentation assets."""
 
 from pathlib import Path
+from datetime import datetime, timezone
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 
@@ -12,6 +13,9 @@ class ControlPages:
             autoescape=select_autoescape(["html"]),
             undefined=StrictUndefined,
         )
+        self._templates.filters["utc_iso"] = lambda value: value.replace(tzinfo=timezone.utc).isoformat()
 
-    def render(self) -> bytes:
-        return self._templates.get_template("control.html").render().encode("utf-8")
+    def render(self, sites: list[dict[str, object]], *, error: str | None = None) -> bytes:
+        return self._templates.get_template("control.html").render(
+            sites=sites, error=error, refreshed_at=datetime.now(timezone.utc),
+        ).encode("utf-8")

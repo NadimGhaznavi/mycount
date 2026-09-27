@@ -1,9 +1,14 @@
 """Handle HTTP requests for the control pages."""
 
 from http.server import BaseHTTPRequestHandler
+import logging
 from urllib.parse import urlsplit
 
+import pymysql
+
 from mycount.constants.DMyCount import DMyCount
+from mycount.interface.DbMgr import DbMgr
+from mycount.interface.VisitDb import VisitDb
 from mycount.server.ControlPages import ControlPages
 
 
@@ -15,7 +20,18 @@ class ControlHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         path = urlsplit(self.path).path
         if path == "/":
-            self.respond(200, ControlPages().render(), "text/html; charset=utf-8")
+            try:
+                db = DbMgr()
+                try:
+                    sites = VisitDb(db).totals_by_site()
+                finally:
+                    db.close()
+            except pymysql.MySQLError:
+                logging.exception("Unable to read site visits")
+                self.respond(503, ControlPages().render([], error="Site visits unavailable."),
+                             "text/html; charset=utf-8")
+                return
+            self.respond(200, ControlPages().render(sites), "text/html; charset=utf-8")
         elif path == "/health":
             self.respond(200, b'{"status":"ok","service":"mycount-control"}', "application/json")
         else:

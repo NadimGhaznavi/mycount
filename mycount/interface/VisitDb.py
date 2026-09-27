@@ -53,7 +53,7 @@ class VisitDb:
         known bot views are reported separately, not treated as people.
         """
         return self._db.query("""
-            SELECT p.site, COUNT(*) AS page_views,
+            SELECT p.site, COUNT(*) AS page_views, MAX(v.received_at) AS last_visited,
                    COUNT(DISTINCT v.visitor_id) AS unique_browsers,
                    COUNT(CASE WHEN v.visitor_id IS NULL THEN 1 END) AS unidentified_views,
                    COUNT(CASE WHEN v.is_bot = 1 THEN 1 END) AS known_bot_views
