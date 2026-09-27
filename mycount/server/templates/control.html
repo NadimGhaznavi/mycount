@@ -8,10 +8,26 @@
     <thead><tr><th scope="col">Sites</th><th scope="col" class="visits">Visits</th><th scope="col">Last Visited</th></tr></thead>
     <tbody>
       {% for site in sites %}
-      <tr>
-        <td>{{ site.site }}</td>
+      <tr class="site-row">
+        <td><button type="button" class="site-toggle" aria-expanded="false" aria-controls="site-pages-{{ loop.index }}"><span class="expand-icon" aria-hidden="true">▸</span> {{ site.site }}</button></td>
         <td class="visits">{{ site.page_views }}</td>
         <td><time datetime="{{ site.last_visited | utc_iso }}" data-local-time="date">{{ site.last_visited.strftime('%Y-%m-%d %H:%M') }} UTC</time></td>
+      </tr>
+      <tr id="site-pages-{{ loop.index }}" class="site-pages" hidden>
+        <td colspan="3">
+          <table aria-label="Pages for {{ site.site }}">
+            <thead><tr><th scope="col">Page</th><th scope="col" class="visits">Visits</th><th scope="col">Last Visited</th></tr></thead>
+            <tbody>
+              {% for page in pages_by_site[site.site] %}
+              <tr>
+                <td>{{ page.url }}</td>
+                <td class="visits">{{ page.page_views }}</td>
+                <td><time datetime="{{ page.last_visited | utc_iso }}" data-local-time="date">{{ page.last_visited.strftime('%Y-%m-%d %H:%M') }} UTC</time></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </td>
       </tr>
       {% else %}
       <tr><td colspan="3">No visits recorded yet.</td></tr>
@@ -19,5 +35,16 @@
     </tbody>
   </table>
 </div>
+<script>
+  for (const row of document.querySelectorAll('.site-row')) {
+    const button = row.querySelector('.site-toggle');
+    row.addEventListener('click', () => {
+      const expanded = button.getAttribute('aria-expanded') === 'true';
+      button.setAttribute('aria-expanded', String(!expanded));
+      button.querySelector('.expand-icon').textContent = expanded ? '▸' : '▾';
+      document.getElementById(button.getAttribute('aria-controls')).hidden = expanded;
+    });
+  }
+</script>
 {% endif %}
 {% endblock %}
