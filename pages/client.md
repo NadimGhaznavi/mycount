@@ -51,6 +51,16 @@ current payload. The planned fingerprinting support described in the
 
 ## Service requirements and manual verification
 
+From the MyCount checkout, run `python3 scripts/test_ax3l.py` to check public
+HTTPS health, Ax3l's CORS preflight, and submission of one synthetic Ax3l visit.
+It requires Python 3 and curl, exits nonzero on failure, and prints the unique
+`/__mycount_test__/` page URL and SQL to verify the saved visit. It does not retry
+POST requests or execute the website's JavaScript.
+
+On the collector host, `python3 scripts/test_ax3l.py --local` tests local Caddy
+with certificate validation while bypassing public DNS and router forwarding.
+Use the default mode from outside the LAN to verify public reachability.
+
 The collector skeleton accepts the client's JSON payload at `/count` and returns
 `204` after storing an event. See [installation]({% link pages/installation.md %})
 for setup. Caddy provides HTTPS on public port `443` and forwards visitor

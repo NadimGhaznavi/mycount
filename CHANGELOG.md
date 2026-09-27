@@ -9,6 +9,12 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Added a bunch of allowed sites.
+
+### Added
+
+- Add an Ax3l HTTPS smoke test for health, CORS preflight, and one identifiable test visit, with an optional local Caddy mode.
+
 ## [0.3.0] - 2026-09-27 @ 07:19
 
 ### Added
