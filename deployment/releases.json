@@ -81,7 +81,7 @@
       ]
     },
     "mycount/activity/CollectVisit.py": {
-      "digest": "334519b2994c434d4c671145dc9478e75577c519f99e1f035edc06747ba28dd3",
+      "digest": "913426af0523de9caf7a9c1ff553fd9924785a620c62f271d39e8564a356e006",
       "targets": [
         "listener"
       ]
@@ -93,7 +93,7 @@
       ]
     },
     "mycount/activity/GeoIpSchema.py": {
-      "digest": "f0335136ffe87fbdd1a40ac30ffcbf98b613de69ae2ba59feb07644028863dbd",
+      "digest": "48e2f257c9ce57eb940d687e5ce687eb0539a796938dc028e6cc62fe53e13fc6",
       "targets": [
         "filesystem"
       ]
@@ -111,7 +111,7 @@
       ]
     },
     "mycount/activity/VisitorSchema.py": {
-      "digest": "bf670734830e4d24a96f928f1460ff876c3b7d9c52de86a0af0b7ee28df3cf4f",
+      "digest": "d6c290f06e3cc2f3b04e5ead0006c0095c9504962a11c3efce96519ccc04ede8",
       "targets": [
         "filesystem"
       ]
@@ -146,13 +146,13 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "a29c84f2a8d199bd79dadc65342c9efcf9f1d918fe15edd35993683ba02932e1",
+      "digest": "705344f7a54e659ba21e262ae9718fa3e8856e62250b2d882f48dff7eb1477c2",
       "targets": [
         "filesystem"
       ]
     },
     "mycount/constants/DGeoIp.py": {
-      "digest": "2cf4c5bc74efedb6760d290f825c692e8d23807db78b73132db34d2809392882",
+      "digest": "63c8d129534d10e3ed7320ef4bb3a5a819469cb2313bca60c282ed927ed1a2da",
       "targets": [
         "filesystem"
       ]
@@ -187,14 +187,14 @@
       ]
     },
     "mycount/entity/GeoLocation.py": {
-      "digest": "a621c208a458cb9123c118d8d95e407319bc86d1d80225adf86fa5bbd40ed782",
+      "digest": "3fe5cfcc69afaa2648a1f7ff823816d0b02c2c54af1041262d80c48ce3a544d4",
       "targets": [
         "filesystem",
         "listener"
       ]
     },
     "mycount/entity/Visit.py": {
-      "digest": "d08ab8311b5eb76ffbf0f16d043ca66c0348bab2fdff89d94ceee3ced7d66df3",
+      "digest": "185f5853924e5af2d4cfd0890d88251c24b662081bc40c2ae125846bfce415b4",
       "targets": [
         "listener",
         "report-server"
@@ -212,6 +212,12 @@
       "digest": "f8eb7ed4f57bebd617c4ef7c5469f8bee44f4cb90cf5f82d5d948586159f48ed",
       "targets": [
         "listener"
+      ]
+    },
+    "mycount/interface/CountryNameMigration.py": {
+      "digest": "e2d797559c9e2202de68a38e648ade56a0d57d71ff67e57e6bc4f15ebdfe5790",
+      "targets": [
+        "filesystem"
       ]
     },
     "mycount/interface/DatabaseEnvironment.py": {
@@ -241,19 +247,19 @@
       ]
     },
     "mycount/interface/GeoIp.py": {
-      "digest": "b056f505b91ff67bb58b0ae6a45ae40921ed0de31e76bace190acd187de8fe06",
+      "digest": "07a5655ef727a7bbd452aed4a1e4d26b9117b0597fbfb8dd7d85821d464fc476",
       "targets": [
         "listener"
       ]
     },
     "mycount/interface/GeoIpImportDb.py": {
-      "digest": "32ea15bc2118d89426f91ebae7e7f9810ec8019d2e36dc2a92b180f7a7b9a26c",
+      "digest": "56aae75a82b7271440ba31f236d3ba19ea78e34e4ae721296f25442de634d7fa",
       "targets": [
         "filesystem"
       ]
     },
     "mycount/interface/GeoIpSource.py": {
-      "digest": "956491ecf0ce4ed9d754d29ebaa4e037c351cdfd9c29303477b896bddca0296d",
+      "digest": "86e473716933067cae016a85d81b3c63b59c01c69a617ca4a1c847b81b32e9ef",
       "targets": [
         "filesystem"
       ]
@@ -271,7 +277,7 @@
       ]
     },
     "mycount/interface/VisitDb.py": {
-      "digest": "0ef3475489074e7a2bbf5ab5ed60d2c5bb986a6074d8f17afd172849bec8ca8e",
+      "digest": "f9e3912e3735fe20b0560f618f7af8d2d6c9033f17debc613bfab0aa816c78d5",
       "targets": [
         "listener",
         "report-server"
@@ -347,7 +353,7 @@
       ]
     },
     "mycount/server/templates/control.html": {
-      "digest": "cc9513959ed46a01ab8f0a945bd2d36675409d532d14dd0b5279a4064a492f39",
+      "digest": "1e744f420699b75a32208dbf956247bb816e57f306447865b086585d2026f3c4",
       "targets": [
         "report-server"
       ]
@@ -359,7 +365,7 @@
       ]
     },
     "mycount/server/templates/reference.html": {
-      "digest": "0ec8599006fda70c54102b0450b804d094385b39b8843a230d9a7a6364c51eb6",
+      "digest": "ce291f2a367f7404b8bced1a966e80071b97f8db00c92ba04fa4f463784dc465",
       "targets": [
         "report-server"
       ]
@@ -377,7 +383,7 @@
       ]
     },
     "requirements.txt": {
-      "digest": "f91295f31d036c726e05b03bac7cf35a27a20d78de5ed25b31e5c2f35c393209",
+      "digest": "0f7cf1471a81f3ff16d76acb62bf0e2f0d91f9fbd9074b6d8d9112a7cd6ed61b",
       "targets": [
         "filesystem",
         "listener",
@@ -491,6 +497,14 @@
         "report-server"
       ],
       "version": "0.7.0"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "0.7.2"
     }
   ]
 }
