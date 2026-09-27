@@ -9,6 +9,7 @@ from werkzeug.wrappers import Request, Response
 from mycount.activity.CollectVisit import CollectVisit
 from mycount.constants.DMyCount import DMyCount
 from mycount.interface.VisitPayload import InvalidVisit
+from mycount.interface.VisitorAddress import VisitorAddress
 
 
 class CollectorHttp:
@@ -50,8 +51,7 @@ class CollectorHttp:
             return Response(status=405, headers={"Allow": "POST, OPTIONS"})
         payload = request.get_json()
         try:
-            # Until a trusted proxy is configured, forwarded headers are ignored.
-            self._collector.record(payload, request.remote_addr)
+            self._collector.record(payload, VisitorAddress.resolve(request))
         except InvalidVisit:
             return Response(status=400)
         except pymysql.OperationalError as error:

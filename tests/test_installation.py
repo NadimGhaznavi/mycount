@@ -1,0 +1,124 @@
+"""Exercise deployment scripts without touching host services or data."""
+
+from contextlib import ExitStack, redirect_stdout
+import io
+from pathlib import Path
+import subprocess
+from tempfile import TemporaryDirectory
+import unittest
+from unittest.mock import patch
+
+from mycount.constants.DCaddy import DCaddy
+from mycount.constants.DGeoIp import DGeoIp
+from mycount.constants.DMyCount import DMyCount
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+class DeploymentTests(unittest.TestCase):
+    def setUp(self):
+        self.stack = ExitStack()
+        self.addCleanup(self.stack.close)
+        self.root = Path(self.stack.enter_context(TemporaryDirectory()))
+        self.config = self.root / 'Caddyfile'
+        self.site = self.root / 'mycount.caddy'
+        self.app = self.root / 'prod' / 'mycount'
+        self.app.mkdir(parents=True)
+        (self.app / 'application.py').write_text('installed')
+        self.cron = self.root / 'cron'
+        self.cron.write_text('schedule')
+        self.unit_dir = self.root / 'systemd'
+        self.unit_dir.mkdir()
+        self.unit = self.unit_dir / DMyCount.SERVICE_UNIT
+        self.unit.write_text('unit')
+        self.credentials = self.root / 'database.env'
+        self.credentials.write_text('preserve credentials')
+        self.site.write_text('previous site')
+        self.other_sites = ':80 {\n    respond "other site"\n}\n'
+        self.config.write_text(self.other_sites + f'import {self.site}\n')
+        for cls, key, value in (
+            (DCaddy, 'CONFIG', str(self.config)),
+            (DCaddy, 'SITE_CONFIG', str(self.site)),
+            (DMyCount, 'BASE_DIR', str(self.app)),
+            (DMyCount, 'DATABASE_ENV', str(self.credentials)),
+            (DGeoIp, 'CRON_FILE', str(self.cron)),
+        ):
+            self.stack.enter_context(patch.object(cls, key, value))
+        self.run = self.stack.enter_context(patch('subprocess.run'))
+        self.run.return_value = subprocess.CompletedProcess([], 0)
+        self.stack.enter_context(redirect_stdout(io.StringIO()))
+
+    def execute(self, script):
+        source = (ROOT / 'scripts' / script).read_text().split("<<'PY'\n", 1)[1].split('\nPY', 1)[0]
+        source = source.replace("'/opt/prod'", repr(str(self.app.parent)))
+        source = source.replace("'/etc/systemd/system'", repr(str(self.unit_dir)))
+        exec(compile(source, script, 'exec'), {'__name__': '__main__'})
+
+    def test_uninstall_is_repeatable_and_preserves_data_and_shared_sites(self):
+        self.execute('uninstall.sh')
+        self.execute('uninstall.sh')
+        self.assertEqual(self.config.read_text(), self.other_sites)
+        self.assertEqual(self.credentials.read_text(), 'preserve credentials')
+        for path in (self.app, self.cron, self.unit, self.site):
+            self.assertFalse(path.exists())
+        commands = [call.args[0] for call in self.run.call_args_list]
+        self.assertIn(['systemctl', 'disable', '--now', DMyCount.SERVICE_UNIT], commands)
+        self.assertFalse(any(command[0] in ('mariadb', 'userdel', 'groupdel', 'upnpc') for command in commands))
+
+    def test_uninstall_validation_failure_leaves_installation_intact(self):
+        original = self.config.read_text()
+        self.run.side_effect = subprocess.CalledProcessError(1, 'caddy')
+        with self.assertRaises(subprocess.CalledProcessError):
+            self.execute('uninstall.sh')
+        self.assertEqual(self.config.read_text(), original)
+        for path in (self.app, self.cron, self.unit, self.site):
+            self.assertTrue(path.exists())
+
+    def test_uninstall_reload_failure_restores_config(self):
+        original = self.config.read_text()
+        self.run.side_effect = [subprocess.CompletedProcess([], 0), subprocess.CompletedProcess([], 0),
+                                subprocess.CalledProcessError(1, 'systemctl')]
+        with self.assertRaises(subprocess.CalledProcessError):
+            self.execute('uninstall.sh')
+        self.assertEqual(self.config.read_text(), original)
+        self.assertTrue(self.site.exists())
+        self.assertTrue(self.app.exists())
+
+    def test_uninstall_rejects_symlink_application(self):
+        elsewhere = self.root / 'elsewhere'
+        self.app.rename(elsewhere)
+        self.app.symlink_to(elsewhere, target_is_directory=True)
+        with self.assertRaises(SystemExit):
+            self.execute('uninstall.sh')
+        self.assertTrue((elsewhere / 'application.py').exists())
+        self.run.assert_not_called()
+
+    def test_caddy_install_is_repeatable_and_validates_beside_config(self):
+        def run(command, **kwargs):
+            if command[0] == 'caddy':
+                candidate = Path(command[command.index('--config') + 1])
+                self.assertEqual(candidate.parent, self.config.parent)
+                self.assertIn(self.other_sites.strip(), candidate.read_text())
+            return subprocess.CompletedProcess(command, 0)
+        self.run.side_effect = run
+        original = self.config.read_text()
+        self.execute('install-caddy.sh')
+        self.execute('install-caddy.sh')
+        self.assertEqual(self.config.read_text().count(f'import {self.site}'), 1)
+        self.assertIn(self.other_sites.strip(), self.config.read_text())
+        self.assertEqual(self.config.with_name('Caddyfile.before-mycount').read_text(), original)
+        self.assertIn('reverse_proxy', self.site.read_text())
+
+    def test_caddy_reload_failure_restores_previous_files(self):
+        original = self.config.read_text()
+        self.run.side_effect = [subprocess.CompletedProcess([], 0), subprocess.CompletedProcess([], 0),
+                                subprocess.CalledProcessError(1, 'systemctl')]
+        with self.assertRaises(subprocess.CalledProcessError):
+            self.execute('install-caddy.sh')
+        self.assertEqual(self.config.read_text(), original)
+        self.assertEqual(self.site.read_text(), 'previous site')
+
+
+if __name__ == '__main__':
+    unittest.main()

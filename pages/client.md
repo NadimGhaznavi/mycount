@@ -18,7 +18,7 @@ in `_config.yml`:
 
 ```yaml
 mycount:
-  endpoint: "https://count.osoyalce.com/"
+  endpoint: "https://count.osoyalce.com/count"
 ```
 
 Add this script once to a page with Jekyll front matter, or to its layout:
@@ -33,6 +33,10 @@ Add this script once to a page with Jekyll front matter, or to its layout:
 
 Use a fixed, non-personal label for `data-site`.
 
+The endpoint uses standard HTTPS port 443 and the path `DMyCount.COLLECTION_PATH`.
+Keep this static Jekyll setting in sync when changing the hostname or path;
+GitHub Pages does not read Python constants.
+
 An empty or omitted endpoint disables collection. Configured endpoints must use HTTPS and
 must not contain credentials. The endpoint URL is public; do not embed secrets.
 
@@ -45,10 +49,10 @@ current payload. The planned fingerprinting support described in the
 
 ## Service requirements and manual verification
 
-The collector skeleton accepts the client's JSON payload at `/` and returns
+The collector skeleton accepts the client's JSON payload at `/count` and returns
 `204` after storing an event. See [installation]({% link pages/installation.md %})
-for setup. Public HTTPS routing and trusted visitor-IP forwarding remain
-deployment work.
+for setup. Caddy provides HTTPS on public port `443` and forwards visitor
+addresses through the local proxy connection.
 
 Because the site and service have different origins, the service must handle
 the browser's CORS preflight (`OPTIONS`) for JSON requests. Allow the origin

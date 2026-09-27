@@ -9,6 +9,22 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Added
+
+- Add a repeatable uninstaller and removal guide; preserve collected data, credentials, accounts, and shared services and router mappings.
+- Add isolated deployment tests for repeated installation/removal, Caddy preservation, validation failures, and reload rollback.
+
+### Changed
+
+- Check Python and deployment prerequisites, stop the collector before dependency updates, and verify collector health before configuring HTTPS.
+- Validate Caddy with relative imports anchored to its configuration directory and restore previous configuration files if service activation or reload fails.
+
+- Add Caddy setup preserving existing sites, public certificate automation, and UPnP forwarding; accept validated visitor addresses from the local proxy for geolocation.
+
+- Use standard HTTPS port 443 with `/count` for collection; keep port 36666 local, forward router ports 80/443, and update the browser endpoint and installation guide.
+
+- Document the complete Caddy configuration, import placement alongside the LAN-only site, validation and reload commands, and public HTTPS verification.
+
 ## [0.1.0] - 2026-09-26 @ 16:20
 
 ### Summary

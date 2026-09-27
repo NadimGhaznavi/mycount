@@ -1,0 +1,11 @@
+https://@DOMAIN@ {
+    @collector path @COLLECTION_PATH@ @HEALTH_PATH@
+    handle @collector {
+        reverse_proxy @UPSTREAM@ {
+            header_up @VISITOR_HEADER@ {http.request.remote.host}
+        }
+    }
+    handle {
+        respond 404
+    }
+}

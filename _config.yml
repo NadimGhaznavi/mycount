@@ -4,7 +4,7 @@ description: "MyCount project documentation."
 url: "https://mycount.osoyalce.com"
 baseurl: ""
 mycount:
-  endpoint: "https://count.osoyalce.com/"
+  endpoint: "https://count.osoyalce.com/count"
 repository: "NadimGhaznavi/mycount"
 locale: "en-US"
 remote_theme: "NadimGhaznavi/minimal-mistakes"
@@ -30,6 +30,7 @@ footer:
 include:
   - pages
 exclude:
+  - caddy
   - AGENTS.md
   - README.md
   - LICENSE
