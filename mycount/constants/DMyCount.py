@@ -47,6 +47,7 @@ class DMyCount:
     OPTIONAL_PAYLOAD_FIELDS: Final[frozenset[str]] = frozenset({"referrer", "client_details", "visitor_id", "search"})
     VISITOR_ID_PATTERN: Final[str] = r"[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
     EVENT: Final[str] = "page_view"
+    COUNT_PATH: Final[str] = "/get_count"
     COLLECTION_PATH: Final[str] = "/count"
     HEALTH_PATH: Final[str] = "/health"
     HTTPS_PORT: Final[int] = 443
