@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.6.5] - 2026-09-27 @ 12:02
+
 - Show per-site visit totals and latest visit times in MyCount Control, with browser-local timestamps and a title-bar last-refresh time. Load database credentials for the control service.
 
 ## [0.6.2] - 2026-09-27 @ 11:52
