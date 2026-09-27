@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-09-27 @ 17:44
+
 - Prefix country names in Visits by Location with Unicode flags while preserving country-name sorting.
 - Prefix cities in Recent Visits with Unicode country flags, retaining city-name sorting and omitting flags for unknown countries.
 - Add City between Time and URL in Recent Visits, displaying `---` for unknown cities.
