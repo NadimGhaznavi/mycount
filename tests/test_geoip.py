@@ -39,7 +39,7 @@ class FixtureGeoIpSource(GeoIpSource):
         }
         archive(destination, version, [
             {"ip_version": str(version), "start_ip": start, "end_ip": end,
-             "continent": "North America", "country_code": "CA", "state": "Ontario", "city": city,
+             "continent": "North America", "country_code": "CA", "country": "Canada", "state": "Ontario", "city": city,
              "latitude": "43.2557", "longitude": "-79.8711",
              "zip": "00123", "timezone": "America/Toronto"}
             for start, end, city in ranges[version]
@@ -81,7 +81,7 @@ class GeoIpSourceTests(unittest.TestCase):
         FixtureGeoIpSource(city=city).download(4, self.path)
         rows = list(GeoIpSource().rows(self.path, 4))
         self.assertEqual(rows[0].location.city_name, city)
-        self.assertEqual(rows[0].location.continent, 'North America')
+        self.assertEqual(rows[0].location.country_name, 'Canada')
         self.assertEqual(rows[0].location.zip, '00123')
         self.assertEqual(rows[0].location.timezone, 'America/Toronto')
         self.assertEqual(len(rows[0].start), 16)
@@ -132,15 +132,15 @@ class GeoIpSourceTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'location'):
                     list(GeoIpSource().rows(self.path, 4))
 
-    def test_optional_continent_and_invalid_length(self):
-        for continent in ('', 'x' * (DGeoIp.CONTINENT_LENGTH + 1)):
+    def test_optional_country_name_and_invalid_length(self):
+        for country in ('', 'x' * (DGeoIp.COUNTRY_NAME_LENGTH + 1)):
             archive(self.path, 4, [{'ip_version': '4', 'start_ip': '8.8.8.0',
-                                   'end_ip': '8.8.8.255', 'continent': continent}])
-            if continent:
+                                   'end_ip': '8.8.8.255', 'country': country}])
+            if country:
                 with self.assertRaisesRegex(ValueError, 'location'):
                     list(GeoIpSource().rows(self.path, 4))
             else:
-                self.assertIsNone(next(GeoIpSource().rows(self.path, 4)).location.continent)
+                self.assertIsNone(next(GeoIpSource().rows(self.path, 4)).location.country_name)
 
     def test_invalid_range_and_address_family_are_rejected(self):
         for version, start, end in (("6", "8.8.8.0", "8.8.8.255"),

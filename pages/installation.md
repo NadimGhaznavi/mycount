@@ -151,11 +151,17 @@ Expect HTTP 204. This checks HTTPS and proxy connectivity; use the
 
 ## GeoIP updates
 
-GeoIP imports retain continent, latitude, longitude, ZIP/postal code, and timezone
-alongside country, region, and city. After an upgrade adds these columns, existing ranges have no values for
-the new fields until the next scheduled or manual GeoIP refresh. New visits copy
-the available values;
-historical visits are not backfilled.
+GeoIP imports retain country names, latitude, longitude, ZIP/postal code, and timezone
+alongside country codes, region, and city. New visits copy the available values.
+Coordinates, ZIP/postal code, and timezone added to existing ranges remain
+empty until the next scheduled or manual GeoIP refresh; those fields are not
+backfilled on historical visits.
+
+Upgrades add nullable `country_name` columns to reference ranges and visits,
+backfill missing names from recognized ISO country codes using `pycountry`,
+and drop the obsolete `continent` columns. Unknown codes remain unnamed.
+New imports retain the CSV country name; later refreshes do not rewrite names
+on existing visits.
 
 MyCount uses the free ipapi.is
 [IPv4](https://github.com/ipapi-is/ipapi/blob/main/databases/geolocationDatabaseIPv4.csv.zip)

@@ -1,6 +1,7 @@
 """Explicit schema for public geolocation reference data."""
 
 from mycount.interface.DbMgr import DbMgr
+from mycount.interface.CountryNameMigration import CountryNameMigration
 from mycount.constants.DGeoIp import DGeoIp
 from mycount.constants.DMyCount import DMyCount
 
@@ -26,9 +27,11 @@ class GeoIpSchema:
         """)
         self._db.execute(f"""
             ALTER TABLE geoip_ranges
-                ADD COLUMN IF NOT EXISTS continent VARCHAR({DGeoIp.CONTINENT_LENGTH}) NULL,
+                ADD COLUMN IF NOT EXISTS country_name VARCHAR({DGeoIp.COUNTRY_NAME_LENGTH}) NULL,
+                DROP COLUMN IF EXISTS continent,
                 ADD COLUMN IF NOT EXISTS latitude DOUBLE NULL,
                 ADD COLUMN IF NOT EXISTS longitude DOUBLE NULL,
                 ADD COLUMN IF NOT EXISTS zip VARCHAR({DGeoIp.ZIP_LENGTH}) NULL,
                 ADD COLUMN IF NOT EXISTS timezone VARCHAR({DGeoIp.TIMEZONE_LENGTH}) NULL
         """)
+        CountryNameMigration(self._db).apply("geoip_ranges")

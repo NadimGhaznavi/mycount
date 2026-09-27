@@ -21,8 +21,8 @@ class CollectVisit:
         try:
             location = GeoIp(db).locate(address)
             visit = replace(visit, ip_address=address, country_code=location.country_code,
-                            region_name=location.region_name,
-                            city_name=location.city_name, continent=location.continent,
+                            country_name=location.country_name, region_name=location.region_name,
+                            city_name=location.city_name,
                             latitude=location.latitude, longitude=location.longitude,
                             zip=location.zip, timezone=location.timezone)
             return VisitDb(db).record(visit)

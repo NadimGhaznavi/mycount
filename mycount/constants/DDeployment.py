@@ -109,6 +109,7 @@ class DDeployment:
             "mycount/activity/__init__.py",
             "mycount/constants/DGeoIp.py",
             "mycount/constants/DMyCount.py",
+            "mycount/interface/CountryNameMigration.py",
             "mycount/interface/DbMgr.py",
         ),
         "mycount/activity/ReleaseDeployment.py": (
@@ -132,6 +133,7 @@ class DDeployment:
             "mycount/constants/DGeoIp.py",
             "mycount/constants/DMyCount.py",
             "mycount/constants/DVisitorDetails.py",
+            "mycount/interface/CountryNameMigration.py",
             "mycount/interface/DbMgr.py",
         ),
         "mycount/activity/__init__.py": (
@@ -192,6 +194,11 @@ class DDeployment:
             "mycount/constants/DMyCount.py",
             "mycount/interface/VisitPayload.py",
             "mycount/interface/VisitorAddress.py",
+            "mycount/interface/__init__.py",
+        ),
+        "mycount/interface/CountryNameMigration.py": (
+            "mycount/__init__.py",
+            "mycount/interface/DbMgr.py",
             "mycount/interface/__init__.py",
         ),
         "mycount/interface/DatabaseEnvironment.py": (

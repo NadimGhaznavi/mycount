@@ -16,10 +16,11 @@ known bots, across all pages for that site. Last Visited is the latest received
 visit, displayed in browser-local time as `YYYY-MM-DD HH:MM`.
 
 Beside it, Visits by Location groups all recorded page views across sites by
-Continent, Country (two-letter code), State/Province, and City, with a Visits column. Unknown
+Country, State/Province, and City, with a Visits column. Unknown
 or empty fields display `---` and remain included in the counts. Rows start
-with the highest visit count, then continent, country, state/province, and city for ties;
-column headers allow sorting. Both tables end with a bold, right-aligned
+with the highest visit count, then country name/code, state/province, and city for ties;
+Country displays the stored full name; grouping uses its country code.
+Column headers allow sorting. Both tables end with a bold, right-aligned
 Total row showing the sum of Visits (zero when empty), which stays at the
 bottom when sorting. The tables stack on narrow screens.
 

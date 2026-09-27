@@ -98,7 +98,7 @@ class CollectorHttpTests(unittest.TestCase):
                 patch('mycount.activity.CollectVisit.GeoIp') as geo, \
                 patch('mycount.activity.CollectVisit.VisitDb') as visits:
             geo.return_value.locate.return_value = GeoLocation(
-                continent='North America', country_code='CA', region_name='Ontario', city_name='Hamilton',
+                country_name='Canada', country_code='CA', region_name='Ontario', city_name='Hamilton',
                 latitude=43.2557, longitude=-79.8711, zip='00123', timezone='America/New_York')
             response = client.post('/count', json=payload, headers={
                 'Origin': origin, DCaddy.VISITOR_HEADER: '8.8.8.8',
@@ -113,7 +113,7 @@ class CollectorHttpTests(unittest.TestCase):
             self.assertEqual(saved.referrer_host, 'search.example')
             self.assertEqual(saved.referrer, payload['referrer'])
             self.assertEqual(saved.search, payload['search'])
-            self.assertEqual(saved.continent, 'North America')
+            self.assertEqual(saved.country_name, 'Canada')
             self.assertEqual(saved.latitude, 43.2557)
             self.assertEqual(saved.longitude, -79.8711)
             self.assertEqual(saved.zip, '00123')

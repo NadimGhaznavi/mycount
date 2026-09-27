@@ -106,7 +106,7 @@ class DatabaseTests(unittest.TestCase):
             geo = GeoIp(reader)
             for ip in ("8.8.8.0", "8.8.8.255", "::ffff:8.8.8.8", "2606:4700::1"):
                 self.assertEqual(geo.locate(ip).city_name, "Example")
-                self.assertEqual(geo.locate(ip).continent, 'North America')
+                self.assertEqual(geo.locate(ip).country_name, 'Canada')
                 self.assertAlmostEqual(geo.locate(ip).latitude, 43.2557)
                 self.assertAlmostEqual(geo.locate(ip).longitude, -79.8711)
                 self.assertEqual(geo.locate(ip).zip, '00123')
@@ -198,34 +198,50 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(json.loads(row['client_details']), payload['client_details'])
 
     def test_collection_additions_migrate_and_preserve_exact_values(self):
-        self.db.execute('ALTER TABLE page_views DROP COLUMN search, DROP COLUMN referrer, DROP COLUMN continent')
+        self.db.execute('ALTER TABLE page_views DROP COLUMN search, DROP COLUMN referrer')
         old_id = self.view(self.page())
         VisitorSchema(self.db).apply()
         VisitorSchema(self.db).apply()
         self.assertEqual(self.db.query(
-            'SELECT search, referrer, continent FROM page_views WHERE page_view_id=%s', (old_id,)
-        )[0], dict(search=None, referrer=None, continent=None))
+            'SELECT search, referrer FROM page_views WHERE page_view_id=%s', (old_id,)
+        )[0], dict(search=None, referrer=None))
         expected = dict(search='?q=a%20b&q=two&empty=',
-                        referrer='https://example.com/path?q=a%20b#section', continent='North America')
+                        referrer='https://example.com/path?q=a%20b#section')
         visit = Visit(site='mycount', url='https://example.com/page',
                       received_at=datetime.now(timezone.utc), **expected)
         first = VisitDb(self.db).record(visit)
         second = VisitDb(self.db).record(replace(visit, search='?other=yes'))
         self.assertEqual(self.db.query(
-            'SELECT search, referrer, continent FROM page_views WHERE page_view_id=%s', (first,)
+            'SELECT search, referrer FROM page_views WHERE page_view_id=%s', (first,)
         )[0], expected)
         rows = self.db.query('SELECT page_id FROM page_views WHERE page_view_id IN (%s,%s)', (first, second))
         self.assertEqual(rows[0]['page_id'], rows[1]['page_id'])
 
-    def test_geoip_continent_migration_preserves_existing_ranges(self):
+    def test_country_name_migration_and_continent_removal(self):
         UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()
-        self.db.execute('ALTER TABLE geoip_ranges DROP COLUMN continent')
-        GeoIpSchema(self.db).apply()
-        GeoIpSchema(self.db).apply()
-        self.assertIsNone(GeoIp(self.db).locate('8.8.8.8').continent)
-        self.assertEqual(GeoIp(self.db).locate('8.8.8.8').city_name, 'Example')
+        visits = VisitDb(self.db)
+        visit = Visit(site='example', url='https://example.com/',
+                      received_at=datetime.now(timezone.utc), country_code='CA')
+        known = visits.record(visit)
+        unknown = visits.record(replace(visit, country_code='ZZ'))
+        missing = visits.record(replace(visit, country_code=None))
+        for table in ('page_views', 'geoip_ranges'):
+            self.db.execute(f'ALTER TABLE {table} DROP COLUMN country_name, ADD COLUMN continent VARCHAR(64) NULL')
+        for _ in range(2):
+            VisitorSchema(self.db).apply()
+            GeoIpSchema(self.db).apply()
+        rows = self.db.query('SELECT page_view_id, country_name FROM page_views')
+        self.assertEqual({row['page_view_id']: row['country_name'] for row in rows},
+                         {known: 'Canada', unknown: None, missing: None})
+        self.assertEqual(GeoIp(self.db).locate('8.8.8.8').country_name, 'Canada')
+        for table in ('page_views', 'geoip_ranges'):
+            self.assertNotIn('continent', {row['Field'] for row in self.db.query(f'SHOW COLUMNS FROM {table}')})
+        supplied = visits.record(replace(visit, country_name='Provider name'))
+        VisitorSchema(self.db).apply()
+        self.assertEqual(self.db.query('SELECT country_name FROM page_views WHERE page_view_id=%s',
+                                      (supplied,))[0]['country_name'], 'Provider name')
         UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()
-        self.assertEqual(GeoIp(self.db).locate('8.8.8.8').continent, 'North America')
+        self.assertEqual(GeoIp(self.db).locate('8.8.8.8').country_name, 'Canada')
 
     def test_geoip_details_migration_and_visit_round_trip(self):
         UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()
@@ -345,21 +361,21 @@ class DatabaseTests(unittest.TestCase):
         visits = VisitDb(self.db)
         self.assertEqual(visits.totals_by_location(), [])
         visit = Visit(site='first', url='https://example.com/',
-                      received_at=datetime.now(timezone.utc), continent='North America',
+                      received_at=datetime.now(timezone.utc), country_name='Canada',
                       country_code='CA', region_name='Ontario', city_name='Hamilton')
         visits.record(visit)
         visits.record(replace(visit, site='second'))
-        visits.record(replace(visit, continent=None, country_code=None, region_name=None, city_name=None))
-        visits.record(replace(visit, continent='', country_code='', region_name='', city_name=''))
+        visits.record(replace(visit, country_name=None, country_code=None, region_name=None, city_name=None))
+        visits.record(replace(visit, country_name='', country_code='', region_name='', city_name=''))
         visits.record(replace(visit, city_name='Toronto'))
         visits.record(replace(visit, region_name='Alberta'))
         visits.record(replace(visit, city_name=None))
         self.assertEqual(visits.totals_by_location(), [
-            dict(continent=None, country_code=None, region_name=None, city_name=None, page_views=2),
-            dict(continent='North America', country_code='CA', region_name='Ontario', city_name='Hamilton', page_views=2),
-            dict(continent='North America', country_code='CA', region_name='Alberta', city_name='Hamilton', page_views=1),
-            dict(continent='North America', country_code='CA', region_name='Ontario', city_name=None, page_views=1),
-            dict(continent='North America', country_code='CA', region_name='Ontario', city_name='Toronto', page_views=1),
+            dict(country_name=None, country_code=None, region_name=None, city_name=None, page_views=2),
+            dict(country_name='Canada', country_code='CA', region_name='Ontario', city_name='Hamilton', page_views=2),
+            dict(country_name='Canada', country_code='CA', region_name='Alberta', city_name='Hamilton', page_views=1),
+            dict(country_name='Canada', country_code='CA', region_name='Ontario', city_name=None, page_views=1),
+            dict(country_name='Canada', country_code='CA', region_name='Ontario', city_name='Toronto', page_views=1),
         ])
 
     def page(self, url="https://example.com/products/", site="mycount"):
