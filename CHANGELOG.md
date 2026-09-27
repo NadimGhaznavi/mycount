@@ -9,6 +9,15 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Summary
+
+Record referring sites and richer visitor details alongside existing city,
+region, country, and language data. Preserve historical visits and accept older clients during rollout.
+
+- Add referrer hostname, retained user-agent, browser/OS versions, device brand/model, and bot classification.
+- Collect optional screen, timezone, hardware, connection, navigation, and browser preference details with bounded validation.
+- Add repeatable schema migration and document collector-first deployment and referrer/city reporting.
+
 ## [0.4.2] - 2026-09-27 @ 08:39
 
 - Allow `https://r3el.osoyalce.com` to submit page views to the collector.

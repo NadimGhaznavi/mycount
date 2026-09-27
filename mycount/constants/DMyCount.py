@@ -44,6 +44,7 @@ class DMyCount:
     MAX_USER_AGENT_LENGTH: Final[int] = 2048
     CITY_NAME_LENGTH: Final[int] = 255
     SCHEMA_VERSION: Final[int] = 1
+    OPTIONAL_PAYLOAD_FIELDS: Final[frozenset[str]] = frozenset({"referrer", "client_details"})
     EVENT: Final[str] = "page_view"
     COLLECTION_PATH: Final[str] = "/count"
     HEALTH_PATH: Final[str] = "/health"

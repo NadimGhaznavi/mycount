@@ -2,6 +2,7 @@
 
 from datetime import datetime, timezone
 from hashlib import sha256
+import json
 import os
 from pathlib import Path
 import shutil
@@ -22,6 +23,8 @@ from mycount.interface.GeoIp import GeoIp
 from mycount.interface.GeoIpImportDb import GeoIpImportDb
 from mycount.interface.VisitDb import VisitDb
 from mycount.entity.Visit import Visit
+from mycount.interface.VisitPayload import VisitPayload
+from mycount.activity.BrowserMetadata import BrowserMetadata
 from test_geoip import FixtureGeoIpSource, archive
 
 
@@ -158,6 +161,43 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(rows[0], rows[1])
         self.assertEqual(rows[0]["city_name"], city)
         self.assertEqual(self.db.query("SELECT COUNT(*) AS n FROM page_view_languages")[0]["n"], 4)
+
+    def test_visitor_details_migration_preserves_old_rows_and_new_round_trip(self):
+        columns = ('referrer_host', 'user_agent', 'browser_version', 'os_version',
+                   'device_brand', 'device_model', 'is_bot', 'client_details')
+        self.db.execute('ALTER TABLE page_views ' + ', '.join('DROP COLUMN ' + name for name in columns))
+        old_id = self.view(self.page())
+        VisitorSchema(self.db).apply()
+        VisitorSchema(self.db).apply()
+        old = self.db.query('SELECT * FROM page_views WHERE page_view_id=%s', (old_id,))[0]
+        for column in columns:
+            self.assertIsNone(old[column])
+        payload = {
+            'schema_version': 1, 'event': 'page_view', 'site': 'r3el',
+            'url': 'https://r3el.osoyalce.com/', 'languages': ['en-CA'],
+            'user_agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
+                          '(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+            'referrer': 'https://example.com/search?private=value',
+            'client_details': {'timezone': 'America/Toronto', 'viewport_width': 1280, 'webdriver': False},
+        }
+        visit, agent = VisitPayload().resolve(payload, 'https://r3el.osoyalce.com')
+        visit = BrowserMetadata().enrich(visit, agent)
+        view_id = VisitDb(self.db).record(visit)
+        row = self.db.query('SELECT * FROM page_views WHERE page_view_id=%s', (view_id,))[0]
+        self.assertEqual(row['referrer_host'], 'example.com')
+        self.assertEqual(row['user_agent'], payload['user_agent'])
+        self.assertEqual(row['browser_version'], '130.0.0')
+        self.assertEqual(row['is_bot'], 0)
+        self.assertEqual(json.loads(row['client_details']), payload['client_details'])
+
+    def test_visit_details_roll_back_with_invalid_languages(self):
+        visit = Visit(site='r3el', url='https://r3el.osoyalce.com/',
+                      received_at=datetime.now(timezone.utc), referrer_host='example.com',
+                      client_details=(('timezone', 'America/Toronto'),), languages=('x' * 256,))
+        with self.assertRaises(pymysql.DataError):
+            VisitDb(self.db).record(visit)
+        self.assertEqual(self.db.query('SELECT * FROM page_views'), [])
+        self.assertEqual(self.db.query('SELECT * FROM pages'), [])
 
     def page(self, url="https://example.com/products/", site="mycount"):
         return self.db.insert("INSERT INTO pages(site, url) VALUES (%s, %s)", (site, url))
