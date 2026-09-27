@@ -13,7 +13,8 @@ class Visit:
     containing only the origin and path. Languages retain preference order.
     Unknown metadata is None; fingerprint and version are supplied together.
     Activities can use dataclasses.replace to return an enriched visit.
-    Raw request data and database-generated IDs remain outside this entity.
+    Optional client details are immutable key/value pairs. The validated
+    user-agent string is retained; database-generated IDs remain outside this entity.
     """
 
     site: str
@@ -29,3 +30,11 @@ class Visit:
     device_category: Literal["desktop", "mobile", "tablet", "other"] | None = None
     fingerprint: bytes | None = None
     fingerprint_version: int | None = None
+    referrer_host: str | None = None
+    user_agent: str | None = None
+    browser_version: str | None = None
+    os_version: str | None = None
+    device_brand: str | None = None
+    device_model: str | None = None
+    is_bot: bool | None = None
+    client_details: tuple[tuple[str, str | int | float | bool], ...] = ()

@@ -6,6 +6,7 @@ from urllib.parse import urlsplit
 
 from mycount.entity.Visit import Visit
 from mycount.constants.DMyCount import DMyCount
+from mycount.interface.VisitorDetails import VisitorDetails
 
 
 class InvalidVisit(ValueError):
@@ -15,7 +16,8 @@ class InvalidVisit(ValueError):
 class VisitPayload:
     def resolve(self, payload: object, origin: str) -> tuple[Visit, str]:
         """Return validated visit data and a transient user-agent string."""
-        if not isinstance(payload, dict) or payload.keys() != DMyCount.PAYLOAD_FIELDS:
+        if (not isinstance(payload, dict) or not DMyCount.PAYLOAD_FIELDS <= payload.keys()
+                or payload.keys() - DMyCount.PAYLOAD_FIELDS - DMyCount.OPTIONAL_PAYLOAD_FIELDS):
             raise InvalidVisit("Invalid payload fields.")
         if type(payload["schema_version"]) is not int or payload["schema_version"] != DMyCount.SCHEMA_VERSION:
             raise InvalidVisit("Unsupported schema_version.")
@@ -57,10 +59,19 @@ class VisitPayload:
         except UnicodeError as error:
             raise InvalidVisit("Invalid user_agent.") from error
 
+        try:
+            referrer_host = VisitorDetails.referrer_host(payload.get("referrer"))
+            client_details = VisitorDetails.resolve(payload.get("client_details", {}))
+        except ValueError as error:
+            raise InvalidVisit(str(error)) from error
+
         visit = Visit(
             site=site,
             url=origin + (address.path or "/"),
             received_at=datetime.now(timezone.utc),
             languages=tuple(languages),
+            referrer_host=referrer_host,
+            user_agent=agent or None,
+            client_details=client_details,
         )
         return visit, agent

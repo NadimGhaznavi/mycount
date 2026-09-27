@@ -2,6 +2,7 @@
 
 from mycount.interface.DbMgr import DbMgr
 from mycount.constants.DMyCount import DMyCount
+from mycount.constants.DVisitorDetails import DVisitorDetails
 
 
 class VisitorSchema:
@@ -51,6 +52,18 @@ class VisitorSchema:
                 INDEX idx_view_fingerprint_time (fingerprint_version, fingerprint, received_at),
                 CONSTRAINT fk_view_page FOREIGN KEY (page_id) REFERENCES pages(page_id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
+        """)
+        # Nullable additions preserve historical rows and support cached older clients.
+        self._db.execute(f"""
+            ALTER TABLE page_views
+                ADD COLUMN IF NOT EXISTS referrer_host VARCHAR({DVisitorDetails.MAX_HOST_LENGTH}) NULL,
+                ADD COLUMN IF NOT EXISTS user_agent TEXT NULL,
+                ADD COLUMN IF NOT EXISTS browser_version VARCHAR({DVisitorDetails.VERSION_LENGTH}) NULL,
+                ADD COLUMN IF NOT EXISTS os_version VARCHAR({DVisitorDetails.VERSION_LENGTH}) NULL,
+                ADD COLUMN IF NOT EXISTS device_brand VARCHAR({DVisitorDetails.TEXT_LENGTH}) NULL,
+                ADD COLUMN IF NOT EXISTS device_model VARCHAR({DVisitorDetails.TEXT_LENGTH}) NULL,
+                ADD COLUMN IF NOT EXISTS is_bot BOOLEAN NULL,
+                ADD COLUMN IF NOT EXISTS client_details JSON NULL
         """)
         width = self._db.query("""
             SELECT CHARACTER_MAXIMUM_LENGTH AS width FROM information_schema.COLUMNS

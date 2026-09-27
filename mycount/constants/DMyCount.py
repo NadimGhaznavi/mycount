@@ -4,7 +4,7 @@ from typing import Final
 
 
 class DMyCount:
-    VERSION: Final[str] = "0.4.2"
+    VERSION: Final[str] = "0.5.0"
     BASE_DIR: Final[str] = "/opt/prod/mycount"
     DATABASE_ENV: Final[str] = "/etc/mycount/database.env"
     DATABASE_NAME: Final[str] = "mycount"
@@ -44,6 +44,7 @@ class DMyCount:
     MAX_USER_AGENT_LENGTH: Final[int] = 2048
     CITY_NAME_LENGTH: Final[int] = 255
     SCHEMA_VERSION: Final[int] = 1
+    OPTIONAL_PAYLOAD_FIELDS: Final[frozenset[str]] = frozenset({"referrer", "client_details"})
     EVENT: Final[str] = "page_view"
     COLLECTION_PATH: Final[str] = "/count"
     HEALTH_PATH: Final[str] = "/health"

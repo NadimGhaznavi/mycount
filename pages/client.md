@@ -49,6 +49,60 @@ The [client source]({{ '/client/mycount.js' | relative_url }}) defines the
 current payload. The planned fingerprinting support described in the
 [project mission]({% link pages/project-mission.md %}) is not yet implemented.
 
+Each visit can store the following information:
+
+| Information | Source |
+| --- | --- |
+| Site, page origin/path, receipt time in UTC | Client and collector |
+| Referring hostname | `document.referrer`, reduced to a hostname |
+| Country, region, city | Server-side IP geolocation |
+| Preferred languages, user-agent string | Browser |
+| Browser/OS family and version, device category/brand/model, bot classification | User-agent parsing |
+| Screen and available dimensions, viewport size, pixel ratio, color/pixel depth | Browser |
+| Timezone and UTC offset, platform/vendor, reported CPU threads and approximate memory, touch points | Browser, when available |
+| Cookie support, online status, PDF support, automation indicator | Browser, when available |
+| Color scheme, reduced-motion preference, Do Not Track and Global Privacy Control signals | Browser, when available |
+| Effective connection type, estimated downlink/round-trip time, data-saving preference, navigation type | Browser, when available |
+
+City is approximate: VPNs, proxies, mobile networks, and reference-data gaps
+can produce a different city or no city. No precise-location permission is
+requested. Browser-reported values can be reduced, unavailable, or spoofed;
+bot classification is a hint, not proof that a visit is human or automated.
+Missing optional values remain unknown rather than being reported as false or zero.
+
+Referrers identify the immediately preceding site, including same-site navigation.
+Direct visits and suppressed referrers are indistinguishable and stored as null.
+Paths, query strings, fragments, and credentials from referrers are not retained.
+Browser [referrer policies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy)
+control what `document.referrer` exposes; collection does not bypass them.
+The existing page URL still excludes queries and fragments. Collection uses
+no cookies or local storage, does not retain visitor IP addresses, and does
+not read page contents or form input. Reported privacy preference signals are
+stored as metadata; they do not currently change collection behavior.
+
+Deploy the collector and apply its schema upgrade **before** copying the updated
+`client/mycount.js` to each website (for Ax3l/R3el, the deployed copy is at
+`assets/js/mycount.js`). Older cached clients remain accepted and leave the new
+client fields empty. Historical rows cannot have missing details reconstructed.
+An older collector rejects the new optional fields, so upgrade order matters.
+
+### View referrers and cities
+
+The new fields live in `page_views`; less commonly queried browser details are
+in its validated `client_details` JSON column. For recent R3el visits:
+
+```sql
+SELECT v.received_at, p.url, v.referrer_host,
+       v.country_code, v.region_name, v.city_name,
+       v.browser_family, v.browser_version, v.is_bot,
+       JSON_UNQUOTE(JSON_EXTRACT(v.client_details, '$.timezone')) AS timezone
+FROM page_views v
+JOIN pages p ON p.page_id = v.page_id
+WHERE p.site = 'r3el'
+ORDER BY v.received_at DESC
+LIMIT 20;
+```
+
 ## Service requirements and manual verification
 
 From the MyCount checkout, run `python3 scripts/test_ax3l.py` to check public
