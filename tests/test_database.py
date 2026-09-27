@@ -400,6 +400,10 @@ class DatabaseTests(unittest.TestCase):
                                  received_at=datetime(2026, 9, 27, 18, tzinfo=timezone.utc)))
         visits.record(replace(visit, site='bot-only', url='https://example.com/bot',
                              city_name='Mountain View', is_bot=True))
+        self.assertEqual(visits.count_by_site('example'), 2)
+        self.assertEqual(visits.count_by_site('bot-only'), 0)
+        self.assertEqual(visits.count_by_site('missing'), 0)
+        self.assertEqual(self.db.query('SELECT COUNT(*) AS total FROM page_views')[0]['total'], 7)
         for query in (visits.totals_by_site, visits.totals_by_page, visits.totals_by_location):
             self.assertEqual(sum(row['page_views'] for row in query(exclude_bots=False)), 7)
             filtered = query(exclude_bots=True)

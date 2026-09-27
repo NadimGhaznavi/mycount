@@ -92,6 +92,15 @@ class VisitDb:
             ORDER BY page_views DESC, country_name, country_code, region_name, city_name
         """, params)
 
+    def count_by_site(self, site: str) -> int:
+        """Read the bot-filtered page-view count without recording a visit."""
+        where, params = self._bot_filter(True)
+        return self._db.query(f"""
+            SELECT COUNT(*) AS visits
+            FROM page_views v JOIN pages p ON p.page_id = v.page_id
+            {where} AND p.site = %s
+        """, (*params, site))[0]["visits"]
+
     @staticmethod
     def _bot_filter(exclude_bots: bool) -> tuple[str, tuple[str, ...]]:
         if not exclude_bots:

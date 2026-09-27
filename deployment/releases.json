@@ -1,7 +1,7 @@
 {
   "artifacts": {
     "caddy/mycount.caddy": {
-      "digest": "3c1d8ce8d9e6559c1b8d59ab443b992ef5574ccbb6807ec56052b30884d4a66e",
+      "digest": "0f5b8aca74255d51a54d97f5889232a32c66e2bd7606fb4daf16b16e4ec2c933",
       "targets": [
         "filesystem"
       ]
@@ -86,6 +86,12 @@
         "listener"
       ]
     },
+    "mycount/activity/CountVisits.py": {
+      "digest": "59462e8fe33937f38c1b10953515d11939ca4a99bc0763728fdbfd854aadad2b",
+      "targets": [
+        "listener"
+      ]
+    },
     "mycount/activity/DeploymentImpact.py": {
       "digest": "56bf7b742bda37889ed717c1c4e6108a55afb947119c9434feaa04945547110d",
       "targets": [
@@ -152,7 +158,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "7038953c967ecc770e10f2a4861a86bc398b40d662db2d2839261a9428de006f",
+      "digest": "51b27e8c88bd4aac439d56c56721352ac1b050fe28de18072edaad462a7f2f40",
       "targets": [
         "filesystem"
       ]
@@ -164,7 +170,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "668f7f976875ef00b9a5d36f74291885d9fd2869a9b9aecb1f5ac31c8ef4ae46",
+      "digest": "1904795b205c5b07e8bf9174fa70177ec328777d6f1975f33285592fd5f4f45e",
       "targets": [
         "filesystem",
         "listener",
@@ -216,7 +222,7 @@
       ]
     },
     "mycount/interface/CollectorHttp.py": {
-      "digest": "f8eb7ed4f57bebd617c4ef7c5469f8bee44f4cb90cf5f82d5d948586159f48ed",
+      "digest": "f041971e624055de99556e05c373e482db262ef4279004661743da55b6e463d8",
       "targets": [
         "listener"
       ]
@@ -284,7 +290,7 @@
       ]
     },
     "mycount/interface/VisitDb.py": {
-      "digest": "9d86d3b4d02847dbc3be9a3d17f176604a2bc60c11ee4c0677b17d8aa3fd05ce",
+      "digest": "1989207dec88f301afc3563610e7ddf90389fad4c0e7a70f64a8e79b88d6246f",
       "targets": [
         "listener",
         "report-server"
@@ -398,7 +404,7 @@
       ]
     },
     "scripts/install-caddy.sh": {
-      "digest": "7488ba2864066880c970fb36c4e213f345c376cdd65ed47d447d2c4d859de60d",
+      "digest": "05d827b8f6ee146fd7fe2447a4a9f55a26102c69e7ac62172a6dfe19f6ebea29",
       "targets": [
         "filesystem"
       ]
@@ -520,6 +526,14 @@
         "report-server"
       ],
       "version": "0.7.3"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "0.8.0"
     }
   ]
 }

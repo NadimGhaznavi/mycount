@@ -35,7 +35,7 @@ class ClientTests(unittest.TestCase):
                 + (ROOT / 'client/mycount.js').read_text() + '</script>')
             result = subprocess.run([
                 CHROME, '--headless', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage',
-                '--disable-background-networking', '--no-first-run', '--no-default-browser-check',
+                '--disable-background-networking', '--virtual-time-budget=1000', '--no-first-run', '--no-default-browser-check',
                 f'--user-data-dir={root / "profile"}', '--dump-dom', page.as_uri() + '?q=a%20b&q=two#section',
             ], capture_output=True, text=True, check=True, timeout=30)
             match = re.search(r'<pre id="result">(.*?)</pre>', result.stdout, re.DOTALL)
@@ -109,3 +109,34 @@ class ClientTests(unittest.TestCase):
                 payload = json.loads(self.run_client(setup)['options']['body'])
                 self.assertEqual(UUID(payload['visitor_id']).version, 4)
                 self.assertEqual(len(payload['visitor_id']), 36)
+
+    def test_counters_share_one_read_after_one_post(self):
+        for failure in ('none', 'post', 'get', 'invalid'):
+            with self.subTest(failure=failure):
+                captured = self.run_client("const failure = " + json.dumps(failure) + ";" + r"""
+                    document.write('<span data-mycount-counter>…</span><span data-mycount-counter>…</span>');
+                    const calls = [];
+                    let postFinished = false;
+                    window.fetch = (url, options) => {
+                        calls.push({url, method: options.method, postFinished});
+                        if (options.method === 'POST') {
+                            return new Promise((resolve, reject) => setTimeout(() => {
+                                postFinished = true;
+                                if (failure === 'post') reject(new Error('network'));
+                                else resolve({ok: true, status: 204});
+                            }, 10));
+                        }
+                        return Promise.resolve({ok: failure !== 'get',
+                            json: () => Promise.resolve({site: 'r3el', visits: failure === 'invalid' ? -1 : 1234})});
+                    };
+                    setTimeout(() => {
+                        document.getElementById('result').textContent = JSON.stringify({calls,
+                            labels: Array.from(document.querySelectorAll('[data-mycount-counter]'), node => node.textContent),
+                            expected: (1234).toLocaleString()});
+                    }, 100);
+                """)
+                self.assertEqual([call['method'] for call in captured['calls']], ['POST', 'GET'])
+                self.assertTrue(captured['calls'][1]['postFinished'])
+                self.assertEqual(captured['calls'][1]['url'], 'https://count.osoyalce.com/get_count?site=r3el')
+                expected = '—' if failure in ('get', 'invalid') else captured['expected']
+                self.assertEqual(captured['labels'], [expected, expected])

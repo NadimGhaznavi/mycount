@@ -21,6 +21,7 @@ original = config.read_text()
 rendered = Path('caddy/mycount.caddy').read_text()
 for name, value in {
     'DOMAIN': DCaddy.HOSTNAME, 'UPSTREAM': f'{DMyCount.HOST}:{DMyCount.PORT}',
+    'COUNT_PATH': DMyCount.COUNT_PATH,
     'COLLECTION_PATH': DMyCount.COLLECTION_PATH, 'HEALTH_PATH': DMyCount.HEALTH_PATH,
     'VISITOR_HEADER': DCaddy.VISITOR_HEADER,
 }.items():

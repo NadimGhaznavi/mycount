@@ -98,7 +98,8 @@
         },
     };
 
-    fetch(endpoint.href, {
+    const counters = document.querySelectorAll("[data-mycount-counter]");
+    const collection = fetch(endpoint.href, {
         method: "POST",
         mode: "cors",
         credentials: "omit",
@@ -116,4 +117,24 @@
         // Do not log the payload or retry a request that may have been received.
         console.warn("MyCount collection failed. Check the endpoint and CORS configuration.");
     });
+
+    if (counters.length) {
+        collection.then(async () => {
+            const countUrl = new URL("/get_count", endpoint);
+            countUrl.searchParams.set("site", site);
+            const response = await fetch(countUrl.href, {
+                method: "GET", mode: "cors", credentials: "omit",
+                referrerPolicy: "no-referrer", redirect: "error", cache: "no-store",
+            });
+            if (!response.ok) throw new Error("Counter unavailable");
+            const data = await response.json();
+            if (data.site !== site || !Number.isSafeInteger(data.visits) || data.visits < 0) {
+                throw new Error("Invalid counter response");
+            }
+            for (const counter of counters) counter.textContent = data.visits.toLocaleString();
+        }).catch(() => {
+            for (const counter of counters) counter.textContent = "—";
+            console.warn("MyCount counter unavailable.");
+        });
+    }
 })();
