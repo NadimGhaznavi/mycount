@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.6.11] - 2026-09-27 @ 14:44
+
 ### Added
 
 - Store the request's full IPv4 or IPv6 address with each new page view. Add a nullable IP column for existing databases, preserving unknown historical addresses.
