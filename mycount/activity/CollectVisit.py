@@ -14,8 +14,8 @@ class CollectVisit:
         self._payload = payload
         self._browser = browser
 
-    def record(self, payload: object, address: str) -> int:
-        visit, user_agent = self._payload.resolve(payload)
+    def record(self, payload: object, address: str, origin: str) -> int:
+        visit, user_agent = self._payload.resolve(payload, origin)
         visit = self._browser.enrich(visit, user_agent)
         db = DbMgr()
         try:

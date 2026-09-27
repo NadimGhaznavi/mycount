@@ -13,6 +13,7 @@ components, metrics, and privacy boundaries.
 ## Development
 
 - [Installation and GeoIP updates]({% link pages/installation.md %})
+- [Upgrading]({% link pages/upgrading.md %})
 - [Uninstall]({% link pages/uninstall.md %})
 - [Browser client and live example]({% link pages/client.md %})
 - [Data access]({% link pages/data-access.md %})

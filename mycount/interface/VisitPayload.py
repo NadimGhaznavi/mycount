@@ -13,18 +13,16 @@ class InvalidVisit(ValueError):
 
 
 class VisitPayload:
-    def __init__(self, site: str, origin: str) -> None:
-        self._site = site
-        self._origin = origin
-        self._address = urlsplit(origin)
-
-    def resolve(self, payload: object) -> tuple[Visit, str]:
+    def resolve(self, payload: object, origin: str) -> tuple[Visit, str]:
         """Return validated visit data and a transient user-agent string."""
         if not isinstance(payload, dict) or payload.keys() != DMyCount.PAYLOAD_FIELDS:
             raise InvalidVisit("Invalid payload fields.")
         if type(payload["schema_version"]) is not int or payload["schema_version"] != DMyCount.SCHEMA_VERSION:
             raise InvalidVisit("Unsupported schema_version.")
-        if payload["event"] != DMyCount.EVENT or payload["site"] != self._site:
+        site = payload["site"]
+        if (payload["event"] != DMyCount.EVENT or not isinstance(site, str)
+                or not 1 <= len(site) <= DMyCount.MAX_SITE_LENGTH
+                or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", site) is None):
             raise InvalidVisit("Invalid event or site.")
 
         url = payload["url"]
@@ -33,10 +31,11 @@ class VisitPayload:
         try:
             url.encode("utf-8")
             address = urlsplit(url)
+            allowed_address = urlsplit(origin)
             same_origin = (
-                address.scheme == self._address.scheme
-                and address.hostname == self._address.hostname
-                and (address.port or DMyCount.HTTPS_PORT) == (self._address.port or DMyCount.HTTPS_PORT)
+                address.scheme == allowed_address.scheme
+                and address.hostname == allowed_address.hostname
+                and (address.port or DMyCount.HTTPS_PORT) == (allowed_address.port or DMyCount.HTTPS_PORT)
             )
         except (ValueError, UnicodeError) as error:
             raise InvalidVisit("Invalid page URL.") from error
@@ -59,8 +58,8 @@ class VisitPayload:
             raise InvalidVisit("Invalid user_agent.") from error
 
         visit = Visit(
-            site=self._site,
-            url=self._origin + (address.path or "/"),
+            site=site,
+            url=origin + (address.path or "/"),
             received_at=datetime.now(timezone.utc),
             languages=tuple(languages),
         )

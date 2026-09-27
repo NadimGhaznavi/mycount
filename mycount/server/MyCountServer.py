@@ -23,6 +23,6 @@ class MyCountServer(BaseApplication):
 
     def load(self) -> CollectorHttp:
         collector = CollectVisit(
-            VisitPayload(DMyCount.SITE, DMyCount.ORIGIN), BrowserMetadata(),
+            VisitPayload(), BrowserMetadata(),
         )
-        return CollectorHttp(collector, DMyCount.ORIGIN)
+        return CollectorHttp(collector, DMyCount.ORIGINS)
