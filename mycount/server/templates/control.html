@@ -46,6 +46,23 @@
     <tfoot><tr><th scope="row">Total:</th><td class="visits">{{ sites | sum(attribute='page_views') }}</td><td></td></tr></tfoot>
   </table>
 </div>
+<div class="table-wrap">
+  <table class="recent-visits" aria-label="Recent Visits">
+    <caption>Recent Visits</caption>
+    <thead><tr><th scope="col">Date</th><th scope="col">Time</th><th scope="col">URL</th></tr></thead>
+    <tbody>
+      {% for visit in recent %}
+      <tr>
+        <td><time datetime="{{ visit.received_at | utc_iso }}" data-local-time="date-only">{{ visit.received_at.strftime('%Y-%m-%d') }} UTC</time></td>
+        <td><time datetime="{{ visit.received_at | utc_iso }}" data-local-time="time-12">{{ visit.received_at.strftime('%I:%M %p') }} UTC</time></td>
+        <td>{{ visit.url }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3">No visits match the current filters.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 </div>
 <div class="table-wrap">
   <table aria-label="Visits by Location">
