@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-09-27 @ 16:36
+
 - Add a read-only, bot-filtered `/get_count?site=...` endpoint and optional `data-mycount-counter` elements in the shared client. Fetch once after tracking, reuse the count across elements, and show an em dash on failure without retrying or recording extra visits. Route the endpoint through Caddy.
 
 ## [0.7.3] - 2026-09-27 @ 16:24
