@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-27 @ 07:03
+
 ### Added
 
 - Add a repeatable uninstaller and removal guide; preserve collected data, credentials, accounts, and shared services and router mappings.
