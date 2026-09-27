@@ -4,6 +4,15 @@
 <p role="alert">{{ error }}</p>
 {% else %}
 <div class="metrics-tables">
+<div class="metrics-site-column">
+<form class="metrics-filters" method="get" action="/">
+  <fieldset>
+    <legend>Filters</legend>
+    <input type="hidden" name="exclude_bots" value="0">
+    <label><input type="checkbox" name="exclude_bots" value="1"{% if exclude_bots %} checked{% endif %} onchange="this.form.requestSubmit()"> Exclude bots</label>
+    <noscript><button type="submit">Apply filters</button></noscript>
+  </fieldset>
+</form>
 <div class="table-wrap">
   <table aria-label="Site visits">
     <thead><tr><th scope="col">Visits by Site</th><th scope="col" class="visits">Visits</th><th scope="col">Last Visited</th></tr></thead>
@@ -31,11 +40,12 @@
         </td>
       </tr>
       {% else %}
-      <tr><td colspan="3">No visits recorded yet.</td></tr>
+      <tr><td colspan="3">No visits match the current filters.</td></tr>
       {% endfor %}
     </tbody>
     <tfoot><tr><th scope="row">Total:</th><td class="visits">{{ sites | sum(attribute='page_views') }}</td><td></td></tr></tfoot>
   </table>
+</div>
 </div>
 <div class="table-wrap">
   <table aria-label="Visits by Location">
@@ -50,7 +60,7 @@
         <td class="visits">{{ location.page_views }}</td>
       </tr>
       {% else %}
-      <tr><td colspan="4">No visits recorded yet.</td></tr>
+      <tr><td colspan="4">No visits match the current filters.</td></tr>
       {% endfor %}
     </tbody>
     <tfoot><tr><th scope="row" colspan="3">Total:</th><td class="visits">{{ locations | sum(attribute='page_views') }}</td></tr></tfoot>

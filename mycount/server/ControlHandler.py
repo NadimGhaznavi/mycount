@@ -2,7 +2,7 @@
 
 from http.server import BaseHTTPRequestHandler
 import logging
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 import pymysql
 
@@ -18,24 +18,26 @@ class ControlHandler(BaseHTTPRequestHandler):
         self.connection.settimeout(DMyCount.REQUEST_TIMEOUT)
 
     def do_GET(self) -> None:
-        path = urlsplit(self.path).path
+        request = urlsplit(self.path)
+        path = request.path
         if path == "/":
+            exclude_bots = parse_qs(request.query).get("exclude_bots", ["1"])[-1] != "0"
             try:
                 db = DbMgr()
                 try:
                     with db.transaction(read_only=True):
                         visits = VisitDb(db)
-                        sites = visits.totals_by_site()
-                        pages = visits.totals_by_page()
-                        locations = visits.totals_by_location()
+                        sites = visits.totals_by_site(exclude_bots=exclude_bots)
+                        pages = visits.totals_by_page(exclude_bots=exclude_bots)
+                        locations = visits.totals_by_location(exclude_bots=exclude_bots)
                 finally:
                     db.close()
             except pymysql.MySQLError:
                 logging.exception("Unable to read site visits")
-                self.respond(503, ControlPages().render([], [], [], error="Site visits unavailable."),
+                self.respond(503, ControlPages().render([], [], [], exclude_bots=exclude_bots, error="Site visits unavailable."),
                              "text/html; charset=utf-8")
                 return
-            self.respond(200, ControlPages().render(sites, pages, locations), "text/html; charset=utf-8")
+            self.respond(200, ControlPages().render(sites, pages, locations, exclude_bots=exclude_bots), "text/html; charset=utf-8")
         elif path == "/reference":
             self.respond(200, ControlPages().reference(), "text/html; charset=utf-8")
         elif path == "/health":

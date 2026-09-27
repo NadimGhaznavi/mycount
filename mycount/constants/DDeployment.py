@@ -147,6 +147,10 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
         ),
+        "mycount/constants/DCountryNameMigration.py": (
+            "mycount/__init__.py",
+            "mycount/constants/__init__.py",
+        ),
         "mycount/constants/DDbMgr.py": (
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
@@ -198,6 +202,7 @@ class DDeployment:
         ),
         "mycount/interface/CountryNameMigration.py": (
             "mycount/__init__.py",
+            "mycount/constants/DCountryNameMigration.py",
             "mycount/interface/DbMgr.py",
             "mycount/interface/__init__.py",
         ),
@@ -255,6 +260,7 @@ class DDeployment:
         ),
         "mycount/interface/VisitDb.py": (
             "mycount/__init__.py",
+            "mycount/constants/DVisitorDetails.py",
             "mycount/entity/Visit.py",
             "mycount/interface/DbMgr.py",
             "mycount/interface/__init__.py",

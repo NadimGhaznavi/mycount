@@ -29,3 +29,11 @@ class BrowserMetadataTests(unittest.TestCase):
         enriched = BrowserMetadata().enrich(visit, 'Googlebot/2.1 (+http://www.google.com/bot.html)')
         self.assertTrue(enriched.is_bot)
         self.assertIsNone(BrowserMetadata().enrich(visit, '').is_bot)
+
+    def test_googleother_is_a_bot(self):
+        visit = Visit(site='example', url='https://example.com/',
+                      received_at=datetime.now(timezone.utc))
+        agent = ('Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) '
+                 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.52 '
+                 'Mobile Safari/537.36 (compatible; GoogleOther)')
+        self.assertTrue(BrowserMetadata().enrich(visit, agent).is_bot)
