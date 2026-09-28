@@ -15,7 +15,16 @@
   th[aria-sort="ascending"] .column-sort::after { content: ' ↑'; }
   th[aria-sort="descending"] .column-sort::after { content: ' ↓'; }
   .metrics-tables { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
-  .metrics-site-column { min-width: 0; display: grid; gap: 1.5rem; }
+  .metrics-site-column, .metrics-location-column { min-width: 0; display: grid; gap: 1.5rem; }
+  .country-chart { border: 1px solid #62412b; border-radius: .4rem; overflow: hidden; }
+  .country-chart h2 { margin: 0; padding: .8rem; font-size: .9rem; background: #291d15; }
+  .country-chart-content { display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; padding: 1.25rem; }
+  .country-pie { width: 15rem; max-width: 100%; aspect-ratio: 1; border-radius: 50%; flex-shrink: 0; margin-inline: auto; }
+  .country-legend { flex: 1 1 14rem; min-width: 0; list-style: none; margin: 0; padding: 0; font-size: .9rem; }
+  .country-legend li { display: grid; grid-template-columns: .8rem minmax(0, 1fr) auto; align-items: baseline; gap: .6rem; padding: .4rem 0; overflow-wrap: anywhere; }
+  .country-swatch { width: .8rem; height: .8rem; border-radius: .15rem; }
+  .country-value { text-align: right; white-space: nowrap; }
+  .country-chart > p { margin: 1.25rem; font-size: .9rem; }
   .metrics-filters fieldset { margin: 0; min-width: 0; padding: 1rem; border: 1px solid #62412b; border-radius: .4rem; }
   .metrics-filters legend { font-weight: 700; }
   .metrics-filters label, .metrics-filters input { cursor: pointer; }
