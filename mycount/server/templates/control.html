@@ -65,6 +65,7 @@
   </table>
 </div>
 </div>
+<div class="metrics-location-column">
 <div class="table-wrap">
   <table aria-label="Visits by Location">
     <caption>Visits by Location</caption>
@@ -83,6 +84,22 @@
     </tbody>
     <tfoot><tr><th scope="row" colspan="3">Total:</th><td class="visits">{{ locations | sum(attribute='page_views') }}</td></tr></tfoot>
   </table>
+</div>
+<section class="country-chart" aria-labelledby="country-chart-title">
+  <h2 id="country-chart-title">Visits by Location</h2>
+  {% if country_slices %}
+  <div class="country-chart-content">
+    <div class="country-pie" role="img" aria-label="Visits by country. Counts and percentages are listed in the legend." style="background: conic-gradient({% for country in country_slices %}{{ country.color }} {{ country.start }}% {{ country.end }}%{{ ', ' if not loop.last }}{% endfor %});"></div>
+    <ul class="country-legend" aria-label="Visits by country">
+      {% for country in country_slices %}
+      <li><span class="country-swatch" aria-hidden="true" style="background: {{ country.color }};"></span><span>{{ country.name }}</span><span class="country-value">{{ country.visits }} ({{ '%.1f' | format(country.percent) }}%)</span></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% else %}
+  <p>No visits match the current filters.</p>
+  {% endif %}
+</section>
 </div>
 </div>
 <script>

@@ -17,9 +17,33 @@ from threading import Thread
 import unittest
 
 from mycount.server.ControlHandler import ControlHandler
+from mycount.server.ControlPages import ControlPages
 
 
 class ControlServerTests(unittest.TestCase):
+    def test_country_pie_combines_cities_and_preserves_unknown_visits(self):
+        locations = [
+            {"country_name": "Canada", "country_code": "CA", "region_name": "Ontario", "city_name": "Toronto", "page_views": 2},
+            {"country_name": "Canada", "country_code": "CA", "region_name": "Quebec", "city_name": "Montreal", "page_views": 4},
+            {"country_name": "<Country>", "country_code": "US", "region_name": None, "city_name": None, "page_views": 3},
+            {"country_name": None, "country_code": None, "region_name": None, "city_name": None, "page_views": 1},
+        ]
+        body = ControlPages().render([], [], locations, []).decode()
+        chart = body.split('<section class="country-chart"', 1)[1].split('</section>', 1)[0]
+        self.assertIn('>Visits by Location</h2>', chart)
+        self.assertIn('>Canada</span><span class="country-value">6 (60.0%)', chart)
+        self.assertIn('>&lt;Country&gt;</span><span class="country-value">3 (30.0%)', chart)
+        self.assertIn('>Unknown</span><span class="country-value">1 (10.0%)', chart)
+        for interval in ('0.0% 60.0%', '60.0% 90.0%', '90.0% 100.0%'):
+            self.assertIn(interval, chart)
+        self.assertNotIn('Toronto', chart)
+        single = ControlPages().render([], [], locations[:1], [])
+        self.assertIn(b'0.0% 100.0%', single)
+        self.assertIn(b'2 (100.0%)', single)
+        empty = ControlPages().render([], [], [], []).decode().split('<section class="country-chart"', 1)[1]
+        self.assertIn('No visits match the current filters.', empty)
+        self.assertNotIn('conic-gradient(', empty)
+
     @patch("mycount.server.ControlHandler.DbMgr")
     def test_banner_health_and_missing_page(self, factory):
         factory.return_value.query.side_effect = [
@@ -59,9 +83,10 @@ class ControlServerTests(unittest.TestCase):
                     self.assertIn(b'&lt;city&gt;', body)
                     self.assertIn(b'>State/Province</th>', body)
                     self.assertIn(b'<td>Ontario</td>', body)
-                    self.assertIn(b'<td>Canada</td>', body)
+                    self.assertIn('aria-label="Country: CA">🇨🇦</span> Canada</td>'.encode(), body)
                     self.assertNotIn(b'>Continent</th>', body)
-                    self.assertEqual(body.count(b'<td>---</td>'), 3)
+                    self.assertEqual(body.count(b'<td>---</td>'), 2)
+                    self.assertIn(b'<td data-sort-value="---">---</td>', body)
                     self.assertIn(b'>9</td>', body)
                     self.assertIn(b'>3</td>', body)
                     factory.return_value.transaction.assert_called_once_with(read_only=True)

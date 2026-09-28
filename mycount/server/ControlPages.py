@@ -25,8 +25,34 @@ class ControlPages:
             pages_by_site.setdefault(page["site"], []).append(page)
         return self._templates.get_template("control.html").render(
             sites=sites, pages_by_site=pages_by_site, locations=locations, recent=recent,
+            country_slices=self._country_slices(locations),
             error=error, exclude_bots=exclude_bots, refreshed_at=datetime.now(timezone.utc), active_page="metrics",
         ).encode("utf-8")
+
+    @staticmethod
+    def _country_slices(locations: list[dict[str, object]]) -> list[dict[str, object]]:
+        countries = {}
+        for location in locations:
+            code = (location["country_code"] or "").upper()
+            country = countries.setdefault(code, {
+                "name": location["country_name"] or code or "Unknown", "visits": 0,
+            })
+            country["visits"] += location["page_views"]
+        ordered = sorted(countries.values(), key=lambda country: (-country["visits"], country["name"]))
+        total = sum(country["visits"] for country in ordered)
+        slices = []
+        cumulative = 0
+        for index, country in enumerate(ordered):
+            start = cumulative
+            cumulative += country["visits"]
+            slices.append({
+                **country,
+                "percent": country["visits"] / total * 100,
+                "start": start / total * 100,
+                "end": cumulative / total * 100,
+                "color": f"hsl({(index * 137.508 + 28) % 360:.3f} 65% 60%)",
+            })
+        return slices
 
     def reference(self) -> bytes:
         return self._templates.get_template("reference.html").render(

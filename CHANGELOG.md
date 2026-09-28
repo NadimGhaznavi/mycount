@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-09-28 @ 12:32
+
+- Add a Visits by Location country pie chart below the location table, with visit counts, percentages, and the existing bot filter.
+
 ## [0.9.1] - 2026-09-27 @ 17:44
 
 - Prefix country names in Visits by Location with Unicode flags while preserving country-name sorting.
