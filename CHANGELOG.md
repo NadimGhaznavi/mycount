@@ -9,6 +9,15 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-09-30 @ 17:29
+
+- Add a sortable Referrers table in the right column, grouped by host with visit totals, Direct / Unknown visits, bot filtering, and a 10-row scroll area.
+- Move the Visits by Location pie chart above the location table.
+
+- Limit Recent Visits and Visits by Location to a 10-record viewport with scrolling, and load all matching recent visits instead of only the latest 20.
+
+- Add “Counting since September XX, 2026” beneath MyCount Control in the title box.
+
 ## [0.10.0] - 2026-09-28 @ 12:32
 
 - Add a Visits by Location country pie chart below the location table, with visit counts, percentages, and the existing bot filter.

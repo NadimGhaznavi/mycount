@@ -46,7 +46,7 @@
     <tfoot><tr><th scope="row">Total:</th><td class="visits">{{ sites | sum(attribute='page_views') }}</td><td></td></tr></tfoot>
   </table>
 </div>
-<div class="table-wrap">
+<div class="table-wrap table-scroll" tabindex="0" role="region" aria-label="Recent Visits scroll area">
   <table class="recent-visits" aria-label="Recent Visits">
     <caption>Recent Visits</caption>
     <thead><tr><th scope="col">Date</th><th scope="col">Time</th><th scope="col">City</th><th scope="col">URL</th></tr></thead>
@@ -66,7 +66,22 @@
 </div>
 </div>
 <div class="metrics-location-column">
-<div class="table-wrap">
+<section class="country-chart" aria-labelledby="country-chart-title">
+  <h2 id="country-chart-title">Visits by Location</h2>
+  {% if country_slices %}
+  <div class="country-chart-content">
+    <div class="country-pie" role="img" aria-label="Visits by country. Counts and percentages are listed in the legend." style="background: conic-gradient({% for country in country_slices %}{{ country.color }} {{ country.start }}% {{ country.end }}%{{ ', ' if not loop.last }}{% endfor %});"></div>
+    <ul class="country-legend" aria-label="Visits by country">
+      {% for country in country_slices %}
+      <li><span class="country-swatch" aria-hidden="true" style="background: {{ country.color }};"></span><span>{{ country.name }}</span><span class="country-value">{{ country.visits }} ({{ '%.1f' | format(country.percent) }}%)</span></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% else %}
+  <p>No visits match the current filters.</p>
+  {% endif %}
+</section>
+<div class="table-wrap table-scroll" tabindex="0" role="region" aria-label="Visits by Location scroll area">
   <table aria-label="Visits by Location">
     <caption>Visits by Location</caption>
     <thead><tr><th scope="col">Country</th><th scope="col">State/Province</th><th scope="col">City</th><th scope="col" class="visits">Visits</th></tr></thead>
@@ -85,24 +100,42 @@
     <tfoot><tr><th scope="row" colspan="3">Total:</th><td class="visits">{{ locations | sum(attribute='page_views') }}</td></tr></tfoot>
   </table>
 </div>
-<section class="country-chart" aria-labelledby="country-chart-title">
-  <h2 id="country-chart-title">Visits by Location</h2>
-  {% if country_slices %}
-  <div class="country-chart-content">
-    <div class="country-pie" role="img" aria-label="Visits by country. Counts and percentages are listed in the legend." style="background: conic-gradient({% for country in country_slices %}{{ country.color }} {{ country.start }}% {{ country.end }}%{{ ', ' if not loop.last }}{% endfor %});"></div>
-    <ul class="country-legend" aria-label="Visits by country">
-      {% for country in country_slices %}
-      <li><span class="country-swatch" aria-hidden="true" style="background: {{ country.color }};"></span><span>{{ country.name }}</span><span class="country-value">{{ country.visits }} ({{ '%.1f' | format(country.percent) }}%)</span></li>
+<div class="table-wrap table-scroll" tabindex="0" role="region" aria-label="Referrers scroll area">
+  <table aria-label="Referrers">
+    <caption>Referrers</caption>
+    <thead><tr><th scope="col">Referrer</th><th scope="col" class="visits">Visits</th></tr></thead>
+    <tbody>
+      {% for referrer in referrers %}
+      <tr><td>{{ referrer.referrer_host or 'Direct / Unknown' }}</td><td class="visits">{{ referrer.page_views }}</td></tr>
+      {% else %}
+      <tr><td colspan="2">No visits match the current filters.</td></tr>
       {% endfor %}
-    </ul>
-  </div>
-  {% else %}
-  <p>No visits match the current filters.</p>
-  {% endif %}
-</section>
+    </tbody>
+    <tfoot><tr><th scope="row">Total:</th><td class="visits">{{ referrers | sum(attribute='page_views') }}</td></tr></tfoot>
+  </table>
+</div>
 </div>
 </div>
 <script>
+  for (const wrapper of document.querySelectorAll('.table-scroll')) {
+    const table = wrapper.querySelector('table');
+    const body = table.tBodies[0];
+    const sizeViewport = () => {
+      if (body.rows.length <= 10) {
+        wrapper.style.maxHeight = '';
+        return;
+      }
+      const height = body.rows[9].getBoundingClientRect().bottom - table.getBoundingClientRect().top;
+      const bordersAndScrollbar = wrapper.offsetHeight - wrapper.clientHeight;
+      wrapper.style.maxHeight = `${Math.ceil(height + bordersAndScrollbar)}px`;
+    };
+    new ResizeObserver(sizeViewport).observe(table);
+    new MutationObserver(() => {
+      wrapper.scrollTop = 0;
+      sizeViewport();
+    }).observe(body, {childList: true});
+    sizeViewport();
+  }
   for (const row of document.querySelectorAll('.site-row')) {
     const button = row.querySelector('.site-toggle');
     row.addEventListener('click', () => {

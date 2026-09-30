@@ -8,7 +8,10 @@
 </head>
 <body>
   <header class="masthead">
-    <a href="/">MyCount <span>Control</span></a>
+    <div class="masthead-title">
+      <a href="/">MyCount <span>Control</span></a>
+      <p>Counting since September XX, 2026</p>
+    </div>
     <nav aria-label="Reports">
       <a href="/"{% if active_page == 'metrics' %} aria-current="page"{% endif %}>[Metrics]</a>
       <a href="/reference"{% if active_page == 'reference' %} aria-current="page"{% endif %}>[Reference]</a>

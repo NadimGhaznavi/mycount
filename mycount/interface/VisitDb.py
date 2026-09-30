@@ -92,15 +92,25 @@ class VisitDb:
             ORDER BY page_views DESC, country_name, country_code, region_name, city_name
         """, params)
 
+    def totals_by_referrer(self, *, exclude_bots: bool = False) -> list[dict[str, object]]:
+        """Rank referrer hosts by visits, including visits with no known referrer."""
+        where, params = self._bot_filter(exclude_bots)
+        return self._db.query(f"""
+            SELECT NULLIF(v.referrer_host, '') AS referrer_host, COUNT(*) AS page_views
+            FROM page_views v
+            {where}
+            GROUP BY NULLIF(v.referrer_host, '')
+            ORDER BY page_views DESC, referrer_host
+        """, params)
+
     def recent_visits(self, *, exclude_bots: bool = False) -> list[dict[str, object]]:
-        """Return the latest 20 matching visits, newest ID first for time ties."""
+        """Return all matching visits, newest ID first for time ties."""
         where, params = self._bot_filter(exclude_bots)
         return self._db.query(f"""
             SELECT v.received_at, v.country_code, v.city_name, p.url
             FROM page_views v JOIN pages p ON p.page_id = v.page_id
             {where}
             ORDER BY v.received_at DESC, v.page_view_id DESC
-            LIMIT 20
         """, params)
 
     def count_by_site(self, site: str) -> int:
