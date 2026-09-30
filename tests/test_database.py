@@ -414,6 +414,17 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(visits.totals_by_page(exclude_bots=True)[0]['last_visited'],
                          visit.received_at.replace(tzinfo=None))
 
+    def test_first_visit_uses_earliest_timestamp_across_sites_including_bots(self):
+        visits = VisitDb(self.db)
+        self.assertIsNone(visits.first_visit_at())
+        visit = Visit(site='first', url='https://example.com/',
+                      received_at=datetime(2026, 9, 28, 12, tzinfo=timezone.utc))
+        visits.record(visit)
+        earliest = datetime(2026, 9, 23, 1, tzinfo=timezone.utc)
+        visits.record(replace(visit, site='second', is_bot=True, received_at=earliest))
+        visits.record(replace(visit, received_at=datetime(2026, 9, 25, tzinfo=timezone.utc)))
+        self.assertEqual(visits.first_visit_at(), earliest.replace(tzinfo=None))
+
     def test_referrer_totals_group_hosts_include_unknowns_and_filter_bots(self):
         visits = VisitDb(self.db)
         self.assertEqual(visits.totals_by_referrer(), [])
