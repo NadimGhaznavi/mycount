@@ -31,14 +31,15 @@ class ControlHandler(BaseHTTPRequestHandler):
                         pages = visits.totals_by_page(exclude_bots=exclude_bots)
                         locations = visits.totals_by_location(exclude_bots=exclude_bots)
                         recent = visits.recent_visits(exclude_bots=exclude_bots)
+                        referrers = visits.totals_by_referrer(exclude_bots=exclude_bots)
                 finally:
                     db.close()
             except pymysql.MySQLError:
                 logging.exception("Unable to read site visits")
-                self.respond(503, ControlPages().render([], [], [], [], exclude_bots=exclude_bots, error="Site visits unavailable."),
+                self.respond(503, ControlPages().render([], [], [], [], [], exclude_bots=exclude_bots, error="Site visits unavailable."),
                              "text/html; charset=utf-8")
                 return
-            self.respond(200, ControlPages().render(sites, pages, locations, recent, exclude_bots=exclude_bots), "text/html; charset=utf-8")
+            self.respond(200, ControlPages().render(sites, pages, locations, recent, referrers, exclude_bots=exclude_bots), "text/html; charset=utf-8")
         elif path == "/reference":
             self.respond(200, ControlPages().reference(), "text/html; charset=utf-8")
         elif path == "/health":

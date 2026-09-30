@@ -414,7 +414,29 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(visits.totals_by_page(exclude_bots=True)[0]['last_visited'],
                          visit.received_at.replace(tzinfo=None))
 
-    def test_recent_visits_filter_before_limit_and_break_timestamp_ties(self):
+    def test_referrer_totals_group_hosts_include_unknowns_and_filter_bots(self):
+        visits = VisitDb(self.db)
+        self.assertEqual(visits.totals_by_referrer(), [])
+        visit = Visit(site='first', url='https://example.com/',
+                      received_at=datetime.now(timezone.utc))
+        visits.record(replace(visit, referrer_host='search.example', referrer='https://search.example/a'))
+        visits.record(replace(visit, site='second', referrer_host='search.example', referrer='https://search.example/b'))
+        visits.record(replace(visit, referrer_host='another.example'))
+        visits.record(visit)
+        visits.record(replace(visit, referrer_host=''))
+        visits.record(replace(visit, referrer_host='bot.example', is_bot=True))
+        visits.record(replace(visit, referrer_host='bot.example', browser_family='GoogleOther'))
+        visits.record(replace(visit, referrer_host='bot.example', browser_family='Googlebot'))
+        self.assertEqual(visits.totals_by_referrer(exclude_bots=True), [
+            {'referrer_host': None, 'page_views': 2},
+            {'referrer_host': 'search.example', 'page_views': 2},
+            {'referrer_host': 'another.example', 'page_views': 1},
+        ])
+        unfiltered = visits.totals_by_referrer()
+        self.assertEqual(unfiltered[0], {'referrer_host': 'bot.example', 'page_views': 3})
+        self.assertEqual(sum(row['page_views'] for row in unfiltered), 8)
+
+    def test_recent_visits_include_all_matches_and_break_timestamp_ties(self):
         visits = VisitDb(self.db)
         self.assertEqual(visits.recent_visits(), [])
         timestamp = datetime(2026, 9, 27, 12, tzinfo=timezone.utc)
@@ -426,12 +448,14 @@ class DatabaseTests(unittest.TestCase):
         visits.record(replace(visit, url='https://example.com/google-other', browser_family='GoogleOther'))
         filtered = visits.recent_visits(exclude_bots=True)
         self.assertEqual([row['url'] for row in filtered],
-                         [f'https://example.com/{index}' for index in range(24, 4, -1)])
+                         [f'https://example.com/{index}' for index in range(24, -1, -1)])
         self.assertEqual(filtered[0]['received_at'], timestamp.replace(tzinfo=None))
         all_visits = visits.recent_visits()
-        self.assertEqual(len(all_visits), 20)
+        self.assertEqual(len(all_visits), 27)
         self.assertEqual(all_visits[0]['url'], 'https://example.com/bot')
         self.assertEqual(all_visits[1]['url'], 'https://example.com/google-other')
+        self.assertEqual([row['url'] for row in all_visits[2:]],
+                         [f'https://example.com/{index}' for index in range(24, -1, -1)])
 
     def test_location_totals_include_unknowns_and_combine_sites(self):
         visits = VisitDb(self.db)

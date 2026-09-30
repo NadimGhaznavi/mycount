@@ -33,13 +33,24 @@ Column headers allow sorting. Both tables end with a bold, right-aligned
 Total row showing the sum of Visits (zero when empty), which stays at the
 bottom when sorting. The tables stack on narrow screens.
 
-Recent Visits appears below Visits by Site in the left column. It shows the
-latest 20 visits matching the bot filter, newest first (newest record first
+Recent Visits appears below Visits by Site in the left column. It shows
+all visits matching the bot filter, newest first (newest record first
 when timestamps tie), with Date (`YYYY-MM-DD`), Time (`HH:MM AM/PM`), City, and URL. Cities are prefixed with a Unicode country flag when the stored country code
 is recognized. Unknown cities display `---`; unknown countries have no flag.
 Dates and times use the browser timezone. Visits by Location and Last refresh
 keep their positions. Recent visits are read in the same transaction as the
 other metrics.
+
+Recent Visits and Visits by Location show the first 10 records in a scrollable
+area. Scroll down within each table to see the remaining records; all matching
+records are loaded. The visible height adjusts to wrapped rows and window size.
+
+Referrers appears below Visits by Location in the right column. It groups visits
+by referrer host, ordered by visit count, with missing referrers labeled
+Direct / Unknown. The table includes internal referrers, supports column sorting,
+and shows a total for all matching visits. It uses the same bot filter and
+read-only transaction as the other metrics, loading all hosts into a 10-row
+scroll area.
 
 Click a site row to expand or collapse its page table. The site-name button
 also works with Enter or Space. Each page shows its full recorded URL, visit
