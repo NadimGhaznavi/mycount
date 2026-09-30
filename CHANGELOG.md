@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-09-30 @ 17:37
+
 - Populate Counting since from the earliest recorded visit on Metrics and Reference, using the browser's local date and keeping it independent of the bot filter.
 ## [0.11.0] - 2026-09-30 @ 17:29
 
