@@ -9,6 +9,7 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Populate Counting since from the earliest recorded visit on Metrics and Reference, using the browser's local date and keeping it independent of the bot filter.
 ## [0.11.0] - 2026-09-30 @ 17:29
 
 - Add a sortable Referrers table in the right column, grouped by host with visit totals, Direct / Unknown visits, bot filtering, and a 10-row scroll area.

@@ -21,6 +21,15 @@ from mycount.server.ControlPages import ControlPages
 
 
 class ControlServerTests(unittest.TestCase):
+    def test_counting_since_uses_first_visit_date_and_hides_when_unknown(self):
+        pages = ControlPages()
+        first = datetime(2025, 2, 3, 1, 30)
+        for body in (pages.render([], [], [], [], [], first_visit_at=first), pages.reference(first)):
+            self.assertIn(b'Counting since <time datetime="2025-02-03T01:30:00+00:00" data-local-time="long-date">February 3, 2025</time>', body)
+            self.assertNotIn(b'September XX', body)
+        for body in (pages.render([], [], [], [], []), pages.reference()):
+            self.assertNotIn(b'Counting since', body)
+
     def test_country_pie_combines_cities_and_preserves_unknown_visits(self):
         locations = [
             {"country_name": "Canada", "country_code": "CA", "region_name": "Ontario", "city_name": "Toronto", "page_views": 2},
@@ -55,6 +64,7 @@ class ControlServerTests(unittest.TestCase):
             [{"received_at": datetime(2026, 9, 27, 15, 5), "country_code": "CA", "city_name": "Hamilton", "url": "https://example.com/<recent>"}],
             [{"referrer_host": "<referrer>", "page_views": 8},
              {"referrer_host": None, "page_views": 4}],
+            [{"first_visit_at": datetime(2026, 9, 23, 12)}],
         ]
         with ThreadingHTTPServer(("127.0.0.1", 0), ControlHandler) as server:
             thread = Thread(target=server.serve_forever)
@@ -72,6 +82,7 @@ class ControlServerTests(unittest.TestCase):
                     self.assertIn(b">12</td>", body)
                     self.assertIn(b'2026-09-27T15:05:00+00:00', body)
                     self.assertIn(b"Last refresh:", body)
+                    self.assertIn(b'data-local-time="long-date">September 23, 2026</time>', body)
                     self.assertIn(b'https://example.com/&lt;page&gt;', body)
                     self.assertIn(b'aria-expanded="false"', body)
                     self.assertIn(b'aria-controls="site-pages-1"', body)
@@ -99,11 +110,12 @@ class ControlServerTests(unittest.TestCase):
                     factory.return_value.transaction.assert_called_once_with(read_only=True)
                     factory.return_value.close.assert_called_once()
                     self.assertIn(b'value="1" checked', body)
-                    for call in factory.return_value.query.call_args_list:
+                    for call in factory.return_value.query.call_args_list[:-1]:
                         self.assertIn('COALESCE(v.is_bot, 0) = 0', call.args[0])
+                    self.assertNotIn('WHERE', factory.return_value.query.call_args_list[-1].args[0])
                     for query, excluded in [('exclude_bots=0', False), ('exclude_bots=0&exclude_bots=1', True)]:
                         factory.reset_mock()
-                        factory.return_value.query.side_effect = [[], [], [], [], []]
+                        factory.return_value.query.side_effect = [[], [], [], [], [], [{"first_visit_at": datetime(2026, 9, 23, 12)}]]
                         connection.request("GET", "/?" + query)
                         response = connection.getresponse()
                         self.assertEqual(response.status, 200)
@@ -111,9 +123,11 @@ class ControlServerTests(unittest.TestCase):
                         self.assertEqual(b'value="1" checked' in filtered, excluded)
                         self.assertEqual(filtered.count(b'class="visits">0</td>'), 3)
                         self.assertIn(b'<caption>Referrers</caption>', filtered)
-                        for call in factory.return_value.query.call_args_list:
+                        self.assertIn(b'data-local-time="long-date">September 23, 2026</time>', filtered)
+                        for call in factory.return_value.query.call_args_list[:-1]:
                             self.assertEqual('COALESCE(v.is_bot, 0) = 0' in call.args[0], excluded)
                     factory.reset_mock()
+                    factory.return_value.query.side_effect = [[{"first_visit_at": datetime(2026, 9, 23, 12)}]]
                     connection.request("GET", "/reference")
                     response = connection.getresponse()
                     self.assertEqual(response.status, 200)
@@ -127,13 +141,25 @@ class ControlServerTests(unittest.TestCase):
                     self.assertIn(b'GeoIP CSV</td><td>accuracy</td><td>---</td><td>---</td>', reference)
                     self.assertIn(b'href="/reference" aria-current="page"', reference)
                     self.assertNotIn(b"document.querySelectorAll('table')", reference)
-                    factory.assert_not_called()
+                    self.assertIn(b'data-local-time="long-date">September 23, 2026</time>', reference)
+                    factory.return_value.close.assert_called_once()
+                    factory.reset_mock()
                     connection.request("GET", "/health")
                     response = connection.getresponse()
                     self.assertEqual(response.status, 200)
                     self.assertEqual(json.loads(response.read()), {"status": "ok", "service": "mycount-control"})
                     factory.assert_not_called()
                     factory.return_value.query.side_effect = pymysql.OperationalError("private details")
+                    with self.assertLogs(level="ERROR"):
+                        connection.request("GET", "/reference")
+                        response = connection.getresponse()
+                        self.assertEqual(response.status, 200)
+                        reference = response.read()
+                    self.assertIn(b'Optional browser details', reference)
+                    self.assertNotIn(b'Counting since', reference)
+                    self.assertNotIn(b'private details', reference)
+                    factory.return_value.close.assert_called_once()
+                    factory.reset_mock()
                     with self.assertLogs(level="ERROR"):
                         connection.request("GET", "/")
                         response = connection.getresponse()

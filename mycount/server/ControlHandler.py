@@ -32,6 +32,7 @@ class ControlHandler(BaseHTTPRequestHandler):
                         locations = visits.totals_by_location(exclude_bots=exclude_bots)
                         recent = visits.recent_visits(exclude_bots=exclude_bots)
                         referrers = visits.totals_by_referrer(exclude_bots=exclude_bots)
+                        first_visit_at = visits.first_visit_at()
                 finally:
                     db.close()
             except pymysql.MySQLError:
@@ -39,9 +40,19 @@ class ControlHandler(BaseHTTPRequestHandler):
                 self.respond(503, ControlPages().render([], [], [], [], [], exclude_bots=exclude_bots, error="Site visits unavailable."),
                              "text/html; charset=utf-8")
                 return
-            self.respond(200, ControlPages().render(sites, pages, locations, recent, referrers, exclude_bots=exclude_bots), "text/html; charset=utf-8")
+            self.respond(200, ControlPages().render(sites, pages, locations, recent, referrers,
+                                                  first_visit_at=first_visit_at, exclude_bots=exclude_bots), "text/html; charset=utf-8")
         elif path == "/reference":
-            self.respond(200, ControlPages().reference(), "text/html; charset=utf-8")
+            first_visit_at = None
+            try:
+                db = DbMgr()
+                try:
+                    first_visit_at = VisitDb(db).first_visit_at()
+                finally:
+                    db.close()
+            except pymysql.MySQLError:
+                logging.exception("Unable to read first visit for reference header")
+            self.respond(200, ControlPages().reference(first_visit_at), "text/html; charset=utf-8")
         elif path == "/health":
             self.respond(200, b'{"status":"ok","service":"mycount-control"}', "application/json")
         else:

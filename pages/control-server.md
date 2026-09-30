@@ -63,7 +63,14 @@ The title bar has **Metrics** (`/`) and **Reference** (`/reference`) links.
 Reference displays one [data inventory table]({% link pages/collected-data.md %})
 with Source, Source Details, Table, Column, and Details. It includes optional browser details,
 all GeoIP source fields, and storage mappings; unretained values show `---` in
-both storage columns. This is static documentation without database queries.
+both storage columns. The reference content is static; its title bar queries the
+earliest recorded visit. If that query fails, Reference remains available with
+the Counting since line hidden, and the error is logged.
+
+Both pages display Counting since followed by the earliest recorded visit's
+date (for example, September 23, 2026), in the browser's local timezone.
+This date includes all sites and bots regardless of the current filter. The
+line is hidden when no visits have been recorded or the date is unavailable.
 Last refresh appears on its own row below the title bar in
 browser-local time as `MMM DD - HH:MM` (for example, `Sep 27 - 14:36`).
 
