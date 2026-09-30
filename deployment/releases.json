@@ -290,7 +290,7 @@
       ]
     },
     "mycount/interface/VisitDb.py": {
-      "digest": "ba8e39c846b31f9f83ef4ad1bceb7a60ffc557e8e7ed7542d21cb42fb82c685e",
+      "digest": "6f910b89d12c9d9c8bfed314352d3f98a0c47d6dece26f2d8fbc72d7aac89e4a",
       "targets": [
         "listener",
         "report-server"
@@ -323,13 +323,13 @@
       ]
     },
     "mycount/server/ControlHandler.py": {
-      "digest": "64dd9ef9c5ddfd9449a0431a39c6ce59697f7390e0cfaf799e01f0ca4929ce7b",
+      "digest": "e5eda27f1991b3b821c1e601456665687d24effa203a54bb38c3fc8791b9d705",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/ControlPages.py": {
-      "digest": "7f36555c9fb11b93e3af07fb8c78a77357b09a3a888a0620e01575baa2fcfc59",
+      "digest": "863c4db7ccd5b2ea4923d272629e0cb31c50ee659f73cd00c332230eec35e01a",
       "targets": [
         "report-server"
       ]
@@ -360,13 +360,13 @@
       ]
     },
     "mycount/server/templates/base.html": {
-      "digest": "51039a0f596965dbc428e91619d0bf13f0b7e6c1692e70e5f5aaba1f50127604",
+      "digest": "5b165fcd0306150feb40f6ddd1a2e06c95ac77a000dd51d574b74178dc777cbe",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/templates/control.html": {
-      "digest": "e2dfa8ed89453d3dc9c419d1a69cbe83d5970c96a29e9c0db53752bd65a06f9b",
+      "digest": "c231b0858bc73d75a2336a3c96cffb45909d09a5478283d5fc7fbaf8e082a8d4",
       "targets": [
         "report-server"
       ]
@@ -384,7 +384,7 @@
       ]
     },
     "mycount/server/templates/styles.html": {
-      "digest": "9cfce25fb7adf888bb69f5b504ccefbef10fa529c53def47ca9ac59a2c8e9759",
+      "digest": "cf4a99cd1ef75a321bb5d6fd9cc2e432093d4370788c3f900268973ce71873fd",
       "targets": [
         "report-server"
       ]
@@ -554,6 +554,13 @@
         "report-server"
       ],
       "version": "0.10.0"
+    },
+    {
+      "targets": [
+        "listener",
+        "report-server"
+      ],
+      "version": "0.11.0"
     }
   ]
 }

@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-09-30 @ 17:29
+
 - Add a sortable Referrers table in the right column, grouped by host with visit totals, Direct / Unknown visits, bot filtering, and a 10-row scroll area.
 - Move the Visits by Location pie chart above the location table.
 
