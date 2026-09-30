@@ -10,7 +10,9 @@
   <header class="masthead">
     <div class="masthead-title">
       <a href="/">MyCount <span>Control</span></a>
-      <p>Counting since September XX, 2026</p>
+      {% if first_visit_at is not none %}
+      <p>Counting since <time datetime="{{ first_visit_at | utc_iso }}" data-local-time="long-date">{{ first_visit_at.strftime('%B') }} {{ first_visit_at.day }}, {{ first_visit_at.year }}</time></p>
+      {% endif %}
     </div>
     <nav aria-label="Reports">
       <a href="/"{% if active_page == 'metrics' %} aria-current="page"{% endif %}>[Metrics]</a>

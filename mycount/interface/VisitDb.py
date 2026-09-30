@@ -1,6 +1,6 @@
 """Persist a processed visit through the shared database bridge."""
 
-from datetime import timezone
+from datetime import datetime, timezone
 import json
 
 from mycount.entity.Visit import Visit
@@ -102,6 +102,10 @@ class VisitDb:
             GROUP BY NULLIF(v.referrer_host, '')
             ORDER BY page_views DESC, referrer_host
         """, params)
+
+    def first_visit_at(self) -> datetime | None:
+        """Return the earliest recorded visit across all sites, including bots."""
+        return self._db.query("SELECT MIN(received_at) AS first_visit_at FROM page_views")[0]['first_visit_at']
 
     def recent_visits(self, *, exclude_bots: bool = False) -> list[dict[str, object]]:
         """Return all matching visits, newest ID first for time ties."""
