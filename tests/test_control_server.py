@@ -28,7 +28,7 @@ class ControlServerTests(unittest.TestCase):
             {"country_name": "<Country>", "country_code": "US", "region_name": None, "city_name": None, "page_views": 3},
             {"country_name": None, "country_code": None, "region_name": None, "city_name": None, "page_views": 1},
         ]
-        body = ControlPages().render([], [], locations, []).decode()
+        body = ControlPages().render([], [], locations, [], []).decode()
         chart = body.split('<section class="country-chart"', 1)[1].split('</section>', 1)[0]
         self.assertIn('>Visits by Location</h2>', chart)
         self.assertIn('>Canada</span><span class="country-value">6 (60.0%)', chart)
@@ -37,10 +37,10 @@ class ControlServerTests(unittest.TestCase):
         for interval in ('0.0% 60.0%', '60.0% 90.0%', '90.0% 100.0%'):
             self.assertIn(interval, chart)
         self.assertNotIn('Toronto', chart)
-        single = ControlPages().render([], [], locations[:1], [])
+        single = ControlPages().render([], [], locations[:1], [], [])
         self.assertIn(b'0.0% 100.0%', single)
         self.assertIn(b'2 (100.0%)', single)
-        empty = ControlPages().render([], [], [], []).decode().split('<section class="country-chart"', 1)[1]
+        empty = ControlPages().render([], [], [], [], []).decode().split('<section class="country-chart"', 1)[1]
         self.assertIn('No visits match the current filters.', empty)
         self.assertNotIn('conic-gradient(', empty)
 
@@ -53,6 +53,8 @@ class ControlServerTests(unittest.TestCase):
             [{"country_name": "Canada", "country_code": "CA", "region_name": "Ontario", "city_name": "<city>", "page_views": 9},
              {"country_name": None, "country_code": "", "region_name": None, "city_name": None, "page_views": 3}],
             [{"received_at": datetime(2026, 9, 27, 15, 5), "country_code": "CA", "city_name": "Hamilton", "url": "https://example.com/<recent>"}],
+            [{"referrer_host": "<referrer>", "page_views": 8},
+             {"referrer_host": None, "page_views": 4}],
         ]
         with ThreadingHTTPServer(("127.0.0.1", 0), ControlHandler) as server:
             thread = Thread(target=server.serve_forever)
@@ -80,6 +82,11 @@ class ControlServerTests(unittest.TestCase):
                     self.assertIn(b'data-local-time="time-12"', body)
                     self.assertIn(b'>Visits by Site</th>', body)
                     self.assertIn(b'<caption>Visits by Location</caption>', body)
+                    referrers = body.split(b'<table aria-label="Referrers">', 1)[1].split(b'</table>', 1)[0]
+                    self.assertIn(b'<caption>Referrers</caption>', referrers)
+                    self.assertIn(b'<td>&lt;referrer&gt;</td><td class="visits">8</td>', referrers)
+                    self.assertIn(b'<td>Direct / Unknown</td><td class="visits">4</td>', referrers)
+                    self.assertIn(b'<tfoot><tr><th scope="row">Total:</th><td class="visits">12</td>', referrers)
                     self.assertIn(b'&lt;city&gt;', body)
                     self.assertIn(b'>State/Province</th>', body)
                     self.assertIn(b'<td>Ontario</td>', body)
@@ -96,13 +103,14 @@ class ControlServerTests(unittest.TestCase):
                         self.assertIn('COALESCE(v.is_bot, 0) = 0', call.args[0])
                     for query, excluded in [('exclude_bots=0', False), ('exclude_bots=0&exclude_bots=1', True)]:
                         factory.reset_mock()
-                        factory.return_value.query.side_effect = [[], [], [], []]
+                        factory.return_value.query.side_effect = [[], [], [], [], []]
                         connection.request("GET", "/?" + query)
                         response = connection.getresponse()
                         self.assertEqual(response.status, 200)
                         filtered = response.read()
                         self.assertEqual(b'value="1" checked' in filtered, excluded)
-                        self.assertEqual(filtered.count(b'class="visits">0</td>'), 2)
+                        self.assertEqual(filtered.count(b'class="visits">0</td>'), 3)
+                        self.assertIn(b'<caption>Referrers</caption>', filtered)
                         for call in factory.return_value.query.call_args_list:
                             self.assertEqual('COALESCE(v.is_bot, 0) = 0' in call.args[0], excluded)
                     factory.reset_mock()
@@ -158,7 +166,7 @@ class ControlServerTests(unittest.TestCase):
             subprocess.run(
                 [sys.executable, "-B", "-c",
                  "from mycount.server.ControlPages import ControlPages; "
-                 "assert b'MyCount <span>Control</span>' in ControlPages().render([], [], [], []); "
+                 "assert b'MyCount <span>Control</span>' in ControlPages().render([], [], [], [], []); "
                  "assert b'Optional browser details' in ControlPages().reference()"],
                 cwd=directory, check=True,
             )
