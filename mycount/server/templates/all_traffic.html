@@ -1,0 +1,38 @@
+<script src="https://cdn.plot.ly/plotly-4.1.1.min.js" charset="utf-8"></script>
+<script>
+  (() => {
+    const timestamps = {{ traffic_times | tojson }};
+    const dateKey = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const counts = new Map();
+    for (const timestamp of timestamps) {
+      const key = dateKey(new Date(timestamp));
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+    const firstDay = [...counts.keys()].sort()[0];
+    const [year, month, day] = firstDay.split('-').map(Number);
+    const cursor = new Date(year, month - 1, day);
+    const lastDay = [...counts.keys(), dateKey(new Date())].sort().at(-1);
+    const dates = [];
+    const hits = [];
+    while (dateKey(cursor) <= lastDay) {
+      const key = dateKey(cursor);
+      dates.push(key);
+      hits.push(counts.get(key) || 0);
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    Plotly.newPlot('all-traffic', [{
+      type: 'bar', x: dates, y: hits,
+      marker: {color: '#ffac63'},
+      hovertemplate: '%{x|%b %d, %Y}<br>%{y} hits<extra></extra>',
+    }], {
+      height: 220,
+      margin: {l: 55, r: 20, t: 15, b: 45},
+      paper_bgcolor: '#191410', plot_bgcolor: '#191410',
+      font: {family: 'system-ui, sans-serif', color: '#f3e7db', size: 12},
+      xaxis: {type: 'date', tickformat: '%b %d', showgrid: false, fixedrange: true},
+      yaxis: {title: {text: 'Hits'}, rangemode: 'tozero', minallowed: 0, tickformat: ',d',
+              dtick: Math.max(1, Math.ceil(Math.max(...hits) / 4)), gridcolor: '#62412b', fixedrange: true},
+      bargap: 0.25, showlegend: false,
+    }, {responsive: true, displayModeBar: false});
+  })();
+</script>
