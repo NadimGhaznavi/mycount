@@ -3,6 +3,8 @@
 {% if error %}
 <p role="alert">{{ error }}</p>
 {% else %}
+{% set chart_colors = ['#c62828', '#1565c0', '#f2c230', '#d7d3c8', '#303030'] %}
+{% set chart_outlines = ['#ff5252', '#42a5ff', '#ffeb59', '#fffdf5', '#737373'] %}
 <div class="metrics-tables">
 <div class="metrics-site-column">
 <form class="metrics-filters" method="get" action="/">
@@ -70,10 +72,10 @@
   <h2 id="country-chart-title">Visits by Location</h2>
   {% if country_slices %}
   <div class="country-chart-content">
-    <div class="country-pie" role="img" aria-label="Visits by country. Counts and percentages are listed in the legend." style="background: conic-gradient({% for country in country_slices %}{{ country.color }} {{ country.start }}% {{ country.end }}%{{ ', ' if not loop.last }}{% endfor %});"></div>
+    <div id="country-pie" class="country-pie" role="img" aria-label="Visits by country. Counts and percentages are listed in the legend."></div>
     <ul class="country-legend" aria-label="Visits by country">
       {% for country in country_slices %}
-      <li><span class="country-swatch" aria-hidden="true" style="background: {{ country.color }};"></span><span>{{ country.name }}</span><span class="country-value">{{ country.visits }} ({{ '%.1f' | format(country.percent) }}%)</span></li>
+      <li><span class="country-swatch" aria-hidden="true" style="background: {{ chart_colors[loop.index0 % chart_colors | length] }};"></span><span>{{ country.name }}</span><span class="country-value">{{ country.visits }} ({{ '%.1f' | format(country.percent) }}%)</span></li>
       {% endfor %}
     </ul>
   </div>
@@ -116,15 +118,37 @@
 </div>
 </div>
 </div>
-<section class="traffic-chart" aria-labelledby="traffic-chart-title">
-  <h2 id="traffic-chart-title">All Traffic</h2>
-  {% if traffic_times %}
-  <div id="all-traffic" role="img" aria-label="Daily hits across all sites. Hover over a bar for its date and total."></div>
-  {% include 'all_traffic.html' %}
+<div class="metrics-charts">
+<section class="site-chart" aria-labelledby="site-chart-title">
+  <h2 id="site-chart-title">Visits by Site</h2>
+  {% if sites %}
+  <div class="site-chart-content">
+    <div id="site-pie" role="img" aria-label="Visits by site. Counts and percentages are listed in the legend."></div>
+    <ul class="country-legend site-legend" aria-label="Visits by site">
+      {% set total = sites | sum(attribute='page_views') %}
+      {% for site in sites %}
+      <li><span class="country-swatch" aria-hidden="true" style="background: {{ chart_colors[loop.index0 % chart_colors | length] }};"></span><span>{{ site.site }}</span><span class="country-value">{{ site.page_views }} ({{ '%.1f' | format(site.page_views / total * 100) }}%)</span></li>
+      {% endfor %}
+    </ul>
+  </div>
   {% else %}
   <p>No visits match the current filters.</p>
   {% endif %}
 </section>
+<section class="traffic-chart" aria-labelledby="traffic-chart-title">
+  <h2 id="traffic-chart-title">All Traffic</h2>
+  {% if traffic_times %}
+  <div id="all-traffic" role="img" aria-label="Daily hits across all sites. Hover over a bar for its date and total."></div>
+  {% else %}
+  <p>No visits match the current filters.</p>
+  {% endif %}
+</section>
+</div>
+{% if country_slices or sites or traffic_times %}
+{% include 'chart_theme.html' %}
+{% include 'pie_charts.html' %}
+{% if traffic_times %}{% include 'all_traffic.html' %}{% endif %}
+{% endif %}
 <script>
   for (const wrapper of document.querySelectorAll('.table-scroll')) {
     const table = wrapper.querySelector('table');

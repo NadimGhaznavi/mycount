@@ -9,6 +9,11 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-10-01 @ 02:56
+
+- Use Mondrian chart colors with brighter 4-pixel bar and pie outlines, and render the location pie with Plotly.
+- Add a Visits by Site pie beside All Traffic at the bottom of Metrics, occupying one third of the row and stacking on small screens.
+
 ## [0.12.0] - 2026-10-01 @ 02:40
 
 - Add a compact, full-width Plotly bar chart titled All Traffic at the bottom of Metrics, showing daily hits across all sites in browser-local time, including zero-traffic days and respecting the bot filter.

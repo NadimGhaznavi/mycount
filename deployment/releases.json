@@ -158,7 +158,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "690dc7ae520c63942ad07ec4a088fd19354c9c1e24d2313d90787bbb8774f85b",
+      "digest": "264e1af3e67e38a494e79169214ff1f78f0ef194d1009d7283d6f6bb39d20a99",
       "targets": [
         "filesystem"
       ]
@@ -329,7 +329,7 @@
       ]
     },
     "mycount/server/ControlPages.py": {
-      "digest": "f081521cdaa9112a2938ca6e43d10eaa80a40712d296e18bd11a4ace3649974c",
+      "digest": "1d92f55af24f711c22ecd7c675201d85035c72c64b51186882edd5fdbece0702",
       "targets": [
         "report-server"
       ]
@@ -360,7 +360,7 @@
       ]
     },
     "mycount/server/templates/all_traffic.html": {
-      "digest": "7be1e468b8f5f8a1e0e9914ce442b1ec5d16dddabfec308c0d3dd4849aa0f68c",
+      "digest": "6f7cb61a23cb7e2f9dccc0e2cb37a21d7393cbf6f27ff388b5588b448e521f7d",
       "targets": [
         "report-server"
       ]
@@ -371,14 +371,26 @@
         "report-server"
       ]
     },
+    "mycount/server/templates/chart_theme.html": {
+      "digest": "5acc2544fe82727c9878ebe382b0eac19d27147dc097b976c56ffc20b91edb48",
+      "targets": [
+        "report-server"
+      ]
+    },
     "mycount/server/templates/control.html": {
-      "digest": "a39b96bdbf00667a2bbbed7f804d4875e0c12e6779111efa6cfebdec19d1c9e0",
+      "digest": "7b5b098657c5d8eb306ccc5d5c4cc8c8417d57b3780f2ae0bba83fc3e1dd92ed",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/templates/local_time.html": {
       "digest": "fb661c35d5c4db68d91e3fe237f195c65f1606653365d0144bc2c3470d5ea139",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/server/templates/pie_charts.html": {
+      "digest": "674afd42792e54211c09c5260f2284b54d5df9dfd0ccc6ed3ec4d69806f24861",
       "targets": [
         "report-server"
       ]
@@ -390,7 +402,7 @@
       ]
     },
     "mycount/server/templates/styles.html": {
-      "digest": "b00f68fcf3e39d46c5ec42ba0c2ccf43336cd91fcf1d1ed12e1a81eff154b83f",
+      "digest": "8194ad1d253f9d590b5047b020e2060810fb7d9f0618a0cd0780351c7250dfee",
       "targets": [
         "report-server"
       ]
@@ -581,6 +593,13 @@
         "report-server"
       ],
       "version": "0.12.0"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "report-server"
+      ],
+      "version": "0.13.0"
     }
   ]
 }
