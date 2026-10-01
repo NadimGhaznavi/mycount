@@ -127,7 +127,7 @@
     <ul class="country-legend site-legend" aria-label="Visits by site">
       {% set total = sites | sum(attribute='page_views') %}
       {% for site in sites %}
-      <li><span class="country-swatch" aria-hidden="true" style="background: {{ chart_colors[loop.index0 % chart_colors | length] }};"></span><span>{{ site.site }}</span><span class="country-value">{{ site.page_views }} ({{ '%.1f' | format(site.page_views / total * 100) }}%)</span></li>
+      <li><span class="country-swatch" aria-hidden="true" style="background: {{ chart_colors[loop.index0 % chart_colors | length] }};"></span><span>{{ site.site }} - {{ site.page_views }} ({{ '%.0f' | format(site.page_views / total * 100) }}%)</span></li>
       {% endfor %}
     </ul>
   </div>
