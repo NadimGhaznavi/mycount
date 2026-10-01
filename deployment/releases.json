@@ -378,7 +378,7 @@
       ]
     },
     "mycount/server/templates/control.html": {
-      "digest": "7b5b098657c5d8eb306ccc5d5c4cc8c8417d57b3780f2ae0bba83fc3e1dd92ed",
+      "digest": "cd6e5c6d40eab170b23dfdfb4a3c3a429dc219d9b75d55c3dc67103fd94f3210",
       "targets": [
         "report-server"
       ]
@@ -402,7 +402,7 @@
       ]
     },
     "mycount/server/templates/styles.html": {
-      "digest": "8194ad1d253f9d590b5047b020e2060810fb7d9f0618a0cd0780351c7250dfee",
+      "digest": "b8559a99a2fccd3ab51eb9702ad60a2cc4c92e0c1086c7158b2ff02b499f8cb1",
       "targets": [
         "report-server"
       ]
@@ -600,6 +600,12 @@
         "report-server"
       ],
       "version": "0.13.0"
+    },
+    {
+      "targets": [
+        "report-server"
+      ],
+      "version": "0.13.1"
     }
   ]
 }
