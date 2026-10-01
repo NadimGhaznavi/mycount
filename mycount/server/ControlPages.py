@@ -45,16 +45,10 @@ class ControlPages:
         ordered = sorted(countries.values(), key=lambda country: (-country["visits"], country["name"]))
         total = sum(country["visits"] for country in ordered)
         slices = []
-        cumulative = 0
-        for index, country in enumerate(ordered):
-            start = cumulative
-            cumulative += country["visits"]
+        for country in ordered:
             slices.append({
                 **country,
                 "percent": country["visits"] / total * 100,
-                "start": start / total * 100,
-                "end": cumulative / total * 100,
-                "color": f"hsl({(index * 137.508 + 28) % 360:.3f} 65% 60%)",
             })
         return slices
 
