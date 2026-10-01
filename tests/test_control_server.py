@@ -60,15 +60,30 @@ class ControlServerTests(unittest.TestCase):
         self.assertIn('>Canada</span><span class="country-value">6 (60.0%)', chart)
         self.assertIn('>&lt;Country&gt;</span><span class="country-value">3 (30.0%)', chart)
         self.assertIn('>Unknown</span><span class="country-value">1 (10.0%)', chart)
-        for interval in ('0.0% 60.0%', '60.0% 90.0%', '90.0% 100.0%'):
-            self.assertIn(interval, chart)
+        self.assertIn("drawPie('country-pie'", body)
+        self.assertIn('[6, 3, 1]', body)
         self.assertNotIn('Toronto', chart)
         single = ControlPages().render([], [], locations[:1], [], [])
-        self.assertIn(b'0.0% 100.0%', single)
+        self.assertIn(b"drawPie('country-pie'", single)
         self.assertIn(b'2 (100.0%)', single)
         empty = ControlPages().render([], [], [], [], []).decode().split('<section class="country-chart"', 1)[1]
         self.assertIn('No visits match the current filters.', empty)
         self.assertNotIn('conic-gradient(', empty)
+
+    def test_site_pie_uses_site_totals_and_escapes_legend_names(self):
+        sites = [
+            {"site": "<one>", "page_views": 3, "last_visited": datetime(2026, 9, 27)},
+            {"site": "two.example", "page_views": 1, "last_visited": datetime(2026, 9, 27)},
+        ]
+        pages = [{**site, "url": f'https://{site["site"]}/'} for site in sites]
+        body = ControlPages().render(sites, pages, [], [], []).decode()
+        chart = body.split('<section class="site-chart"', 1)[1].split('</section>', 1)[0]
+        self.assertIn('>Visits by Site</h2>', chart)
+        self.assertIn('&lt;one&gt;</span><span class="country-value">3 (75.0%)', chart)
+        self.assertIn('two.example</span><span class="country-value">1 (25.0%)', chart)
+        self.assertIn("drawPie('site-pie'", body)
+        self.assertIn('[3, 1]', body)
+        self.assertEqual(body.count('src="https://cdn.plot.ly/'), 1)
 
     @patch("mycount.server.ControlHandler.DbMgr")
     def test_banner_health_and_missing_page(self, factory):

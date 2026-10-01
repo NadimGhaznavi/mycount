@@ -1,4 +1,3 @@
-<script src="https://cdn.plot.ly/plotly-4.1.1.min.js" charset="utf-8"></script>
 <script>
   (() => {
     const timestamps = {{ traffic_times | tojson }};
@@ -22,13 +21,12 @@
     }
     Plotly.newPlot('all-traffic', [{
       type: 'bar', x: dates, y: hits,
-      marker: {color: '#ffac63'},
+      marker: {color: chartTheme.colors[1], line: {color: chartTheme.outlines[1], width: 4}},
       hovertemplate: '%{x|%b %d, %Y}<br>%{y} hits<extra></extra>',
     }], {
+      ...chartTheme.layout,
       height: 220,
       margin: {l: 55, r: 20, t: 15, b: 45},
-      paper_bgcolor: '#191410', plot_bgcolor: '#191410',
-      font: {family: 'system-ui, sans-serif', color: '#f3e7db', size: 12},
       xaxis: {type: 'date', tickformat: '%b %d', showgrid: false, fixedrange: true},
       yaxis: {title: {text: 'Hits'}, rangemode: 'tozero', minallowed: 0, tickformat: ',d',
               dtick: Math.max(1, Math.ceil(Math.max(...hits) / 4)), gridcolor: '#62412b', fixedrange: true},
