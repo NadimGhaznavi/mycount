@@ -360,7 +360,7 @@
       ]
     },
     "mycount/server/templates/all_traffic.html": {
-      "digest": "6f7cb61a23cb7e2f9dccc0e2cb37a21d7393cbf6f27ff388b5588b448e521f7d",
+      "digest": "0618033edefe4d8ea4ba933884176e83b653f8a6517c0ab015041bc510b8b586",
       "targets": [
         "report-server"
       ]
@@ -402,7 +402,7 @@
       ]
     },
     "mycount/server/templates/styles.html": {
-      "digest": "b8559a99a2fccd3ab51eb9702ad60a2cc4c92e0c1086c7158b2ff02b499f8cb1",
+      "digest": "b00749dfeff719775ca39e14cd6d380bdbd010ef188e1acb588021c75f9330fd",
       "targets": [
         "report-server"
       ]
@@ -606,6 +606,12 @@
         "report-server"
       ],
       "version": "0.13.1"
+    },
+    {
+      "targets": [
+        "report-server"
+      ],
+      "version": "0.13.2"
     }
   ]
 }

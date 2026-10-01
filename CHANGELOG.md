@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.13.2] - 2026-10-01 @ 03:05
+
 - Increase the bottom chart content height to 300px, with a taller Visits by Site pie and legend.
 
 ## [0.13.1] - 2026-10-01 @ 03:02
