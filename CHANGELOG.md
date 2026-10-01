@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Increase the bottom chart content height to 300px, with a taller Visits by Site pie and legend.
+
 ## [0.13.1] - 2026-10-01 @ 03:02
 
 - Show Visits by Site legend items on one line as `site - visits (23%)`, rounding percentages to whole numbers for this chart only.
