@@ -79,8 +79,8 @@ class ControlServerTests(unittest.TestCase):
         body = ControlPages().render(sites, pages, [], [], []).decode()
         chart = body.split('<section class="site-chart"', 1)[1].split('</section>', 1)[0]
         self.assertIn('>Visits by Site</h2>', chart)
-        self.assertIn('&lt;one&gt;</span><span class="country-value">3 (75.0%)', chart)
-        self.assertIn('two.example</span><span class="country-value">1 (25.0%)', chart)
+        self.assertIn('&lt;one&gt; - 3 (75%)</span>', chart)
+        self.assertIn('two.example - 1 (25%)</span>', chart)
         self.assertIn("drawPie('site-pie'", body)
         self.assertIn('[3, 1]', body)
         self.assertEqual(body.count('src="https://cdn.plot.ly/'), 1)

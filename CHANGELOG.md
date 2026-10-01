@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Show Visits by Site legend items on one line as `site - visits (23%)`, rounding percentages to whole numbers for this chart only.
+
 ## [0.13.0] - 2026-10-01 @ 02:56
 
 - Use Mondrian chart colors with brighter 4-pixel bar and pie outlines, and render the location pie with Plotly.
