@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-10-01 @ 03:02
+
 - Show Visits by Site legend items on one line as `site - visits (23%)`, rounding percentages to whole numbers for this chart only.
 
 ## [0.13.0] - 2026-10-01 @ 02:56
