@@ -21,6 +21,23 @@ from mycount.server.ControlPages import ControlPages
 
 
 class ControlServerTests(unittest.TestCase):
+    def test_all_traffic_uses_all_matching_visits_and_follows_the_tables(self):
+        recent = [
+            {"received_at": datetime(2026, 9, 27, 3, 30), "country_code": None,
+             "city_name": None, "url": "https://one.example/"},
+            {"received_at": datetime(2026, 9, 27, 4, 30), "country_code": None,
+             "city_name": None, "url": "https://two.example/"},
+        ]
+        body = ControlPages().render([], [], [], recent, []).decode()
+        self.assertGreater(body.index('<section class="traffic-chart"'), body.rindex('</table>'))
+        self.assertIn('>All Traffic</h2>', body)
+        self.assertIn('const timestamps = ["2026-09-27T03:30:00+00:00", "2026-09-27T04:30:00+00:00"]', body)
+        self.assertIn("Plotly.newPlot('all-traffic'", body)
+        empty = ControlPages().render([], [], [], [], []).decode()
+        chart = empty.split('<section class="traffic-chart"', 1)[1].split('</section>', 1)[0]
+        self.assertIn('No visits match the current filters.', chart)
+        self.assertNotIn('cdn.plot.ly', empty)
+
     def test_counting_since_uses_first_visit_date_and_hides_when_unknown(self):
         pages = ControlPages()
         first = datetime(2025, 2, 3, 1, 30)

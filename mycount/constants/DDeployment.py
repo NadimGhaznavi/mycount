@@ -332,12 +332,15 @@ class DDeployment:
             "mycount/server/MyCountServer.py",
             "mycount/server/__init__.py",
         ),
+        "mycount/server/templates/all_traffic.html": (
+        ),
         "mycount/server/templates/base.html": (
             "mycount/server/templates/local_time.html",
             "mycount/server/templates/styles.html",
             "mycount/server/templates/table_sort.html",
         ),
         "mycount/server/templates/control.html": (
+            "mycount/server/templates/all_traffic.html",
             "mycount/server/templates/base.html",
         ),
         "mycount/server/templates/local_time.html": (

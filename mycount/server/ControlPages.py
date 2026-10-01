@@ -28,6 +28,7 @@ class ControlPages:
         return self._templates.get_template("control.html").render(
             sites=sites, pages_by_site=pages_by_site, locations=locations, recent=recent, referrers=referrers,
             country_slices=self._country_slices(locations),
+            traffic_times=[visit["received_at"].replace(tzinfo=timezone.utc).isoformat() for visit in recent],
             first_visit_at=first_visit_at,
             error=error, exclude_bots=exclude_bots, refreshed_at=datetime.now(timezone.utc), active_page="metrics",
         ).encode("utf-8")

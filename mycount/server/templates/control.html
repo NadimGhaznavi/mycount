@@ -116,6 +116,15 @@
 </div>
 </div>
 </div>
+<section class="traffic-chart" aria-labelledby="traffic-chart-title">
+  <h2 id="traffic-chart-title">All Traffic</h2>
+  {% if traffic_times %}
+  <div id="all-traffic" role="img" aria-label="Daily hits across all sites. Hover over a bar for its date and total."></div>
+  {% include 'all_traffic.html' %}
+  {% else %}
+  <p>No visits match the current filters.</p>
+  {% endif %}
+</section>
 <script>
   for (const wrapper of document.querySelectorAll('.table-scroll')) {
     const table = wrapper.querySelector('table');
