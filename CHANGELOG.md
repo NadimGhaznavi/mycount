@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-10-01 @ 02:40
+
 - Add a compact, full-width Plotly bar chart titled All Traffic at the bottom of Metrics, showing daily hits across all sites in browser-local time, including zero-traffic days and respecting the bot filter.
 
 ## [0.11.1] - 2026-09-30 @ 17:37
