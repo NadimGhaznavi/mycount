@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploy the application after provisioning and prepare its weekly refresh.
+# Deploy the application after provisioning and configure its services.
 set -euo pipefail
 umask 022
 [[ $EUID == 0 && ( $# == 0 || ( $# == 1 && $1 == --upgrade ) ) ]] || { printf 'Usage: sudo scripts/install-services.sh [--upgrade]\n' >&2; exit 1; }
@@ -110,7 +110,6 @@ apply_schemas() {
 import logging
 import os
 from pathlib import Path
-from mycount.activity.GeoIpSchema import GeoIpSchema
 from mycount.activity.VisitorSchema import VisitorSchema
 from mycount.constants.DMyCount import DMyCount
 from mycount.interface.DatabaseEnvironment import DatabaseEnvironment
@@ -120,7 +119,6 @@ os.environ.update(DatabaseEnvironment.read(Path(DMyCount.DATABASE_ENV)))
 db = DbMgr()
 try:
     VisitorSchema(db).apply()
-    GeoIpSchema(db).apply()
 finally:
     db.close()
 PY
@@ -144,11 +142,9 @@ for name in sys.argv[3:]:
     if not target.exists() or target.read_text() != unit:
         target.write_text(unit)
 if sys.argv[2] == 'true':
-    command = f'{DMyCount.BASE_DIR}/scripts/update-geoip.sh'
-    Path(DGeoIp.CRON_FILE).write_text(
-        'SHELL=/bin/bash\nPATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n'
-        f'{DGeoIp.CRON_SCHEDULE} root {command}\n')
-    Path(DGeoIp.CRON_FILE).chmod(0o644)
+    # Remove the schedule left by installations that owned GeoIP datasets.
+    Path(DGeoIp.CRON_FILE).unlink(missing_ok=True)
+    Path(DMyCount.BASE_DIR, 'scripts/update-geoip.sh').unlink(missing_ok=True)
 PY
 }
 
@@ -216,14 +212,7 @@ if [[ ${#targets[@]} -gt 0 ]]; then
     if [[ $full_setup == true ]]; then
         apply_schemas
     fi
-    if [[ $upgrade == false ]]; then
-        printf 'Downloading and importing GeoIP datasets; this may take several minutes...\n'
-        "$install_dir/scripts/update-geoip.sh"
-    fi
     render_definitions
-    if [[ $full_setup == true ]]; then
-        systemctl enable --now cron.service
-    fi
     if [[ ${#units[@]} -gt 0 ]]; then
         start_services
         check_health

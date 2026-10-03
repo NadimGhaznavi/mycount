@@ -170,7 +170,7 @@ class ControlServerTests(unittest.TestCase):
                     self.assertEqual(reference.count(b'<table '), 1)
                     for heading in (b'Source', b'Source Details', b'Table', b'Column', b'Details'):
                         self.assertIn(b'<th scope="col">' + heading + b'</th>', reference)
-                    self.assertIn(b'GeoIP CSV</td><td>accuracy</td><td>---</td><td>---</td>', reference)
+                    self.assertIn(b'BMGeoIP</td><td>accuracy</td><td>---</td><td>---</td>', reference)
                     self.assertNotIn(b'href="/reference"', reference)
                     self.assertIn(b'<a href="/">Metrics</a>', reference)
                     self.assertIn(b'<a href="/marketing">Marketing</a>', reference)

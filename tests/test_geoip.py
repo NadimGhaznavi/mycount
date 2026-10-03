@@ -1,152 +1,117 @@
-"""GeoIP source validation using small local archives."""
+"""Verify BMGeoIP's external contract and MyCount location conversion."""
 
-import csv
-from contextlib import nullcontext
+from copy import deepcopy
+from http.client import IncompleteRead
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from io import StringIO
-from pathlib import Path
-import tempfile
+import json
+from threading import Thread
 import unittest
-from unittest.mock import Mock, patch
-from zipfile import ZipFile
+from unittest.mock import patch
+from urllib.error import HTTPError, URLError
+from urllib.parse import parse_qs, urlsplit
 
 from mycount.constants.DGeoIp import DGeoIp
-from mycount.activity.UpdateGeoIp import UpdateGeoIp
-from mycount.interface.GeoIpSource import GeoIpSource
+from mycount.entity.GeoLocation import GeoLocation
+from mycount.interface.GeoIp import GeoIp
+from mycount.interface.GeoIpUnavailable import GeoIpUnavailable
 
 
-def archive(path, version, rows, columns=DGeoIp.COLUMNS):
-    data = StringIO(newline="")
-    writer = csv.writer(data)
-    writer.writerow(columns)
-    for row in rows:
-        writer.writerow([row.get(column, "") for column in columns])
-    with ZipFile(path, "w") as zipped:
-        zipped.writestr(DGeoIp.MEMBER.format(version=version), data.getvalue())
+def record(**changes):
+    return {**dict.fromkeys(DGeoIp.COLUMNS, ""), "ip_version": "4",
+            "start_ip": "8.8.8.0", "end_ip": "8.8.8.255", "country_code": "CA",
+            "country": "Canada", "state": "Ontario", "city": "É, Example",
+            "latitude": "43.2557", "longitude": "-79.8711", "zip": "00123",
+            "timezone": "America/Toronto", **changes}
 
 
-class FixtureGeoIpSource(GeoIpSource):
-    def __init__(self, fail_version=None, city="Example"):
-        self.fail_version = fail_version
-        self.city = city
+class GeoIpTests(unittest.TestCase):
+    def lookup(self, rows, address="8.8.8.8", **changes):
+        normalized = "8.8.8.8" if address.startswith("::ffff:") else address
+        payload = {"ip": normalized, "ip_version": 6 if ":" in normalized else 4, "results": rows, **changes}
+        with patch("mycount.interface.GeoIp.build_opener") as opener:
+            opener.return_value.open.return_value = StringIO(json.dumps(payload))
+            result = GeoIp().locate(address)
+            self.assertEqual(parse_qs(urlsplit(opener.return_value.open.call_args.args[0]).query),
+                             {"ip": [normalized]})
+            self.assertEqual(opener.return_value.open.call_args.kwargs["timeout"], DGeoIp.TIMEOUT)
+            return result
 
-    def download(self, version, destination):
-        if version == self.fail_version:
-            raise OSError("Simulated download failure")
-        ranges = {
-            4: [("8.8.8.0", "8.8.8.255", self.city)],
-            6: [("2606:4700::", "2606:4700:ffff:ffff:ffff:ffff:ffff:ffff", self.city),
-                ("2606:4700:10::", "2606:4700:10::ff", "Specific")],
-        }
-        archive(destination, version, [
-            {"ip_version": str(version), "start_ip": start, "end_ip": end,
-             "continent": "North America", "country_code": "CA", "country": "Canada", "state": "Ontario", "city": city,
-             "latitude": "43.2557", "longitude": "-79.8711",
-             "zip": "00123", "timezone": "America/Toronto"}
-            for start, end, city in ranges[version]
-        ])
+    def test_location_mapping_and_mapped_ipv4(self):
+        for address in ("8.8.8.8", "::ffff:8.8.8.8"):
+            location = self.lookup([record()], address)
+            self.assertEqual(location, GeoLocation("CA", "Canada", "Ontario", "É, Example",
+                                                   43.2557, -79.8711, "00123", "America/Toronto"))
 
+    def test_overlaps_follow_numeric_start_descending_end_ascending(self):
+        broad = record(ip_version="6", start_ip="2606:4700::", end_ip="2606:4700:ffff:ffff:ffff:ffff:ffff:ffff")
+        nested = record(ip_version="6", start_ip="2606:4700:10::", end_ip="2606:4700:10::ff", city="Specific")
+        wider = {**nested, "end_ip": "2606:4700:10::ffff", "city": "Wider"}
+        for rows in ([broad, wider, nested], [nested, broad, wider]):
+            self.assertEqual(self.lookup(rows, "2606:4700:10::1").city_name, "Specific")
+        self.assertEqual(self.lookup([broad], "2606:4700:10::100").city_name, "É, Example")
+        for address in ("8.8.8.0", "8.8.8.255"):
+            self.assertEqual(self.lookup([record()], address).country_name, "Canada")
 
-class GeoIpProgressTests(unittest.TestCase):
-    def test_reports_stages_and_batch_progress(self):
-        database = Mock()
-        database.refresh.return_value = nullcontext()
-        with patch('mycount.activity.UpdateGeoIp.monotonic', side_effect=[0, 11, 11, 12, 23, 23]):
-            with self.assertLogs('mycount.activity.UpdateGeoIp', level='INFO') as logs:
-                counts = UpdateGeoIp(FixtureGeoIpSource(), database).run()
-        self.assertEqual(counts, {4: 1, 6: 2})
-        self.assertEqual(database.append.call_count, 2)
-        output = '\n'.join(logs.output)
-        self.assertIn('Downloading IPv4', output)
-        self.assertIn('IPv4: imported 1 ranges', output)
-        self.assertIn('IPv6: imported 2 ranges', output)
-        self.assertIn('Publishing GeoIP datasets', output)
+    def test_empty_and_non_global_addresses(self):
+        self.assertEqual(self.lookup([]), GeoLocation())
+        with patch("mycount.interface.GeoIp.build_opener") as opener:
+            for address in ("127.0.0.1", "::1", "192.168.0.1", "::ffff:192.168.0.1"):
+                self.assertEqual(GeoIp().locate(address), GeoLocation())
+            opener.assert_not_called()
 
-    def test_failed_download_does_not_report_publication(self):
-        database = Mock()
-        database.refresh.return_value = nullcontext()
-        with self.assertLogs('mycount.activity.UpdateGeoIp', level='INFO') as logs:
-            with self.assertRaises(OSError):
-                UpdateGeoIp(FixtureGeoIpSource(fail_version=6), database).run()
-        self.assertNotIn('Publishing GeoIP datasets', '\n'.join(logs.output))
+    def test_optional_fields_and_coordinate_boundaries(self):
+        empty = record(**dict.fromkeys(("country_code", "country", "state", "city", "zip", "timezone", "latitude", "longitude"), ""))
+        self.assertEqual(self.lookup([empty]), GeoLocation())
+        location = self.lookup([record(latitude="0", longitude="-180")])
+        self.assertEqual((location.latitude, location.longitude), (0.0, -180.0))
 
+    def test_invalid_external_records_and_envelopes(self):
+        invalid = [record(latitude=value) for value in ("nan", "inf", "91", "text")]
+        invalid += [record(longitude="181"), record(city="x" * 256), record(country_code="CAN"),
+                    record(ip_version="6"), record(end_ip="8.8.7.255"), record(start_ip="8.8.8.9"),
+                    record(zip=123), record(extra="unexpected")]
+        missing = deepcopy(record()); missing.pop("source"); invalid.append(missing)
+        for row in invalid:
+            with self.subTest(row=row), self.assertRaises(GeoIpUnavailable):
+                self.lookup([row])
+        for changes in ({"ip": "1.1.1.1"}, {"ip_version": True}, {"results": None}):
+            with self.subTest(changes=changes), self.assertRaises(GeoIpUnavailable):
+                self.lookup([], **changes)
 
-class GeoIpSourceTests(unittest.TestCase):
-    def setUp(self):
-        temporary = tempfile.TemporaryDirectory()
-        self.addCleanup(temporary.cleanup)
-        self.path = Path(temporary.name) / "source.zip"
+    def test_transport_http_and_json_failures_preserve_cause(self):
+        for error in (TimeoutError("timeout"), URLError("offline"), IncompleteRead(b'partial'),
+                      HTTPError("url", 503, "unavailable", {}, None)):
+            with patch("mycount.interface.GeoIp.build_opener") as opener:
+                opener.return_value.open.side_effect = error
+                with self.assertRaises(GeoIpUnavailable) as raised:
+                    GeoIp().locate("8.8.8.8")
+                self.assertIs(raised.exception.__cause__, error)
+        with patch("mycount.interface.GeoIp.build_opener") as opener:
+            opener.return_value.open.return_value = StringIO("not json")
+            with self.assertRaises(GeoIpUnavailable):
+                GeoIp().locate("8.8.8.8")
 
-    def test_unicode_comma_and_long_city_survive(self):
-        city = "É, " + "x" * 134
-        FixtureGeoIpSource(city=city).download(4, self.path)
-        rows = list(GeoIpSource().rows(self.path, 4))
-        self.assertEqual(rows[0].location.city_name, city)
-        self.assertEqual(rows[0].location.country_name, 'Canada')
-        self.assertEqual(rows[0].location.zip, '00123')
-        self.assertEqual(rows[0].location.timezone, 'America/Toronto')
-        self.assertEqual(len(rows[0].start), 16)
-
-    def test_ipv6_nested_ranges_are_accepted(self):
-        FixtureGeoIpSource().download(6, self.path)
-        rows = list(GeoIpSource().rows(self.path, 6))
-        self.assertEqual(len(rows), 2)
-        self.assertLess(rows[0].start, rows[1].start)
-        self.assertGreater(rows[0].end, rows[1].end)
-
-    def test_wrong_header_is_rejected(self):
-        archive(self.path, 4, [], ("unexpected",))
-        with self.assertRaisesRegex(ValueError, "header"):
-            list(GeoIpSource().rows(self.path, 4))
-
-    def test_coordinates_allow_missing_zero_and_boundaries(self):
-        for latitude, longitude, expected in (
-            ('', '', (None, None)), (' ', '0', (None, 0.0)),
-            ('0', '', (0.0, None)), ('90', '-180', (90.0, -180.0)),
-            ('-90', '180', (-90.0, 180.0)), ('43.2557', '-79.8711', (43.2557, -79.8711)),
-        ):
-            with self.subTest(latitude=latitude, longitude=longitude):
-                archive(self.path, 4, [{'ip_version': '4', 'start_ip': '8.8.8.0',
-                    'end_ip': '8.8.8.255', 'latitude': latitude, 'longitude': longitude}])
-                location = next(GeoIpSource().rows(self.path, 4)).location
-                self.assertEqual((location.latitude, location.longitude), expected)
-
-    def test_invalid_coordinates_are_rejected(self):
-        for field, values in (('latitude', ('91', '-91', 'nan', 'inf', 'text')),
-                              ('longitude', ('181', '-181', 'NaN', '-inf', 'text'))):
-            for value in values:
-                with self.subTest(field=field, value=value):
-                    archive(self.path, 4, [{'ip_version': '4', 'start_ip': '8.8.8.0',
-                        'end_ip': '8.8.8.255', field: value}])
-                    with self.assertRaisesRegex(ValueError, 'coordinate at line 2'):
-                        list(GeoIpSource().rows(self.path, 4))
-
-    def test_optional_zip_timezone_and_length_limits(self):
-        base = {'ip_version': '4', 'start_ip': '8.8.8.0', 'end_ip': '8.8.8.255'}
-        archive(self.path, 4, [base])
-        location = next(GeoIpSource().rows(self.path, 4)).location
-        self.assertIsNone(location.zip)
-        self.assertIsNone(location.timezone)
-        for field, limit in (('zip', DGeoIp.ZIP_LENGTH), ('timezone', DGeoIp.TIMEZONE_LENGTH)):
-            with self.subTest(field=field):
-                archive(self.path, 4, [{**base, field: 'x' * (limit + 1)}])
-                with self.assertRaisesRegex(ValueError, 'location'):
-                    list(GeoIpSource().rows(self.path, 4))
-
-    def test_optional_country_name_and_invalid_length(self):
-        for country in ('', 'x' * (DGeoIp.COUNTRY_NAME_LENGTH + 1)):
-            archive(self.path, 4, [{'ip_version': '4', 'start_ip': '8.8.8.0',
-                                   'end_ip': '8.8.8.255', 'country': country}])
-            if country:
-                with self.assertRaisesRegex(ValueError, 'location'):
-                    list(GeoIpSource().rows(self.path, 4))
-            else:
-                self.assertIsNone(next(GeoIpSource().rows(self.path, 4)).location.country_name)
-
-    def test_invalid_range_and_address_family_are_rejected(self):
-        for version, start, end in (("6", "8.8.8.0", "8.8.8.255"),
-                                    ("4", "8.8.8.255", "8.8.8.0"),
-                                    ("4", "2606:4700::", "2606:4700::ff")):
-            with self.subTest(version=version, start=start):
-                archive(self.path, 4, [{"ip_version": version, "start_ip": start, "end_ip": end}])
-                with self.assertRaisesRegex(ValueError, "range"):
-                    list(GeoIpSource().rows(self.path, 4))
+    def test_real_http_lookup_and_service_unavailability(self):
+        paths = []
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                paths.append(self.path)
+                status = 200 if len(paths) == 1 else 503
+                body = json.dumps({"ip": "8.8.8.8", "ip_version": 4, "results": [record()]}).encode()
+                self.send_response(status)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+            def log_message(self, *args):
+                pass
+        with ThreadingHTTPServer(("127.0.0.1", 0), Handler) as server:
+            thread = Thread(target=server.serve_forever); thread.start()
+            try:
+                with patch.object(DGeoIp, "HOST", "127.0.0.1"), patch.object(DGeoIp, "PORT", server.server_port):
+                    self.assertEqual(GeoIp().locate("8.8.8.8").zip, "00123")
+                    with self.assertRaises(GeoIpUnavailable):
+                        GeoIp().locate("8.8.8.8")
+                self.assertEqual(paths, ["/api/lookup?ip=8.8.8.8"] * 2)
+            finally:
+                server.shutdown(); thread.join()

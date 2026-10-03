@@ -13,6 +13,7 @@ from mycount.activity.CountVisits import CountVisits
 from mycount.constants.DMyCount import DMyCount
 from mycount.interface.VisitPayload import InvalidVisit
 from mycount.interface.VisitorAddress import VisitorAddress
+from mycount.interface.GeoIpUnavailable import GeoIpUnavailable
 
 
 class CollectorHttp:
@@ -59,6 +60,9 @@ class CollectorHttp:
             self._collector.record(payload, VisitorAddress.resolve(request), request.headers["Origin"])
         except InvalidVisit:
             return Response(status=400)
+        except GeoIpUnavailable:
+            logging.getLogger(__name__).exception("Geolocation unavailable.")
+            return Response(status=503)
         except pymysql.OperationalError as error:
             logging.getLogger(__name__).error("Database unavailable (code %s).", error.args[0])
             return Response(status=503)

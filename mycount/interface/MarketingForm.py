@@ -10,6 +10,8 @@ from mycount.entity.MarketingPost import MarketingPost
 class MarketingForm:
     @staticmethod
     def parse(fields: dict[str, list[str]]) -> MarketingPost:
+        if fields.keys() - {"posted_at", "timezone_offset", "platform", "url", "notes"}:
+            raise ValueError("Supply the posting fields only.")
         def field(name: str) -> str:
             values = fields.get(name, [""])
             if len(values) != 1:
@@ -34,7 +36,8 @@ class MarketingForm:
             valid_url = parsed.scheme in ("http", "https") and parsed.hostname and parsed.port != 0
         except ValueError:
             valid_url = False
-        if not valid_url or len(url) > DMarketing.MAX_URL_LENGTH or any(character.isspace() for character in url):
+        if (not valid_url or len(url) > DMarketing.MAX_URL_LENGTH
+                or any(character.isspace() or ord(character) < 32 or ord(character) == 127 for character in url)):
             raise ValueError("Posting URL must be an HTTP(S) URL of at most 2048 characters.")
         notes = field("notes")
         if len(notes) > DMarketing.MAX_NOTES_LENGTH:

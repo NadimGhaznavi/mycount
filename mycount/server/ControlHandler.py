@@ -105,7 +105,13 @@ class ControlHandler(BaseHTTPRequestHandler):
             self.send_error(404, "Page not found")
             return
         origin = self.headers.get("Origin")
-        if origin and urlsplit(origin).netloc != self.headers.get("Host"):
+        try:
+            parsed_origin = urlsplit(origin) if origin else None
+        except ValueError:
+            self.send_error(403, "Invalid submission origin")
+            return
+        if parsed_origin and (parsed_origin.scheme not in ("http", "https")
+                              or parsed_origin.netloc != self.headers.get("Host")):
             self.send_error(403, "Cross-site submission refused")
             return
         content_type = self.headers.get("Content-Type", "")
@@ -114,11 +120,17 @@ class ControlHandler(BaseHTTPRequestHandler):
             return
         fields = {}
         try:
+            if self.headers.get("Transfer-Encoding") or len(self.headers.get_all("Content-Length", [])) != 1:
+                self.send_error(400, "Supply one Content-Length and no Transfer-Encoding")
+                return
             length = int(self.headers.get("Content-Length", "0"))
             if not 0 < length <= DMarketing.MAX_SCREENSHOT_BYTES + DMarketing.MAX_FORM_BYTES:
                 self.send_error(413, "Invalid form size")
                 return
-            fields, screenshot = MarketingUpload.parse(self.rfile.read(length), content_type)
+            body = self.rfile.read(length)
+            if len(body) != length:
+                raise ValueError("Incomplete marketing form.")
+            fields, screenshot = MarketingUpload.parse(body, content_type)
             post = MarketingForm.parse(fields)
             if screenshot is not None:
                 MarketingScreenshots.validate(screenshot)

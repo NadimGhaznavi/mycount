@@ -14,6 +14,7 @@ from tempfile import NamedTemporaryFile
 
 from mycount.constants.DCaddy import DCaddy
 from mycount.constants.DMyCount import DMyCount
+from mycount.interface.RouterMappings import RouterMappings
 
 config = Path(DCaddy.CONFIG)
 site = Path(DCaddy.SITE_CONFIG)
@@ -50,7 +51,6 @@ except subprocess.CalledProcessError:
     else:
         site.write_bytes(previous_site)
     raise
-for port in (DCaddy.HTTP_PORT, DMyCount.HTTPS_PORT):
-    subprocess.run(['upnpc', '-a', DCaddy.LAN_HOST, str(port), str(port), 'TCP'], check=True)
+RouterMappings().forward((DCaddy.HTTP_PORT, DMyCount.HTTPS_PORT))
 print(f'Configured https://{DCaddy.HOSTNAME}{DMyCount.COLLECTION_PATH}; check certificate issuance in the Caddy journal.')
 PY

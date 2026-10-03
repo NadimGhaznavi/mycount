@@ -19,17 +19,12 @@ import pymysql
 
 from mycount.activity.VisitorSchema import VisitorSchema
 from mycount.interface.DbMgr import DbMgr
-from mycount.activity.GeoIpSchema import GeoIpSchema
-from mycount.activity.UpdateGeoIp import UpdateGeoIp
-from mycount.interface.GeoIp import GeoIp
-from mycount.interface.GeoIpImportDb import GeoIpImportDb
 from mycount.interface.VisitDb import VisitDb
 from mycount.interface.MarketingDb import MarketingDb
 from mycount.entity.MarketingPost import MarketingPost
 from mycount.entity.Visit import Visit
 from mycount.interface.VisitPayload import VisitPayload
 from mycount.activity.BrowserMetadata import BrowserMetadata
-from test_geoip import FixtureGeoIpSource, archive
 
 
 @unittest.skipUnless(shutil.which("mariadb-install-db") and shutil.which("mariadbd"),
@@ -84,7 +79,8 @@ class DatabaseTests(unittest.TestCase):
         if cls.db.query("SHOW TABLES"):
             raise AssertionError("DbMgr must not initialize the schema")
         VisitorSchema(cls.db).apply()
-        GeoIpSchema(cls.db).apply()
+        if cls.db.query("SHOW TABLES LIKE 'geoip_ranges'"):
+            raise AssertionError("MyCount must not create local GeoIP range tables")
 
     @classmethod
     def stop_server(cls):
@@ -99,7 +95,6 @@ class DatabaseTests(unittest.TestCase):
         self.db.execute("DELETE FROM marketing_posts")
         self.db.execute("DELETE FROM page_views")
         self.db.execute("DELETE FROM pages")
-        self.db.execute("DELETE FROM geoip_ranges")
 
     def test_marketing_posts_persist_and_schema_reapplication_preserves_them(self):
         marketing = MarketingDb(self.db)
@@ -125,62 +120,6 @@ class DatabaseTests(unittest.TestCase):
         VisitorSchema(self.db).apply()
         self.assertEqual(marketing.posts()[0]['id'], image_post)
         self.assertEqual(marketing.posts()[0]['screenshot_path'], reference)
-
-    def test_geoip_refresh_and_both_address_families(self):
-        counts = UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()
-        self.assertEqual(counts, {4: 1, 6: 2})
-        reader = DbMgr()
-        try:
-            geo = GeoIp(reader)
-            for ip in ("8.8.8.0", "8.8.8.255", "::ffff:8.8.8.8", "2606:4700::1"):
-                self.assertEqual(geo.locate(ip).city_name, "Example")
-                self.assertEqual(geo.locate(ip).country_name, 'Canada')
-                self.assertAlmostEqual(geo.locate(ip).latitude, 43.2557)
-                self.assertAlmostEqual(geo.locate(ip).longitude, -79.8711)
-                self.assertEqual(geo.locate(ip).zip, '00123')
-                self.assertEqual(geo.locate(ip).timezone, 'America/Toronto')
-            self.assertEqual(geo.locate("2606:4700:10::1").city_name, "Specific")
-            # A gap after the nested range must still match the enclosing range.
-            self.assertEqual(geo.locate("2606:4700:10::100").city_name, "Example")
-            for ip in ("8.8.9.0", "127.0.0.1", "::1", "2607::1"):
-                self.assertIsNone(geo.locate(ip).country_code)
-        finally:
-            reader.close()
-        UpdateGeoIp(FixtureGeoIpSource(city="Updated"), GeoIpImportDb(self.db)).run()
-        self.assertEqual(GeoIp(self.db).locate("8.8.8.8").city_name, "Updated")
-
-    def test_failed_second_download_preserves_both_active_families(self):
-        database = GeoIpImportDb(self.db)
-        UpdateGeoIp(FixtureGeoIpSource(city="Original"), database).run()
-        with self.assertRaises(OSError):
-            UpdateGeoIp(FixtureGeoIpSource(fail_version=6, city="New"), database).run()
-        self.assertEqual(GeoIp(self.db).locate("8.8.8.8").city_name, "Original")
-        self.assertEqual(GeoIp(self.db).locate("2606:4700::1").city_name, "Original")
-        self.assertEqual(self.db.query("SHOW TABLES LIKE 'geoip_ranges_next'"), [])
-        # The lock is released even after failure, allowing the next update.
-        UpdateGeoIp(FixtureGeoIpSource(city="Retry"), database).run()
-        self.assertEqual(GeoIp(self.db).locate("8.8.8.8").city_name, "Retry")
-
-    def test_empty_second_file_does_not_publish(self):
-        class EmptySource(FixtureGeoIpSource):
-            def download(self, version, destination):
-                if version == 6:
-                    archive(destination, version, [])
-                else:
-                    super().download(version, destination)
-        with self.assertRaisesRegex(ValueError, "empty"):
-            UpdateGeoIp(EmptySource(), GeoIpImportDb(self.db)).run()
-        self.assertEqual(self.db.query("SELECT * FROM geoip_ranges"), [])
-
-    def test_geoip_refresh_lock_excludes_another_connection(self):
-        reader = DbMgr()
-        try:
-            with GeoIpImportDb(self.db).refresh():
-                with self.assertRaisesRegex(RuntimeError, "already running"):
-                    with GeoIpImportDb(reader).refresh():
-                        self.fail("A second importer entered the refresh")
-        finally:
-            reader.close()
 
     def test_city_migration_and_visit_round_trip(self):
         self.db.execute("ALTER TABLE page_views MODIFY city_name VARCHAR(128) NULL")
@@ -249,14 +188,15 @@ class DatabaseTests(unittest.TestCase):
         from mycount.interface.CountryNameMigration import CountryNameMigration
         from mycount.constants.DCountryNameMigration import DCountryNameMigration
 
-        UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()
-        self.db.execute('UPDATE geoip_ranges SET country_name=NULL')
+        for _ in range(3):
+            VisitDb(self.db).record(Visit(site='example', url='https://example.com/',
+                                        received_at=datetime.now(timezone.utc), country_code='CA'))
         execute = self.db.execute
         batches = 0
 
         def fail_second_batch(sql, params=()):
             nonlocal batches
-            if 'UPDATE geoip_ranges' in sql:
+            if 'UPDATE page_views' in sql:
                 batches += 1
                 if batches == 2:
                     raise RuntimeError('interrupted batch')
@@ -265,59 +205,47 @@ class DatabaseTests(unittest.TestCase):
         with patch.object(DCountryNameMigration, 'BATCH_SIZE', 1):
             with patch.object(self.db, 'execute', side_effect=fail_second_batch):
                 with self.assertRaisesRegex(RuntimeError, 'interrupted batch'):
-                    CountryNameMigration(self.db).apply('geoip_ranges')
+                    CountryNameMigration(self.db).apply()
             self.assertEqual(self.db.query(
-                'SELECT COUNT(*) AS total FROM geoip_ranges WHERE country_name IS NOT NULL'
+                'SELECT COUNT(*) AS total FROM page_views WHERE country_name IS NOT NULL'
             )[0]['total'], 1)
-            CountryNameMigration(self.db).apply('geoip_ranges')
+            CountryNameMigration(self.db).apply()
             self.assertEqual(self.db.query(
-                "SELECT COUNT(*) AS total FROM geoip_ranges WHERE country_name='Canada'"
+                "SELECT COUNT(*) AS total FROM page_views WHERE country_name='Canada'"
             )[0]['total'], 3)
-            CountryNameMigration(self.db).apply('geoip_ranges')
+            CountryNameMigration(self.db).apply()
 
     def test_country_name_migration_and_continent_removal(self):
-        UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()
         visits = VisitDb(self.db)
         visit = Visit(site='example', url='https://example.com/',
                       received_at=datetime.now(timezone.utc), country_code='CA')
         known = visits.record(visit)
         unknown = visits.record(replace(visit, country_code='ZZ'))
         missing = visits.record(replace(visit, country_code=None))
-        for table in ('page_views', 'geoip_ranges'):
+        for table in ('page_views',):
             self.db.execute(f'ALTER TABLE {table} DROP COLUMN country_name, ADD COLUMN continent VARCHAR(64) NULL')
         for _ in range(2):
             VisitorSchema(self.db).apply()
-            GeoIpSchema(self.db).apply()
         rows = self.db.query('SELECT page_view_id, country_name FROM page_views')
         self.assertEqual({row['page_view_id']: row['country_name'] for row in rows},
                          {known: 'Canada', unknown: None, missing: None})
-        self.assertEqual(GeoIp(self.db).locate('8.8.8.8').country_name, 'Canada')
-        for table in ('page_views', 'geoip_ranges'):
+        for table in ('page_views',):
             self.assertNotIn('continent', {row['Field'] for row in self.db.query(f'SHOW COLUMNS FROM {table}')})
         supplied = visits.record(replace(visit, country_name='Provider name'))
         VisitorSchema(self.db).apply()
         self.assertEqual(self.db.query('SELECT country_name FROM page_views WHERE page_view_id=%s',
                                       (supplied,))[0]['country_name'], 'Provider name')
-        UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()
-        self.assertEqual(GeoIp(self.db).locate('8.8.8.8').country_name, 'Canada')
 
     def test_geoip_details_migration_and_visit_round_trip(self):
-        UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()
         old_id = self.view(self.page())
-        for table in ('geoip_ranges', 'page_views'):
+        for table in ('page_views',):
             self.db.execute(f'ALTER TABLE {table} DROP COLUMN latitude, DROP COLUMN longitude, '
                             'DROP COLUMN zip, DROP COLUMN timezone')
         for _ in range(2):
-            GeoIpSchema(self.db).apply()
             VisitorSchema(self.db).apply()
-        location = GeoIp(self.db).locate('8.8.8.8')
-        self.assertIsNone(location.latitude)
-        self.assertIsNone(location.longitude)
-        self.assertIsNone(location.zip)
-        self.assertIsNone(location.timezone)
-        self.assertEqual(location.city_name, 'Example')
-        UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()
-        location = GeoIp(self.db).locate('8.8.8.8')
+        from mycount.entity.GeoLocation import GeoLocation
+        location = GeoLocation(city_name='Example', latitude=43.2557, longitude=-79.8711,
+                               zip='00123', timezone='America/Toronto')
         for latitude, longitude in ((location.latitude, location.longitude), (0.0, None), (None, 0.0)):
             view_id = VisitDb(self.db).record(Visit(
                 site='mycount', url='https://example.com/', received_at=datetime.now(timezone.utc),

@@ -6,9 +6,9 @@ layout: single
 
 [Documentation index]({% link index.md %})
 
-Static inventory of external data available through the current browser integration, incoming request, and all 14 GeoIP CSV fields. Optional values depend on browser support and GeoIP coverage; historical visits may lack newer fields.
+Static inventory of external data available through the current browser integration, incoming request, and all 14 BMGeoIP fields. Optional values depend on browser support and GeoIP coverage; historical visits may lack newer fields.
 
-Table and Column name the storage destinations. --- means no value is stored. Optional browser fields share the client_details JSON column; Details names each JSON key. Geographic values retained in both the reference dataset and visits list both destination tables.
+Table and Column name the storage destinations. --- means no value is stored. Optional browser fields share the client_details JSON column; Details names each JSON key. Geographic values returned by BMGeoIP are stored as snapshots in visits.
 
 | Source | Source Details | Table | Column | Details |
 | --- | --- | --- | --- | --- |
@@ -47,23 +47,23 @@ Table and Column name the storage destinations. --- means no value is stored. Op
 | Browser | screen.height | `page_views` | `client_details` | Optional browser details: JSON key `screen_height`. Screen height. |
 | Browser | screen.pixelDepth | `page_views` | `client_details` | Optional browser details: JSON key `pixel_depth`. Screen pixel depth. |
 | Browser | screen.width | `page_views` | `client_details` | Optional browser details: JSON key `screen_width`. Screen width. |
-| GeoIP CSV | accuracy | --- | --- | Upstream accuracy value; discarded during import, not interpreted by MyCount. |
-| GeoIP CSV | city | `geoip_ranges`, `page_views` | `city_name` | City name; empty values become NULL. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits. |
-| GeoIP CSV | continent | --- | --- | Discarded during import. |
-| GeoIP CSV | country | `geoip_ranges`, `page_views` | `country_name` | Full country name from the CSV; empty becomes NULL. Copied into new visits as a location snapshot. Existing records are backfilled from recognized ISO country codes without replacing stored names. |
-| GeoIP CSV | country_code | `geoip_ranges`, `page_views` | `country_code` | Two-character country code; empty values become NULL. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits. |
-| GeoIP CSV | end_ip | `geoip_ranges` | `end_ip` | Range end, converted to a 16-byte binary value. |
-| GeoIP CSV | ip_version | `geoip_ranges` | `ip_version` | IP family, 4 or 6. |
-| GeoIP CSV | latitude | `geoip_ranges`, `page_views` | `latitude` | Approximate GeoIP latitude in degrees (-90 to 90); missing values remain NULL. Copied into new visits when available; existing ranges need a GeoIP refresh and historical visits are unchanged. |
-| GeoIP CSV | longitude | `geoip_ranges`, `page_views` | `longitude` | Approximate GeoIP longitude in degrees (-180 to 180); missing values remain NULL. Copied into new visits when available; existing ranges need a GeoIP refresh and historical visits are unchanged. |
-| GeoIP CSV | source | --- | --- | Upstream source value; discarded during import. |
-| GeoIP CSV | start_ip | `geoip_ranges` | `start_ip` | Range start, converted to a 16-byte binary value. |
-| GeoIP CSV | state | `geoip_ranges`, `page_views` | `region_name` | State/region name; empty values become NULL. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits. |
-| GeoIP CSV | timezone | `geoip_ranges`, `page_views` | `timezone` | GeoIP timezone, stored separately from the browser timezone in client_details. Empty values become NULL. Available after the next GeoIP refresh and copied into new visits; historical visits are unchanged. |
-| GeoIP CSV | zip | `geoip_ranges`, `page_views` | `zip` | GeoIP ZIP/postal code, stored as text to preserve leading zeros. Empty values become NULL. Available after the next GeoIP refresh and copied into new visits; historical visits are unchanged. |
+| BMGeoIP | accuracy | --- | --- | Provider accuracy text; not retained or interpreted by MyCount. |
+| BMGeoIP | city | `page_views` | `city_name` | City name; empty values become NULL. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits. |
+| BMGeoIP | continent | --- | --- | Returned by BMGeoIP; not retained by MyCount. |
+| BMGeoIP | country | `page_views` | `country_name` | Full provider country name; empty becomes NULL. Copied into new visits as a location snapshot. Existing records are backfilled from recognized ISO country codes without replacing stored names. |
+| BMGeoIP | country_code | `page_views` | `country_code` | Two-character country code; empty values become NULL. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits. |
+| BMGeoIP | end_ip | --- | --- | Inclusive provider range end; used to select a match, not retained. |
+| BMGeoIP | ip_version | --- | --- | Provider IP family text; validated, not retained. |
+| BMGeoIP | latitude | `page_views` | `latitude` | Approximate GeoIP latitude in degrees (-90 to 90); missing values remain NULL. Copied into new visits when available; historical visits are unchanged. |
+| BMGeoIP | longitude | `page_views` | `longitude` | Approximate GeoIP longitude in degrees (-180 to 180); missing values remain NULL. Copied into new visits when available; historical visits are unchanged. |
+| BMGeoIP | source | --- | --- | Provider source text; not retained by MyCount. |
+| BMGeoIP | start_ip | --- | --- | Inclusive provider range start; used to select a match, not retained. |
+| BMGeoIP | state | `page_views` | `region_name` | State/region name; empty values become NULL. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits. |
+| BMGeoIP | timezone | `page_views` | `timezone` | GeoIP timezone, stored separately from the browser timezone in client_details. Empty values become NULL. Copied into new visits; historical visits are unchanged. |
+| BMGeoIP | zip | `page_views` | `zip` | GeoIP ZIP/postal code, stored as text to preserve leading zeros. Empty values become NULL. Copied into new visits; historical visits are unchanged. |
 | Request | connection / trusted Caddy visitor header | `page_views` | `ip_address` | Full IPv4 or IPv6 address used for GeoIP lookup. Historical visits remain NULL; no hash is generated. |
 | Request | Origin header | --- | --- | Checked against configured sites and the page URL; not stored as a separate field. |
 
 See [Browser client]({% link pages/client.md %}) for setup and reporting, and
-[Installation and GeoIP updates]({% link pages/installation.md %}) for the
+[Installation and BMGeoIP]({% link pages/installation.md %}) for the
 reference-data import.

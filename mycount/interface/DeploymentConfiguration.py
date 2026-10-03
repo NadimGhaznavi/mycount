@@ -13,6 +13,6 @@ class DeploymentConfiguration:
             version_pattern=rb'(    VERSION: Final\[str\] = )"[^"\n]+"',
             scan_roots=("mycount", "deployment_tools", "systemd", "caddy"),
             package_roots=("mycount", "deployment_tools"),
-            setup_files=("requirements.txt", "scripts/update-geoip.sh", "scripts/uninstall.sh"),
+            setup_files=("requirements.txt", "scripts/uninstall.sh"),
             full_setup_target=DDeployment.FILESYSTEM,
         )

@@ -6,6 +6,7 @@ from werkzeug.test import Client
 
 from mycount.constants.DCaddy import DCaddy
 from mycount.constants.DMyCount import DMyCount
+from mycount.interface.GeoIpUnavailable import GeoIpUnavailable
 from mycount.interface.CollectorHttp import CollectorHttp
 from mycount.interface.VisitPayload import VisitPayload
 from mycount.activity.BrowserMetadata import BrowserMetadata
@@ -46,6 +47,25 @@ class CollectorHttpTests(unittest.TestCase):
     def test_health(self):
         self.assertEqual(self.client.get('/health').status_code, 204)
         self.collector.record.assert_not_called()
+
+    def test_geolocation_failure_returns_503_with_cors(self):
+        self.collector.record.side_effect = GeoIpUnavailable('private service details')
+        with self.assertLogs(level='ERROR'):
+            response = self.client.post('/count', json={}, headers={'Origin': DMyCount.ORIGINS[0]})
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.headers['Access-Control-Allow-Origin'], DMyCount.ORIGINS[0])
+        self.assertNotIn(b'private service details', response.data)
+
+    def test_failed_geolocation_does_not_open_the_visitor_database(self):
+        with patch('mycount.activity.CollectVisit.GeoIp') as geo, patch('mycount.activity.CollectVisit.DbMgr') as db:
+            geo.return_value.locate.side_effect = GeoIpUnavailable('offline')
+            origin = DMyCount.ORIGINS[0]
+            with self.assertRaises(GeoIpUnavailable):
+                CollectVisit(VisitPayload(), BrowserMetadata()).record({
+                    'schema_version': 1, 'event': 'page_view', 'site': 'mycount',
+                    'url': origin + '/', 'languages': [], 'user_agent': '',
+                }, '8.8.8.8', origin)
+            db.assert_not_called()
 
     def test_sites_pass_preflight_and_payload_validation(self):
         self.collector.record.side_effect = lambda payload, address, origin: VisitPayload().resolve(payload, origin)
