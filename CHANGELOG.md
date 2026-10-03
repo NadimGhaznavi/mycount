@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Added *Discord* platform.
+
 ## [0.14.0] - 2026-10-03 @ 04:45
 
 - Attach optional PNG screenshots to promotional posts, store files in the server's `pages/marketing` folder, and display them from the event details or chart marker. Preserve existing events with a nullable screenshot reference, retain uploads through upgrades and uninstall, and remove new files if saving fails.
