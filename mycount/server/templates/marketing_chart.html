@@ -3,7 +3,7 @@
     const daily = {{ daily | tojson }};
     const posts = {{ posting_times | tojson }};
     const formatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: {{ options.timezone | tojson }}, year: 'numeric', month: '2-digit', day: '2-digit',
+      year: 'numeric', month: '2-digit', day: '2-digit',
       hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
     });
     const localTime = timestamp => {
