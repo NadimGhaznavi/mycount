@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [0.14.2] - 2026-10-03 @ 04:55
+
+- Smooth the Marketing visits line with Plotly spline interpolation.
+
 ## [0.14.1] - 2026-10-03 @ 04:53
 
 - Added *Discord* platform.

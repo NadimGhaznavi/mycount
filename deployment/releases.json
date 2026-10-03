@@ -446,7 +446,7 @@
       ]
     },
     "mycount/server/templates/marketing_chart.html": {
-      "digest": "e95b18e2abfae4a9cda038ce6ede6f563ce6c77bf6b5197e60089bba7bec363c",
+      "digest": "bad52d12a6a5bd9717b47a93fa4dc0efff96751520d94e93b030ebc3f8394853",
       "targets": [
         "report-server"
       ]
@@ -694,6 +694,12 @@
         "report-server"
       ],
       "version": "0.14.1"
+    },
+    {
+      "targets": [
+        "report-server"
+      ],
+      "version": "0.14.2"
     }
   ]
 }

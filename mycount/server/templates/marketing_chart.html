@@ -23,7 +23,7 @@
     const markerTimes = posts.map(post => localTime(new Date(post.posted_at)));
     Plotly.newPlot('marketing-traffic', [{
       type: 'scatter', mode: 'lines+markers', name: 'Visits', x: dates, y: totals,
-      line: {color: chartTheme.colors[1], width: 3},
+      line: {color: chartTheme.colors[1], width: 3, shape: 'spline', smoothing: 1},
       hovertemplate: '%{x|%b %d, %Y}<br>%{y} visits<extra></extra>',
     }, {
       type: 'scatter', mode: 'markers', name: 'Promotional posts', x: markerTimes,
