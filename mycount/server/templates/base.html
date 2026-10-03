@@ -15,8 +15,9 @@
       {% endif %}
     </div>
     <nav aria-label="Reports">
-      <a href="/"{% if active_page == 'metrics' %} aria-current="page"{% endif %}>[Metrics]</a>
-      <a href="/reference"{% if active_page == 'reference' %} aria-current="page"{% endif %}>[Reference]</a>
+      {% if active_page != 'metrics' %}<a href="/">Metrics</a>{% endif %}
+      {% if active_page != 'reference' %}<a href="/reference">Reference</a>{% endif %}
+      {% if active_page != 'marketing' %}<a href="/marketing">Marketing</a>{% endif %}
     </nav>
   </header>
   <div class="refresh-row"><span class="last-refresh">Last refresh: <time datetime="{{ refreshed_at | utc_iso }}" data-local-time="time">—</time></span></div>

@@ -21,7 +21,8 @@ sudo /opt/prod/mycount/scripts/uninstall.sh
 The script removes MyCount's Caddy import and site file, disables and stops
 `mycount-server.service` and `mycount-control.service`, removes both units and
 the weekly GeoIP schedule, and
-deletes `/opt/prod/mycount`. It validates the remaining Caddy configuration
+deletes the application files under `/opt/prod/mycount`, preserving uploaded
+PNGs in `pages/marketing` when that folder exists. It validates the remaining Caddy configuration
 before changing it and reloads Caddy if active. Other Caddy sites are preserved;
 the old Caddyfile backup is not restored over newer configuration changes.
 Repeated runs from the checkout are safe.

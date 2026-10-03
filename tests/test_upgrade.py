@@ -64,7 +64,7 @@ else
 fi
 ''')
         shutil.copy2(python, self.app / '.venv/bin/python')
-        for name in ('getent', 'systemctl', 'systemd-analyze'):
+        for name in ('getent', 'systemctl', 'systemd-analyze', 'install'):
             self.executable(binaries / name, '#!/bin/bash\necho "' + name + ' $*" >> "$TEST_LOG"\n')
         self.executable(self.app / 'scripts/update-geoip.sh', '#!/bin/bash\necho geoip >> "$TEST_LOG"\n')
         self.executable(scripts / 'install-caddy.sh', '#!/bin/bash\necho caddy >> "$TEST_LOG"\nexit "${TEST_CADDY_FAILURE:-0}"\n')
@@ -89,6 +89,7 @@ fi
         self.assertIn('systemctl enable --now mycount-control.service', commands)
         self.assertIn('caddy', commands)
         self.assertIn('Upgraded MyCount', result.stdout)
+        self.assertIn(f'install -d -m 755 -o mycount -g mycount -- {self.app}/pages/marketing', commands)
         self.assertEqual(self.credentials.read_text(), 'retained credentials')
 
     def test_display_only_skips_listener_and_shared_setup(self):

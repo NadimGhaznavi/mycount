@@ -5,6 +5,8 @@ url: "https://mycount.osoyalce.com"
 baseurl: ""
 mycount:
   endpoint: "https://count.osoyalce.com/count"
+  site: "mycount"
+
 repository: "NadimGhaznavi/mycount"
 locale: "en-US"
 remote_theme: "NadimGhaznavi/minimal-mistakes"
@@ -24,6 +26,7 @@ author:
   name: "Nadim-Daniel Ghaznavi"
   bio: "Creator"
   location: "Hamilton, ON"
+  github: "NadimGhaznavi"
 footer:
   since: "2026"
 

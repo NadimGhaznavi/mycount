@@ -78,6 +78,17 @@ class DeploymentTests(unittest.TestCase):
         for path in (self.app, self.cron, self.unit, self.control_unit, self.site):
             self.assertTrue(path.exists())
 
+    def test_uninstall_preserves_marketing_screenshots(self):
+        screenshots = self.app / 'pages' / 'marketing'
+        screenshots.mkdir(parents=True)
+        (screenshots / 'saved.png').write_bytes(b'screenshot')
+        (self.app / 'pages' / 'other.md').write_text('remove')
+        self.execute('uninstall.sh')
+        self.execute('uninstall.sh')
+        self.assertEqual((screenshots / 'saved.png').read_bytes(), b'screenshot')
+        self.assertFalse((self.app / 'application.py').exists())
+        self.assertFalse((self.app / 'pages' / 'other.md').exists())
+
     def test_uninstall_reload_failure_restores_config(self):
         original = self.config.read_text()
         self.run.side_effect = [subprocess.CompletedProcess([], 0), subprocess.CompletedProcess([], 0),

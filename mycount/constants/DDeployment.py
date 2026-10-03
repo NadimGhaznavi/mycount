@@ -118,10 +118,23 @@ class DDeployment:
             "mycount/interface/CountryNameMigration.py",
             "mycount/interface/DbMgr.py",
         ),
+        "mycount/activity/MarketingSchema.py": (
+            "mycount/__init__.py",
+            "mycount/activity/__init__.py",
+            "mycount/constants/DMarketing.py",
+            "mycount/interface/DbMgr.py",
+        ),
         "mycount/activity/ReleaseDeployment.py": (
             "deployment_tools/ReleaseDeployment.py",
             "mycount/__init__.py",
             "mycount/activity/__init__.py",
+        ),
+        "mycount/activity/SaveMarketingPost.py": (
+            "mycount/__init__.py",
+            "mycount/activity/__init__.py",
+            "mycount/entity/MarketingPost.py",
+            "mycount/interface/MarketingDb.py",
+            "mycount/interface/MarketingScreenshots.py",
         ),
         "mycount/activity/UpdateGeoIp.py": (
             "mycount/__init__.py",
@@ -135,6 +148,7 @@ class DDeployment:
         ),
         "mycount/activity/VisitorSchema.py": (
             "mycount/__init__.py",
+            "mycount/activity/MarketingSchema.py",
             "mycount/activity/__init__.py",
             "mycount/constants/DGeoIp.py",
             "mycount/constants/DMyCount.py",
@@ -171,6 +185,10 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
         ),
+        "mycount/constants/DMarketing.py": (
+            "mycount/__init__.py",
+            "mycount/constants/__init__.py",
+        ),
         "mycount/constants/DMyCount.py": (
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
@@ -188,6 +206,10 @@ class DDeployment:
             "mycount/entity/__init__.py",
         ),
         "mycount/entity/GeoLocation.py": (
+            "mycount/__init__.py",
+            "mycount/entity/__init__.py",
+        ),
+        "mycount/entity/MarketingPost.py": (
             "mycount/__init__.py",
             "mycount/entity/__init__.py",
         ),
@@ -255,6 +277,28 @@ class DDeployment:
             "mycount/entity/GeoLocation.py",
             "mycount/interface/__init__.py",
         ),
+        "mycount/interface/MarketingDb.py": (
+            "mycount/__init__.py",
+            "mycount/entity/MarketingPost.py",
+            "mycount/interface/DbMgr.py",
+            "mycount/interface/__init__.py",
+        ),
+        "mycount/interface/MarketingForm.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DMarketing.py",
+            "mycount/entity/MarketingPost.py",
+            "mycount/interface/__init__.py",
+        ),
+        "mycount/interface/MarketingScreenshots.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DMarketing.py",
+            "mycount/interface/__init__.py",
+        ),
+        "mycount/interface/MarketingUpload.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DMarketing.py",
+            "mycount/interface/__init__.py",
+        ),
         "mycount/interface/ReleaseFiles.py": (
             "deployment_tools/ReleaseFiles.py",
             "mycount/__init__.py",
@@ -296,16 +340,24 @@ class DDeployment:
         ),
         "mycount/server/ControlHandler.py": (
             "mycount/__init__.py",
+            "mycount/activity/SaveMarketingPost.py",
+            "mycount/constants/DMarketing.py",
             "mycount/constants/DMyCount.py",
             "mycount/interface/DbMgr.py",
+            "mycount/interface/MarketingDb.py",
+            "mycount/interface/MarketingForm.py",
+            "mycount/interface/MarketingScreenshots.py",
+            "mycount/interface/MarketingUpload.py",
             "mycount/interface/VisitDb.py",
             "mycount/server/ControlPages.py",
             "mycount/server/__init__.py",
         ),
         "mycount/server/ControlPages.py": (
             "mycount/__init__.py",
+            "mycount/constants/DMarketing.py",
             "mycount/server/__init__.py",
             "mycount/server/templates/control.html",
+            "mycount/server/templates/marketing.html",
             "mycount/server/templates/reference.html",
         ),
         "mycount/server/ControlServer.py": (
@@ -348,6 +400,16 @@ class DDeployment:
             "mycount/server/templates/pie_charts.html",
         ),
         "mycount/server/templates/local_time.html": (
+        ),
+        "mycount/server/templates/marketing.html": (
+            "mycount/server/templates/base.html",
+            "mycount/server/templates/chart_theme.html",
+            "mycount/server/templates/marketing_chart.html",
+            "mycount/server/templates/marketing_form.html",
+        ),
+        "mycount/server/templates/marketing_chart.html": (
+        ),
+        "mycount/server/templates/marketing_form.html": (
         ),
         "mycount/server/templates/pie_charts.html": (
         ),
@@ -397,6 +459,7 @@ class DDeployment:
             "mycount/constants/DCaddy.py",
             "mycount/constants/DControl.py",
             "mycount/constants/DGeoIp.py",
+            "mycount/constants/DMarketing.py",
             "mycount/constants/DMyCount.py",
         ),
         "scripts/update-deployment-dependencies.py": (
