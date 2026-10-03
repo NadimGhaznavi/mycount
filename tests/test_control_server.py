@@ -1,6 +1,6 @@
 """Verify control HTTP responses and deployed presentation assets."""
 
-from datetime import datetime
+from datetime import date, datetime
 from unittest.mock import patch
 
 import pymysql
@@ -18,22 +18,24 @@ import unittest
 
 from mycount.server.ControlHandler import ControlHandler
 from mycount.server.ControlPages import ControlPages
+from mycount.entity.Report import Report
+from mycount.entity.ReportOptions import ReportOptions
 
 
 class ControlServerTests(unittest.TestCase):
-    def test_all_traffic_uses_all_matching_visits_and_follows_the_tables(self):
+    def test_all_traffic_uses_daily_aggregates_and_follows_the_tables(self):
         recent = [
             {"received_at": datetime(2026, 9, 27, 3, 30), "country_code": None,
              "city_name": None, "url": "https://one.example/"},
             {"received_at": datetime(2026, 9, 27, 4, 30), "country_code": None,
              "city_name": None, "url": "https://two.example/"},
         ]
-        body = ControlPages().render([], [], [], recent, []).decode()
+        body = ControlPages().render(Report(ReportOptions(date(2026, 9, 27), date(2026, 9, 27), "UTC"), [{"day": "2026-09-27", "page_views": 2}], None, recent=recent)).decode()
         self.assertGreater(body.index('<section class="traffic-chart"'), body.rindex('</table>'))
         self.assertIn('>All Traffic</h2>', body)
-        self.assertIn('const timestamps = ["2026-09-27T03:30:00+00:00", "2026-09-27T04:30:00+00:00"]', body)
+        self.assertIn('const daily = [{"day": "2026-09-27", "page_views": 2}]', body)
         self.assertIn("Plotly.newPlot('all-traffic'", body)
-        empty = ControlPages().render([], [], [], [], []).decode()
+        empty = ControlPages().render(Report(ReportOptions(date(2026, 9, 27), date(2026, 9, 27), "UTC"), [], None)).decode()
         chart = empty.split('<section class="traffic-chart"', 1)[1].split('</section>', 1)[0]
         self.assertIn('No visits match the current filters.', chart)
         self.assertNotIn('cdn.plot.ly', empty)
@@ -41,10 +43,10 @@ class ControlServerTests(unittest.TestCase):
     def test_counting_since_uses_first_visit_date_and_hides_when_unknown(self):
         pages = ControlPages()
         first = datetime(2025, 2, 3, 1, 30)
-        for body in (pages.render([], [], [], [], [], first_visit_at=first), pages.reference(first)):
+        for body in (pages.render(Report(ReportOptions(date(2026, 9, 27), date(2026, 9, 27), "UTC"), [], first)), pages.reference(first)):
             self.assertIn(b'Counting since <time datetime="2025-02-03T01:30:00+00:00" data-local-time="long-date">February 3, 2025</time>', body)
             self.assertNotIn(b'September XX', body)
-        for body in (pages.render([], [], [], [], []), pages.reference()):
+        for body in (pages.render(Report(ReportOptions(date(2026, 9, 27), date(2026, 9, 27), "UTC"), [], None)), pages.reference()):
             self.assertNotIn(b'Counting since', body)
 
     def test_country_pie_combines_cities_and_preserves_unknown_visits(self):
@@ -54,7 +56,7 @@ class ControlServerTests(unittest.TestCase):
             {"country_name": "<Country>", "country_code": "US", "region_name": None, "city_name": None, "page_views": 3},
             {"country_name": None, "country_code": None, "region_name": None, "city_name": None, "page_views": 1},
         ]
-        body = ControlPages().render([], [], locations, [], []).decode()
+        body = ControlPages().render(Report(ReportOptions(date(2026, 9, 27), date(2026, 9, 27), "UTC"), [], None, locations=locations)).decode()
         chart = body.split('<section class="country-chart"', 1)[1].split('</section>', 1)[0]
         self.assertIn('>Visits by Location</h2>', chart)
         self.assertIn('>Canada</span><span class="country-value">6 (60.0%)', chart)
@@ -63,10 +65,10 @@ class ControlServerTests(unittest.TestCase):
         self.assertIn("drawPie('country-pie'", body)
         self.assertIn('[6, 3, 1]', body)
         self.assertNotIn('Toronto', chart)
-        single = ControlPages().render([], [], locations[:1], [], [])
+        single = ControlPages().render(Report(ReportOptions(date(2026, 9, 27), date(2026, 9, 27), "UTC"), [], None, locations=locations[:1]))
         self.assertIn(b"drawPie('country-pie'", single)
         self.assertIn(b'2 (100.0%)', single)
-        empty = ControlPages().render([], [], [], [], []).decode().split('<section class="country-chart"', 1)[1]
+        empty = ControlPages().render(Report(ReportOptions(date(2026, 9, 27), date(2026, 9, 27), "UTC"), [], None)).decode().split('<section class="country-chart"', 1)[1]
         self.assertIn('No visits match the current filters.', empty)
         self.assertNotIn('conic-gradient(', empty)
 
@@ -76,7 +78,7 @@ class ControlServerTests(unittest.TestCase):
             {"site": "two.example", "page_views": 1, "last_visited": datetime(2026, 9, 27)},
         ]
         pages = [{**site, "url": f'https://{site["site"]}/'} for site in sites]
-        body = ControlPages().render(sites, pages, [], [], []).decode()
+        body = ControlPages().render(Report(ReportOptions(date(2026, 9, 27), date(2026, 9, 27), "UTC"), [], None, sites=sites, pages=pages)).decode()
         chart = body.split('<section class="site-chart"', 1)[1].split('</section>', 1)[0]
         self.assertIn('>Visits by Site</h2>', chart)
         self.assertIn('&lt;one&gt; - 3 (75%)</span>', chart)
@@ -85,7 +87,7 @@ class ControlServerTests(unittest.TestCase):
         self.assertIn('[3, 1]', body)
         self.assertEqual(body.count('src="https://cdn.plot.ly/'), 1)
 
-    @patch("mycount.server.ControlHandler.DbMgr")
+    @patch("mycount.activity.ReadReports.DbMgr")
     def test_banner_health_and_missing_page(self, factory):
         factory.return_value.query.side_effect = [
             [{"site": "<example>", "page_views": 12, "last_visited": datetime(2026, 9, 27, 15, 5)}],
@@ -96,6 +98,7 @@ class ControlServerTests(unittest.TestCase):
             [{"received_at": datetime(2026, 9, 27, 15, 5), "country_code": "CA", "city_name": "Hamilton", "url": "https://example.com/<recent>"}],
             [{"referrer_host": "<referrer>", "page_views": 8},
              {"referrer_host": None, "page_views": 4}],
+            [{"day": "2026-09-27", "page_views": 12}],
             [{"first_visit_at": datetime(2026, 9, 23, 12)}],
         ]
         with ThreadingHTTPServer(("127.0.0.1", 0), ControlHandler) as server:
@@ -147,7 +150,7 @@ class ControlServerTests(unittest.TestCase):
                     self.assertNotIn('WHERE', factory.return_value.query.call_args_list[-1].args[0])
                     for query, excluded in [('exclude_bots=0', False), ('exclude_bots=0&exclude_bots=1', True)]:
                         factory.reset_mock()
-                        factory.return_value.query.side_effect = [[], [], [], [], [], [{"first_visit_at": datetime(2026, 9, 23, 12)}]]
+                        factory.return_value.query.side_effect = [[], [], [], [], [], [], [{"first_visit_at": datetime(2026, 9, 23, 12)}]]
                         connection.request("GET", "/?" + query)
                         response = connection.getresponse()
                         self.assertEqual(response.status, 200)
@@ -194,6 +197,12 @@ class ControlServerTests(unittest.TestCase):
                     self.assertEqual(response.status, 200)
                     self.assertEqual(json.loads(response.read()), {"status": "ok", "service": "mycount-control"})
                     factory.assert_not_called()
+                    for path in ('/?start=bad', '/marketing?start=2020-01-01&end=2026-01-01', '/?timezone=Missing/Zone'):
+                        connection.request("GET", path)
+                        response = connection.getresponse()
+                        self.assertEqual(response.status, 400)
+                        response.read()
+                    factory.assert_not_called()
                     factory.return_value.query.side_effect = pymysql.OperationalError("private details")
                     with self.assertLogs(level="ERROR"):
                         connection.request("GET", "/reference")
@@ -237,7 +246,8 @@ class ControlServerTests(unittest.TestCase):
             subprocess.run(
                 [sys.executable, "-B", "-c",
                  "from mycount.server.ControlPages import ControlPages; "
-                 "assert b'MyCount <span>Control</span>' in ControlPages().render([], [], [], [], []); "
+                 "from mycount.entity.Report import Report; from mycount.interface.ReportQuery import ReportQuery; "
+                 "assert b'MyCount <span>Control</span>' in ControlPages().render(Report(ReportQuery.resolve({}), [], None)); "
                  "assert b'Optional browser details' in ControlPages().reference()"],
                 cwd=directory, check=True,
             )

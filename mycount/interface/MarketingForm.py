@@ -2,6 +2,7 @@
 
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urlsplit
+import re
 
 from mycount.constants.DMarketing import DMarketing
 from mycount.entity.MarketingPost import MarketingPost
@@ -10,7 +11,7 @@ from mycount.entity.MarketingPost import MarketingPost
 class MarketingForm:
     @staticmethod
     def parse(fields: dict[str, list[str]]) -> MarketingPost:
-        if fields.keys() - {"posted_at", "timezone_offset", "platform", "url", "notes"}:
+        if fields.keys() - {"posted_at", "timezone_offset", "platform", "url", "notes", "submission_id"}:
             raise ValueError("Supply the posting fields only.")
         def field(name: str) -> str:
             values = fields.get(name, [""])
@@ -18,6 +19,9 @@ class MarketingForm:
                 raise ValueError(f"Supply one value for {name}.")
             return values[0].strip()
 
+        submission_id = field("submission_id")
+        if re.fullmatch(r"[0-9a-f]{32}", submission_id) is None:
+            raise ValueError("Invalid posting submission ID. Reload the form to start a new posting.")
         posted_at = field("posted_at")
         try:
             local = datetime.strptime(posted_at, "%Y-%m-%d %H:%M")
@@ -42,4 +46,4 @@ class MarketingForm:
         notes = field("notes")
         if len(notes) > DMarketing.MAX_NOTES_LENGTH:
             raise ValueError("Notes must be at most 4000 characters.")
-        return MarketingPost(utc, platform, url, notes)
+        return MarketingPost(utc, platform, url, notes, submission_id=submission_id)

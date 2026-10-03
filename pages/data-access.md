@@ -33,7 +33,11 @@ Connections use UTF-8, UTC, and bounded connection and I/O timeouts.
 interfaces own application SQL and choose which operations must succeed
 together. Writes outside `transaction()` are autocommitted. A transaction
 commits on success and rolls back on failure; database exceptions propagate
-to the caller. `transaction(read_only=True)` supports read-only reporting.
+to the caller. A connection failure during a write COMMIT raises
+`DbCommitUncertain`, preserving the original cause: the transaction may already
+be committed even if a subsequent rollback returns successfully. External
+side effects must be retained until reconciled against persisted state.
+`transaction(read_only=True)` supports read-only reporting.
 Transactions must not be nested, and schema operations must run separately.
 
 ## Explicit schema setup
@@ -55,7 +59,10 @@ The schema provides relational constraints and reporting indexes. Its
 definition lives in the source code. The `GeoIp` interface calls BMGeoIP over HTTP before the visitor database
 connection is opened. Visit persistence uses the shared database bridge. `VisitDb.totals_by_site()` reports page views,
 unique browser IDs, unidentified views, and known bot views. Browser IDs use
-first-party local storage.
+first-party local storage. Control reporting uses `ReadReports` to own query
+selection and consistent snapshots. Recent visits use bounded pages, and
+charts query daily aggregates within validated date ranges; local-day UTC
+boundaries are supplied by the application to preserve timezone and DST semantics.
 
 ## Focused checks
 

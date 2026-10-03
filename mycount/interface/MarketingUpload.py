@@ -17,7 +17,7 @@ class MarketingUpload:
            max_content_length=DMarketing.MAX_SCREENSHOT_BYTES + DMarketing.MAX_FORM_BYTES,
            max_form_parts=10, silent=False)
         try:
-            if len(form) > 5 or any(name != "screenshot" for name in files) or len(files.getlist("screenshot")) > 1:
+            if len(form) > 6 or any(name != "screenshot" for name in files) or len(files.getlist("screenshot")) > 1:
                 raise ValueError("Supply one screenshot and the posting fields only.")
             if sum(len(value.encode("utf-8")) for _, value in form.items(multi=True)) > DMarketing.MAX_FORM_BYTES:
                 raise ValueError("Posting fields are too large.")

@@ -25,6 +25,7 @@ class DDeployment:
         "filesystem": (
             "deployment_tools/__main__.py",
             "mycount/activity/DeploymentImpact.py",
+            "mycount/activity/ReconcileMarketingScreenshots.py",
             "mycount/activity/ReleaseDeployment.py",
             "mycount/constants/DDeployment.py",
             "scripts/clear-upnpc-routes.sh",
@@ -116,6 +117,23 @@ class DDeployment:
             "mycount/constants/DMarketing.py",
             "mycount/interface/DbMgr.py",
         ),
+        "mycount/activity/ReadReports.py": (
+            "mycount/__init__.py",
+            "mycount/activity/__init__.py",
+            "mycount/constants/DReports.py",
+            "mycount/entity/Report.py",
+            "mycount/entity/ReportOptions.py",
+            "mycount/interface/DbMgr.py",
+            "mycount/interface/MarketingDb.py",
+            "mycount/interface/VisitDb.py",
+        ),
+        "mycount/activity/ReconcileMarketingScreenshots.py": (
+            "mycount/__init__.py",
+            "mycount/activity/__init__.py",
+            "mycount/interface/DbMgr.py",
+            "mycount/interface/MarketingDb.py",
+            "mycount/interface/MarketingScreenshots.py",
+        ),
         "mycount/activity/ReleaseDeployment.py": (
             "deployment_tools/ReleaseDeployment.py",
             "mycount/__init__.py",
@@ -125,6 +143,7 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/activity/__init__.py",
             "mycount/entity/MarketingPost.py",
+            "mycount/interface/DbCommitUncertain.py",
             "mycount/interface/MarketingDb.py",
             "mycount/interface/MarketingScreenshots.py",
         ),
@@ -175,6 +194,10 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
         ),
+        "mycount/constants/DReports.py": (
+            "mycount/__init__.py",
+            "mycount/constants/__init__.py",
+        ),
         "mycount/constants/DVisitorDetails.py": (
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
@@ -187,6 +210,15 @@ class DDeployment:
             "mycount/entity/__init__.py",
         ),
         "mycount/entity/MarketingPost.py": (
+            "mycount/__init__.py",
+            "mycount/entity/__init__.py",
+        ),
+        "mycount/entity/Report.py": (
+            "mycount/__init__.py",
+            "mycount/entity/ReportOptions.py",
+            "mycount/entity/__init__.py",
+        ),
+        "mycount/entity/ReportOptions.py": (
             "mycount/__init__.py",
             "mycount/entity/__init__.py",
         ),
@@ -217,9 +249,14 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/interface/__init__.py",
         ),
+        "mycount/interface/DbCommitUncertain.py": (
+            "mycount/__init__.py",
+            "mycount/interface/__init__.py",
+        ),
         "mycount/interface/DbMgr.py": (
             "mycount/__init__.py",
             "mycount/constants/DDbMgr.py",
+            "mycount/interface/DbCommitUncertain.py",
             "mycount/interface/__init__.py",
         ),
         "mycount/interface/DeploymentConfiguration.py": (
@@ -274,6 +311,12 @@ class DDeployment:
             "mycount/interface/DeploymentConfiguration.py",
             "mycount/interface/__init__.py",
         ),
+        "mycount/interface/ReportQuery.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DReports.py",
+            "mycount/entity/ReportOptions.py",
+            "mycount/interface/__init__.py",
+        ),
         "mycount/interface/RouterMappings.py": (
             "mycount/__init__.py",
             "mycount/interface/__init__.py",
@@ -284,6 +327,7 @@ class DDeployment:
         ),
         "mycount/interface/VisitDb.py": (
             "mycount/__init__.py",
+            "mycount/constants/DReports.py",
             "mycount/constants/DVisitorDetails.py",
             "mycount/entity/Visit.py",
             "mycount/interface/DbMgr.py",
@@ -313,21 +357,27 @@ class DDeployment:
         ),
         "mycount/server/ControlHandler.py": (
             "mycount/__init__.py",
+            "mycount/activity/ReadReports.py",
             "mycount/activity/SaveMarketingPost.py",
             "mycount/constants/DMarketing.py",
             "mycount/constants/DMyCount.py",
+            "mycount/entity/Report.py",
+            "mycount/entity/ReportOptions.py",
+            "mycount/interface/DbCommitUncertain.py",
             "mycount/interface/DbMgr.py",
             "mycount/interface/MarketingDb.py",
             "mycount/interface/MarketingForm.py",
             "mycount/interface/MarketingScreenshots.py",
             "mycount/interface/MarketingUpload.py",
-            "mycount/interface/VisitDb.py",
+            "mycount/interface/ReportQuery.py",
             "mycount/server/ControlPages.py",
             "mycount/server/__init__.py",
         ),
         "mycount/server/ControlPages.py": (
             "mycount/__init__.py",
             "mycount/constants/DMarketing.py",
+            "mycount/entity/Report.py",
+            "mycount/interface/ReportQuery.py",
             "mycount/server/__init__.py",
             "mycount/server/templates/control.html",
             "mycount/server/templates/marketing.html",
@@ -371,6 +421,7 @@ class DDeployment:
             "mycount/server/templates/base.html",
             "mycount/server/templates/chart_theme.html",
             "mycount/server/templates/pie_charts.html",
+            "mycount/server/templates/report_filters.html",
         ),
         "mycount/server/templates/local_time.html": (
         ),
@@ -379,6 +430,7 @@ class DDeployment:
             "mycount/server/templates/chart_theme.html",
             "mycount/server/templates/marketing_chart.html",
             "mycount/server/templates/marketing_form.html",
+            "mycount/server/templates/report_filters.html",
         ),
         "mycount/server/templates/marketing_chart.html": (
         ),
@@ -388,6 +440,8 @@ class DDeployment:
         ),
         "mycount/server/templates/reference.html": (
             "mycount/server/templates/base.html",
+        ),
+        "mycount/server/templates/report_filters.html": (
         ),
         "mycount/server/templates/styles.html": (
         ),

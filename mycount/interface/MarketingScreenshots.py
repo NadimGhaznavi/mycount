@@ -1,6 +1,8 @@
 """Validate and store PNG screenshots in the application's marketing folder."""
 
 from pathlib import Path
+from collections.abc import Iterator
+from datetime import datetime
 import re
 import struct
 from uuid import uuid4
@@ -68,6 +70,16 @@ class MarketingScreenshots:
 
     def remove(self, reference: str) -> None:
         (self._application / reference).unlink()
+
+    def older_than(self, cutoff: datetime) -> Iterator[str]:
+        """Yield only generated screenshots old enough for reconciliation."""
+        directory = self._application / DMarketing.SCREENSHOT_DIRECTORY
+        if not directory.exists():
+            return
+        for path in directory.iterdir():
+            if (re.fullmatch(r"[0-9a-f]{32}\.png", path.name) is not None
+                    and path.is_file() and path.stat().st_mtime < cutoff.timestamp()):
+                yield f"{DMarketing.SCREENSHOT_DIRECTORY}/{path.name}"
 
     def read(self, reference: str) -> bytes:
         if re.fullmatch(re.escape(DMarketing.SCREENSHOT_DIRECTORY) + r"/[0-9a-f]{32}\.png", reference) is None:

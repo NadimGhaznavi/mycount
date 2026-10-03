@@ -68,7 +68,34 @@ class DeploymentTests(unittest.TestCase):
         commands = [call.args[0] for call in self.run.call_args_list]
         self.assertIn(['systemctl', 'disable', '--now', DMyCount.SERVICE_UNIT], commands)
         self.assertIn(['systemctl', 'disable', '--now', 'mycount-control.service'], commands)
+        self.assertEqual(commands.count(['bash', 'scripts/clear-upnpc-routes.sh']), 2)
         self.assertFalse(any(command[0] in ('mariadb', 'userdel', 'groupdel', 'upnpc') for command in commands))
+
+    def test_uninstall_clears_routes_before_removing_application(self):
+        def run(command, **kwargs):
+            if command == ['bash', 'scripts/clear-upnpc-routes.sh']:
+                self.assertTrue((self.app / 'application.py').exists())
+                self.assertFalse(self.unit.exists())
+                self.assertFalse(self.control_unit.exists())
+            return subprocess.CompletedProcess(command, 0)
+
+        self.run.side_effect = run
+        self.execute('uninstall.sh')
+        self.assertFalse(self.app.exists())
+        self.assertIn(['bash', 'scripts/clear-upnpc-routes.sh'],
+                      [call.args[0] for call in self.run.call_args_list])
+
+    def test_uninstall_router_cleanup_failure_preserves_application_for_retry(self):
+        def run(command, **kwargs):
+            if command == ['bash', 'scripts/clear-upnpc-routes.sh']:
+                raise subprocess.CalledProcessError(1, command)
+            return subprocess.CompletedProcess(command, 0)
+
+        self.run.side_effect = run
+        with self.assertRaises(subprocess.CalledProcessError):
+            self.execute('uninstall.sh')
+        self.assertTrue((self.app / 'application.py').exists())
+        self.assertEqual(self.credentials.read_text(), 'preserve credentials')
 
     def test_uninstall_validation_failure_leaves_installation_intact(self):
         original = self.config.read_text()

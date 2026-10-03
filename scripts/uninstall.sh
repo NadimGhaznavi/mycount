@@ -3,7 +3,7 @@
 set -euo pipefail
 umask 022
 if [[ ${1:-} == --help && $# == 1 ]]; then
-    printf 'Usage: sudo scripts/uninstall.sh\nRemove MyCount services and application; preserve databases, credentials, accounts, and router mappings.\n'
+    printf 'Usage: sudo scripts/uninstall.sh\nRemove MyCount services, application, TCP port 80/443 mappings, and matching UDP mappings; preserve databases, credentials, and accounts.\n'
     exit 0
 fi
 [[ $# == 0 && $EUID == 0 ]] || { printf 'Run scripts/uninstall.sh as root, without arguments.\n' >&2; exit 1; }
@@ -52,6 +52,8 @@ for name in (DControl.SERVICE_UNIT, DMyCount.SERVICE_UNIT):
         subprocess.run(['systemctl', 'disable', '--now', name], check=True)
         unit.unlink()
 subprocess.run(['systemctl', 'daemon-reload'], check=True)
+# Run while the deployed script and its imports still exist.
+subprocess.run(['bash', 'scripts/clear-upnpc-routes.sh'], check=True)
 if application.exists():
     screenshots = application / DMarketing.SCREENSHOT_DIRECTORY
     if screenshots.is_dir() and not screenshots.is_symlink() and not screenshots.parent.is_symlink():
@@ -70,6 +72,6 @@ if application.exists():
                 remove(child)
     else:
         shutil.rmtree(application)
-print('Removed MyCount application, services, GeoIP schedule, and Caddy site.')
-print('Preserved marketing screenshots, databases, credentials, Linux accounts, Caddy, cron, and router mappings.')
+print('Removed MyCount application, services, GeoIP schedule, Caddy site, and port mappings.')
+print('Preserved marketing screenshots, databases, credentials, Linux accounts, Caddy, cron, and unrelated router mappings.')
 PY

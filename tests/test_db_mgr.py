@@ -8,6 +8,7 @@ import pymysql
 
 from mycount.activity.VisitorSchema import VisitorSchema
 from mycount.interface.DbMgr import DbMgr
+from mycount.interface.DbCommitUncertain import DbCommitUncertain
 
 
 class DbMgrTests(unittest.TestCase):
@@ -57,13 +58,13 @@ class DbMgrTests(unittest.TestCase):
         self.connection.rollback.assert_called_once()
         self.assertEqual(self.connection.commit.call_count, 1)
 
-    def test_failed_commit_rolls_back(self):
+    def test_lost_commit_reply_is_uncertain_even_after_rollback(self):
         error = pymysql.OperationalError(2013, "connection lost")
         self.connection.commit.side_effect = error
-        with self.assertRaises(pymysql.OperationalError) as raised:
+        with self.assertRaises(DbCommitUncertain) as raised:
             with self.db.transaction():
                 pass
-        self.assertIs(raised.exception, error)
+        self.assertIs(raised.exception.__cause__, error)
         self.connection.rollback.assert_called_once()
 
     def test_cancellation_rolls_back_and_cursor_errors_propagate(self):

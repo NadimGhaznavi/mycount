@@ -20,6 +20,8 @@ from mycount.interface.MarketingScreenshots import MarketingScreenshots
 from mycount.interface.MarketingUpload import MarketingUpload
 from mycount.server.ControlHandler import ControlHandler
 from mycount.server.ControlPages import ControlPages
+from mycount.entity.Report import Report
+from mycount.interface.ReportQuery import ReportQuery
 
 
 def png(extra: bytes = b"") -> bytes:
@@ -35,7 +37,7 @@ def multipart(data: bytes | None, filename: str = "screenshot.png") -> tuple[byt
     parts = []
     for name, value in {"posted_at": "2026-10-03 14:05", "timezone_offset": "240",
                         "platform": "Reddit", "url": "https://reddit.com/r/example/",
-                        "notes": "keep my notes"}.items():
+                        "notes": "keep my notes", "submission_id": "a" * 32}.items():
         parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"\r\n\r\n{value}\r\n'.encode())
     if data is not None:
         parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="screenshot"; filename="{filename}"\r\nContent-Type: image/png\r\n\r\n'.encode() + data + b"\r\n")
@@ -80,6 +82,7 @@ class MarketingScreenshotTests(unittest.TestCase):
         with TemporaryDirectory() as directory:
             files = MarketingScreenshots(Path(directory))
             posts = Mock()
+            posts.submission.return_value = None
             error = pymysql.OperationalError("save failed")
             posts.record.side_effect = error
             with self.assertRaises(pymysql.OperationalError) as raised:
@@ -90,16 +93,17 @@ class MarketingScreenshotTests(unittest.TestCase):
     def test_screenshot_display_and_posts_without_screenshots(self):
         post = {"id": 1, "posted_at": datetime(2026, 10, 3, 18, 5), "platform": "Reddit",
                 "url": "https://example.com/", "notes": "", "screenshot_path": 'pages/marketing/' + 'a' * 32 + '.png'}
-        body = ControlPages().marketing([post], []).decode()
+        body = ControlPages().marketing(Report(ReportQuery.resolve({}), [], None, posts=[post])).decode()
         self.assertIn('enctype="multipart/form-data"', body)
         self.assertIn('name="screenshot" type="file"', body)
         self.assertIn('src="/' + post['screenshot_path'] + '"', body)
         self.assertIn('View Screenshot', body)
         post['screenshot_path'] = None
-        self.assertNotIn('View Screenshot', ControlPages().marketing([post], []).decode())
+        self.assertNotIn('View Screenshot', ControlPages().marketing(Report(ReportQuery.resolve({}), [], None, posts=[post])).decode())
 
     @patch('mycount.server.ControlHandler.DbMgr')
     def test_upload_fetch_invalid_upload_and_failed_save_cleanup(self, factory):
+        factory.return_value.query.return_value = []
         with TemporaryDirectory() as directory, patch('mycount.server.ControlHandler.MarketingScreenshots') as screenshots:
             files = MarketingScreenshots(Path(directory))
             screenshots.return_value = files
@@ -117,7 +121,7 @@ class MarketingScreenshotTests(unittest.TestCase):
 
                     status, _ = upload(png(), "../../unsafe.png")
                     self.assertEqual(status, 303)
-                    reference = factory.return_value.insert.call_args.args[1][-1]
+                    reference = factory.return_value.insert.call_args.args[1][-2]
                     self.assertEqual(files.read(reference), png())
                     factory.reset_mock()
                     connection.request('GET', '/' + reference)
