@@ -9,6 +9,7 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Remove the date-range and pagination hint from Report Filters.
 - Remove the Report Filters timezone control and automatically use the browser's
   local timezone for report dates and marketing chart posting times, including
   when following report links from another timezone.
