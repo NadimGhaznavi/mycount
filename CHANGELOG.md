@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Add `scripts/clear-upnpc-routes.sh` to clear MyCount's TCP port 80/443 router
+  mappings and matching UDP destinations, verify removal, and preserve other
+  ports and unmatched UDP mappings.
+
 ## [1.0.0] - 2026-10-03 @ 15:22
 
 ### Summary

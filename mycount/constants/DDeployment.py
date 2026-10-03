@@ -27,6 +27,7 @@ class DDeployment:
             "mycount/activity/DeploymentImpact.py",
             "mycount/activity/ReleaseDeployment.py",
             "mycount/constants/DDeployment.py",
+            "scripts/clear-upnpc-routes.sh",
             "scripts/install.sh",
             "scripts/new-release.sh",
             "scripts/uninstall.sh",
@@ -393,6 +394,11 @@ class DDeployment:
         "mycount/server/templates/table_sort.html": (
         ),
         "requirements.txt": (
+        ),
+        "scripts/clear-upnpc-routes.sh": (
+            "mycount/constants/DCaddy.py",
+            "mycount/constants/DMyCount.py",
+            "mycount/interface/RouterMappings.py",
         ),
         "scripts/install-caddy.sh": (
             "caddy/mycount.caddy",

@@ -33,6 +33,22 @@ packages installed through apt, the Caddyfile backup, and router port mappings
 are also retained because they may be shared. Remove router mappings manually
 only when no other site uses them. The separate mydynip service is untouched.
 
+To clear MyCount's TCP port 80 and 443 mappings on the discovered UPnP router,
+run:
+
+```sh
+scripts/clear-upnpc-routes.sh
+```
+
+This requires `upnpc` from miniupnpc and does not require root. It lists the
+mappings before deleting them and checks afterward that the MyCount ports are
+clear. UDP mappings on those external ports are also removed when their
+destination host and internal port match the corresponding TCP mapping in the
+initial listing. Other TCP ports and unmatched UDP mappings are preserved.
+TCP ports 80 and 443
+are removed regardless of their destination; run this only when those mappings
+are no longer needed by other sites.
+
 For a legacy deployment, finish any in-progress GeoIP refresh before removal.
 The external BMGeoIP service and its data are untouched.
 The directory-removal guard accepts only `/opt/prod/mycount`; deployments using
