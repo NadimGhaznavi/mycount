@@ -306,6 +306,7 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/server/__init__.py",
             "mycount/server/templates/control.html",
+            "mycount/server/templates/marketing.html",
             "mycount/server/templates/reference.html",
         ),
         "mycount/server/ControlServer.py": (
@@ -348,6 +349,9 @@ class DDeployment:
             "mycount/server/templates/pie_charts.html",
         ),
         "mycount/server/templates/local_time.html": (
+        ),
+        "mycount/server/templates/marketing.html": (
+            "mycount/server/templates/base.html",
         ),
         "mycount/server/templates/pie_charts.html": (
         ),

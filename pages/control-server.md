@@ -59,7 +59,9 @@ then URL for ties. Multiple sites can remain expanded together. Site, page, and 
 metrics are read in one read-only database transaction when the page loads;
 expanding a row does not reload the report. Reloading collapses the rows.
 
-The title bar has **Metrics** (`/`) and **Reference** (`/reference`) links.
+The title bar has **Metrics** (`/`), **Reference** (`/reference`), and
+**Marketing** (`/marketing`) links without brackets. Each page hides its own
+navigation link. Marketing currently has an empty content area.
 Reference displays one [data inventory table]({% link pages/collected-data.md %})
 with Source, Source Details, Table, Column, and Details. It includes optional browser details,
 all GeoIP source fields, and storage mappings; unretained values show `---` in

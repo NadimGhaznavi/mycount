@@ -53,6 +53,8 @@ class ControlHandler(BaseHTTPRequestHandler):
             except pymysql.MySQLError:
                 logging.exception("Unable to read first visit for reference header")
             self.respond(200, ControlPages().reference(first_visit_at), "text/html; charset=utf-8")
+        elif path == "/marketing":
+            self.respond(200, ControlPages().marketing(), "text/html; charset=utf-8")
         elif path == "/health":
             self.respond(200, b'{"status":"ok","service":"mycount-control"}', "application/json")
         else:

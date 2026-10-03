@@ -6,7 +6,8 @@
     ],
     "mycount/server/ControlPages.py": [
       "mycount/server/templates/control.html",
-      "mycount/server/templates/reference.html"
+      "mycount/server/templates/reference.html",
+      "mycount/server/templates/marketing.html"
     ],
     "scripts/install-caddy.sh": [
       "caddy/mycount.caddy"

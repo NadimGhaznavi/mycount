@@ -57,6 +57,11 @@ class ControlPages:
             refreshed_at=datetime.now(timezone.utc), active_page="reference", first_visit_at=first_visit_at,
         ).encode("utf-8")
 
+    def marketing(self) -> bytes:
+        return self._templates.get_template("marketing.html").render(
+            refreshed_at=datetime.now(timezone.utc), active_page="marketing", first_visit_at=None,
+        ).encode("utf-8")
+
     @staticmethod
     def _country_flag(code: str | None) -> str:
         code = (code or "").upper()
