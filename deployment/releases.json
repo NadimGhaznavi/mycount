@@ -13,7 +13,7 @@
       ]
     },
     "deployment/rules.json": {
-      "digest": "9482857503accf132fbb71c9dc43101dec22cc59b10ab6c946c95cdd4a9f7eb0",
+      "digest": "5ff777c5aae9e7ddc6dc88d5b7cb5b392d75ef1f86cb0a0caf12cd4a43006c22",
       "targets": [
         "filesystem"
       ]
@@ -104,10 +104,22 @@
         "filesystem"
       ]
     },
+    "mycount/activity/MarketingSchema.py": {
+      "digest": "4ebed680a5f3e5097355a1b05c0025f02cae69cb8466a8258e8d166d1dc5019a",
+      "targets": [
+        "filesystem"
+      ]
+    },
     "mycount/activity/ReleaseDeployment.py": {
       "digest": "76a63a64d2ef6faec707830066a9d850ea6e2252b0739a47b3bd1e8fe5dadba0",
       "targets": [
         "filesystem"
+      ]
+    },
+    "mycount/activity/SaveMarketingPost.py": {
+      "digest": "fd14cd9f8d6b6a68e9cc926271e486eea3406aa7e8fc6b9f69f294045e9590cf",
+      "targets": [
+        "report-server"
       ]
     },
     "mycount/activity/UpdateGeoIp.py": {
@@ -117,7 +129,7 @@
       ]
     },
     "mycount/activity/VisitorSchema.py": {
-      "digest": "d6c290f06e3cc2f3b04e5ead0006c0095c9504962a11c3efce96519ccc04ede8",
+      "digest": "25aa1b91ca37fd6306f16e82d64d7ea61ea8dcf12e732d4bfc6b8d45046debdc",
       "targets": [
         "filesystem"
       ]
@@ -126,7 +138,8 @@
       "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "targets": [
         "filesystem",
-        "listener"
+        "listener",
+        "report-server"
       ]
     },
     "mycount/constants/DCaddy.py": {
@@ -158,7 +171,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "264e1af3e67e38a494e79169214ff1f78f0ef194d1009d7283d6f6bb39d20a99",
+      "digest": "c48c105718887092494cdeb0a15d661c3f8928e8e1f0094d18f051f3e44e5d60",
       "targets": [
         "filesystem"
       ]
@@ -167,6 +180,13 @@
       "digest": "63c8d129534d10e3ed7320ef4bb3a5a819469cb2313bca60c282ed927ed1a2da",
       "targets": [
         "filesystem"
+      ]
+    },
+    "mycount/constants/DMarketing.py": {
+      "digest": "6e0a556c2d7a7a0119d77e4b72f2063273e5c539f3861295c609ad768c0a632b",
+      "targets": [
+        "filesystem",
+        "report-server"
       ]
     },
     "mycount/constants/DMyCount.py": {
@@ -204,6 +224,12 @@
       "targets": [
         "filesystem",
         "listener"
+      ]
+    },
+    "mycount/entity/MarketingPost.py": {
+      "digest": "8f3f09eebb7ef2103ab4008311e88348b3eb479073e15f9c0e937b33708d76a1",
+      "targets": [
+        "report-server"
       ]
     },
     "mycount/entity/Visit.py": {
@@ -277,6 +303,30 @@
         "filesystem"
       ]
     },
+    "mycount/interface/MarketingDb.py": {
+      "digest": "0190fd1bae90fbc1b13fac7452d70c414a56a825f6077f03ab9f44198b7a6dfc",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/interface/MarketingForm.py": {
+      "digest": "f13e15f35037007fe72ea9a4a141fa21d15e0bcfec414eee879fb5d69ed7aa7c",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/interface/MarketingScreenshots.py": {
+      "digest": "5635dff06485ef6154ed82b7d6dc90e7a936ee9d15ecd19c4a0b4c01e47992df",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/interface/MarketingUpload.py": {
+      "digest": "680c4420f32888f24a25607c0b125e1fe4728fbcb3f55b2efee3a95135487614",
+      "targets": [
+        "report-server"
+      ]
+    },
     "mycount/interface/ReleaseFiles.py": {
       "digest": "ca4e08c05c7547522fbb222d2e47effb9c007d77f10897c5a85757bb8da17e74",
       "targets": [
@@ -323,13 +373,13 @@
       ]
     },
     "mycount/server/ControlHandler.py": {
-      "digest": "1d26219c18cf0cbd398b1df45f360d0efc9e82bc5ca92c933447e7c58ced828d",
+      "digest": "f65688a856d85a39f89b85fea1cbcaa30657a9249a9bbd3b85660e37b4b82035",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/ControlPages.py": {
-      "digest": "1d92f55af24f711c22ecd7c675201d85035c72c64b51186882edd5fdbece0702",
+      "digest": "38fd57097a95931e08fb5fd4f8474705c7033d2645dd132487150ba511c30da3",
       "targets": [
         "report-server"
       ]
@@ -366,7 +416,7 @@
       ]
     },
     "mycount/server/templates/base.html": {
-      "digest": "303da7ac3fc3ee7b32960aa177f752e92981670cedcb82920c44aafe65285534",
+      "digest": "acd0795248ea884a0a5c1fd0e6780fb577c458e4c0643e58f4fd1f2e939c7c55",
       "targets": [
         "report-server"
       ]
@@ -389,6 +439,24 @@
         "report-server"
       ]
     },
+    "mycount/server/templates/marketing.html": {
+      "digest": "a5448cd22c9d3051cb1ead0008580dd51665ca8ab1b0a28896718add1abab36f",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/server/templates/marketing_chart.html": {
+      "digest": "e95b18e2abfae4a9cda038ce6ede6f563ce6c77bf6b5197e60089bba7bec363c",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/server/templates/marketing_form.html": {
+      "digest": "8bfe46de60dac20f1a90e24c8135c333c7e668e338b8dd411a148be7adb00c49",
+      "targets": [
+        "report-server"
+      ]
+    },
     "mycount/server/templates/pie_charts.html": {
       "digest": "674afd42792e54211c09c5260f2284b54d5df9dfd0ccc6ed3ec4d69806f24861",
       "targets": [
@@ -402,7 +470,7 @@
       ]
     },
     "mycount/server/templates/styles.html": {
-      "digest": "b00749dfeff719775ca39e14cd6d380bdbd010ef188e1acb588021c75f9330fd",
+      "digest": "fe5f9b9c6654c2633d4393f8c0513926facf7357e0f543f308303daf6ea5bb27",
       "targets": [
         "report-server"
       ]
@@ -428,7 +496,7 @@
       ]
     },
     "scripts/install-services.sh": {
-      "digest": "d44f37e9c1df06647558758b20073384ef3f2be8ca4261d319c95e375168ae3d",
+      "digest": "8a5259874f994460ae6fed5175503bd3228655fe8b8b8c727be0fb3977f53259",
       "targets": [
         "filesystem"
       ]
@@ -446,7 +514,7 @@
       ]
     },
     "scripts/uninstall.sh": {
-      "digest": "0731d7d8c3412816650e2d2ffa410b6984e58915e71c8094fbe7e6ab61baf2e2",
+      "digest": "d291bda773273718012bd56ca39adb65baaf949c26cd73022e86c94823ef5f66",
       "targets": [
         "filesystem"
       ]
@@ -470,7 +538,7 @@
       ]
     },
     "systemd/mycount-control.service": {
-      "digest": "9c5045d12440d7ca0e5f9b953402d70c1bcd0f7c56b4b1d4662e035e09355d67",
+      "digest": "16df32a64cb66eef3966a7dc56d2172fe8c668c6e531cabb9d5af6cf022ad8b8",
       "targets": [
         "report-server"
       ]
@@ -612,6 +680,13 @@
         "report-server"
       ],
       "version": "0.13.2"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "report-server"
+      ],
+      "version": "0.14.0"
     }
   ]
 }
