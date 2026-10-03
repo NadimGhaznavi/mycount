@@ -8,3 +8,5 @@ class DMarketing:
     MAX_URL_LENGTH: Final[int] = 2048
     MAX_NOTES_LENGTH: Final[int] = 4000
     MAX_FORM_BYTES: Final[int] = 65536
+    MAX_SCREENSHOT_BYTES: Final[int] = 10 * 1024 * 1024
+    SCREENSHOT_DIRECTORY: Final[str] = "pages/marketing"

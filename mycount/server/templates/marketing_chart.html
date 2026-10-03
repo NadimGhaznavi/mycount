@@ -40,7 +40,12 @@
     }, {responsive: true, displayModeBar: false}).then(plot => {
       plot.on('plotly_click', event => {
         const point = event.points[0];
-        if (point.curveNumber === 1) document.getElementById(`posting-${point.customdata[1]}`).scrollIntoView({behavior: 'smooth'});
+        if (point.curveNumber === 1) {
+          const row = document.getElementById(`posting-${point.customdata[1]}`);
+          const screenshot = row.querySelector('details');
+          if (screenshot) screenshot.open = true;
+          row.scrollIntoView({behavior: 'smooth'});
+        }
       });
     });
   })();

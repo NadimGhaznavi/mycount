@@ -16,7 +16,9 @@ class MarketingSchema:
                 platform VARCHAR(32) NOT NULL,
                 url VARCHAR({DMarketing.MAX_URL_LENGTH}) NOT NULL,
                 notes TEXT NOT NULL,
+                screenshot_path VARCHAR(255) NULL,
                 created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
                 INDEX idx_marketing_post_time (posted_at, id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
         """)
+        self._db.execute("ALTER TABLE marketing_posts ADD COLUMN IF NOT EXISTS screenshot_path VARCHAR(255) NULL")

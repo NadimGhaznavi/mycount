@@ -69,6 +69,20 @@ Posting URL accepts an HTTP(S) link; Notes is optional. Saving stores the postin
 time in UTC and generates `created_at` in the database. Installation and upgrade
 create the `marketing_posts` table without replacing existing events.
 
+An optional PNG screenshot (up to 10 MiB) can be attached when recording a post.
+The server checks the PNG structure and checksums, saves it with a generated
+filename under `pages/marketing` in the application directory, and stores its
+relative path in `marketing_posts.screenshot_path`. Existing posts have a NULL
+reference. A failed event save removes the new screenshot; after a failed form
+submission, select the file again before retrying.
+
+Use **View Screenshot** in the event table to display the image, then click the
+image to open it at full size. Clicking a chart posting marker also opens that
+event's screenshot. The control server serves only generated PNG filenames from
+this folder. Installation and upgrade create the folder for the service account
+and allow systemd write access specifically to it. Upgrades and uninstallation
+preserve uploaded screenshots alongside the retained database records.
+
 The Marketing line chart shows daily visit totals across all sites in the
 browser timezone, including zero-visit days, with bots excluded by default.
 Each promotional post adds a vertical line at its posting time. Hover over its

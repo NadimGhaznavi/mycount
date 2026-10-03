@@ -18,6 +18,7 @@ from mycount.constants.DCaddy import DCaddy
 from mycount.constants.DGeoIp import DGeoIp
 from mycount.constants.DMyCount import DMyCount
 from mycount.constants.DControl import DControl
+from mycount.constants.DMarketing import DMarketing
 
 application = Path(DMyCount.BASE_DIR)
 if application.is_symlink() or application.parent != Path('/opt/prod') or application.name != 'mycount':
@@ -52,7 +53,23 @@ for name in (DControl.SERVICE_UNIT, DMyCount.SERVICE_UNIT):
         unit.unlink()
 subprocess.run(['systemctl', 'daemon-reload'], check=True)
 if application.exists():
-    shutil.rmtree(application)
+    screenshots = application / DMarketing.SCREENSHOT_DIRECTORY
+    if screenshots.is_dir() and not screenshots.is_symlink() and not screenshots.parent.is_symlink():
+        def remove(path):
+            if path.is_symlink() or path.is_file():
+                path.unlink()
+            else:
+                shutil.rmtree(path)
+
+        for child in application.iterdir():
+            if child == screenshots.parent:
+                for page in child.iterdir():
+                    if page != screenshots:
+                        remove(page)
+            else:
+                remove(child)
+    else:
+        shutil.rmtree(application)
 print('Removed MyCount application, services, GeoIP schedule, and Caddy site.')
-print('Preserved databases, credentials, Linux accounts, Caddy, cron, and router mappings.')
+print('Preserved marketing screenshots, databases, credentials, Linux accounts, Caddy, cron, and router mappings.')
 PY

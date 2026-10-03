@@ -46,7 +46,7 @@ class MarketingTests(unittest.TestCase):
 
     def test_form_choices_and_saved_event_escaping(self):
         post = {"id": 1, "posted_at": datetime(2026, 10, 3, 18, 5), "platform": "Reddit",
-                "url": "https://example.com/?a=1&b=2", "notes": "<script>alert(1)</script>"}
+                "url": "https://example.com/?a=1&b=2", "notes": "<script>alert(1)</script>", "screenshot_path": None}
         body = ControlPages().marketing([post], [{"received_at": datetime(2026, 10, 3, 18)}]).decode()
         self.assertEqual(DMarketing.PLATFORMS, tuple(sorted(DMarketing.PLATFORMS)))
         indices = [body.index(f'<option value="{platform}"') for platform in DMarketing.PLATFORMS]

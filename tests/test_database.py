@@ -115,7 +115,16 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(rows[1]['posted_at'], posted_at.replace(tzinfo=None))
         self.assertEqual(rows[1]['notes'], "Some notes")
         self.assertEqual(rows[0]['notes'], "")
+        self.assertIsNone(rows[0]['screenshot_path'])
         self.assertGreaterEqual(rows[1]['created_at'], before)
+        self.db.execute("ALTER TABLE marketing_posts DROP COLUMN screenshot_path")
+        VisitorSchema(self.db).apply()
+        self.assertIsNone(marketing.posts()[0]['screenshot_path'])
+        reference = "pages/marketing/" + "a" * 32 + ".png"
+        image_post = marketing.record(replace(post, screenshot_path=reference))
+        VisitorSchema(self.db).apply()
+        self.assertEqual(marketing.posts()[0]['id'], image_post)
+        self.assertEqual(marketing.posts()[0]['screenshot_path'], reference)
 
     def test_geoip_refresh_and_both_address_families(self):
         counts = UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()

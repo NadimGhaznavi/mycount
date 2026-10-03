@@ -10,3 +10,4 @@ class MarketingPost:
     platform: str
     url: str
     notes: str
+    screenshot_path: str | None = None

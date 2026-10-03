@@ -3,7 +3,7 @@
 <h1>Marketing</h1>
 {% if error %}<p role="alert">{{ error }}</p>{% endif %}
 {% if saved %}<p role="status">Posting saved.</p>{% endif %}
-<form id="marketing-form" class="marketing-form" method="post" action="/marketing">
+<form id="marketing-form" class="marketing-form" method="post" action="/marketing" enctype="multipart/form-data">
   <label for="posted-at">Posted At</label>
   <input id="posted-at" name="posted_at" type="text" required placeholder="yyyy-mm-dd hh:mm" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}" value="{{ fields.get('posted_at', [''])[0] }}" aria-describedby="posting-time-help">
   <small id="posting-time-help">Your local time (yyyy-mm-dd hh:mm).</small>
@@ -16,6 +16,9 @@
   <input id="posting-url" name="url" type="url" required maxlength="2048" value="{{ fields.get('url', [''])[0] }}">
   <label for="posting-notes">Notes</label>
   <textarea id="posting-notes" name="notes" rows="3" maxlength="4000">{{ fields.get('notes', [''])[0] }}</textarea>
+  <label for="posting-screenshot">Screenshot (optional PNG)</label>
+  <input id="posting-screenshot" name="screenshot" type="file" accept="image/png,.png" aria-describedby="screenshot-help">
+  <small id="screenshot-help">PNG file, up to 10 MiB. If saving fails, select the file again before retrying.</small>
   <button type="submit">Save Posting</button>
 </form>
 <form class="metrics-filters" method="get" action="/marketing">
@@ -31,14 +34,17 @@
 <div class="table-wrap marketing-posts">
   <table aria-label="Promotional Posts">
     <caption>Promotional Posts</caption>
-    <thead><tr><th>Posted At</th><th>Platform</th><th>Posting URL</th><th>Notes</th></tr></thead>
+    <thead><tr><th>Posted At</th><th>Platform</th><th>Posting URL</th><th>Notes</th><th>Screenshot</th></tr></thead>
     <tbody>
       {% for post in posts %}
       <tr id="posting-{{ post.id }}">
         <td><time datetime="{{ post.posted_at | utc_iso }}" data-local-time="date">{{ post.posted_at }}</time></td>
         <td>{{ post.platform }}</td><td><a href="{{ post.url }}" target="_blank" rel="noopener noreferrer">{{ post.url }}</a></td><td class="posting-notes">{{ post.notes }}</td>
+        <td>{% if post.screenshot_path %}<details class="posting-screenshot"><summary>View Screenshot</summary>
+          <a href="/{{ post.screenshot_path }}" target="_blank" rel="noopener noreferrer"><img src="/{{ post.screenshot_path }}" alt="Screenshot of {{ post.platform }} promotional post" loading="lazy"></a>
+        </details>{% else %}—{% endif %}</td>
       </tr>
-      {% else %}<tr><td colspan="4">No promotional posts recorded yet.</td></tr>{% endfor %}
+      {% else %}<tr><td colspan="5">No promotional posts recorded yet.</td></tr>{% endfor %}
     </tbody>
   </table>
 </div>

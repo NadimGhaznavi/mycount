@@ -127,6 +127,9 @@ PY
 }
 
 render_definitions() {
+    if [[ $full_setup == true || " ${units[*]} " == *" ${settings[4]} "* ]]; then
+        install -d -m 755 -o "${settings[2]}" -g "${settings[2]}" -- "$install_dir/pages/marketing"
+    fi
 python3 -B - "$checkout" "$full_setup" "${units[@]}" <<'PY'
 from pathlib import Path
 import sys

@@ -129,6 +129,13 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/activity/__init__.py",
         ),
+        "mycount/activity/SaveMarketingPost.py": (
+            "mycount/__init__.py",
+            "mycount/activity/__init__.py",
+            "mycount/entity/MarketingPost.py",
+            "mycount/interface/MarketingDb.py",
+            "mycount/interface/MarketingScreenshots.py",
+        ),
         "mycount/activity/UpdateGeoIp.py": (
             "mycount/__init__.py",
             "mycount/activity/__init__.py",
@@ -282,6 +289,16 @@ class DDeployment:
             "mycount/entity/MarketingPost.py",
             "mycount/interface/__init__.py",
         ),
+        "mycount/interface/MarketingScreenshots.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DMarketing.py",
+            "mycount/interface/__init__.py",
+        ),
+        "mycount/interface/MarketingUpload.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DMarketing.py",
+            "mycount/interface/__init__.py",
+        ),
         "mycount/interface/ReleaseFiles.py": (
             "deployment_tools/ReleaseFiles.py",
             "mycount/__init__.py",
@@ -323,11 +340,14 @@ class DDeployment:
         ),
         "mycount/server/ControlHandler.py": (
             "mycount/__init__.py",
+            "mycount/activity/SaveMarketingPost.py",
             "mycount/constants/DMarketing.py",
             "mycount/constants/DMyCount.py",
             "mycount/interface/DbMgr.py",
             "mycount/interface/MarketingDb.py",
             "mycount/interface/MarketingForm.py",
+            "mycount/interface/MarketingScreenshots.py",
+            "mycount/interface/MarketingUpload.py",
             "mycount/interface/VisitDb.py",
             "mycount/server/ControlPages.py",
             "mycount/server/__init__.py",
@@ -439,6 +459,7 @@ class DDeployment:
             "mycount/constants/DCaddy.py",
             "mycount/constants/DControl.py",
             "mycount/constants/DGeoIp.py",
+            "mycount/constants/DMarketing.py",
             "mycount/constants/DMyCount.py",
         ),
         "scripts/update-deployment-dependencies.py": (

@@ -9,6 +9,7 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Attach optional PNG screenshots to promotional posts, store files in the server's `pages/marketing` folder, and display them from the event details or chart marker. Preserve existing events with a nullable screenshot reference, retain uploads through upgrades and uninstall, and remove new files if saving fails.
 - Add a simple Marketing form for promotional posts with browser-local posting time, alphabetized platforms, posting URL, and notes; store posting events in UTC with system-generated creation timestamps.
 - Plot daily total visits on Marketing with vertical posting markers and a bot filter, alongside the saved posting details.
 - Show the creator's GitHub account in the documentation author profile.

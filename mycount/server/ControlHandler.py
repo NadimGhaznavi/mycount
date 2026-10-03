@@ -5,12 +5,16 @@ import logging
 from urllib.parse import parse_qs, urlsplit
 
 import pymysql
+from werkzeug.exceptions import RequestEntityTooLarge
 
+from mycount.activity.SaveMarketingPost import SaveMarketingPost
 from mycount.constants.DMyCount import DMyCount
 from mycount.constants.DMarketing import DMarketing
 from mycount.interface.DbMgr import DbMgr
 from mycount.interface.MarketingDb import MarketingDb
 from mycount.interface.MarketingForm import MarketingForm
+from mycount.interface.MarketingScreenshots import MarketingScreenshots
+from mycount.interface.MarketingUpload import MarketingUpload
 from mycount.interface.VisitDb import VisitDb
 from mycount.server.ControlPages import ControlPages
 
@@ -60,6 +64,17 @@ class ControlHandler(BaseHTTPRequestHandler):
             query = parse_qs(request.query)
             self.marketing(exclude_bots=query.get("exclude_bots", ["1"])[-1] != "0",
                            saved=query.get("saved") == ["1"])
+        elif path.startswith("/pages/marketing/"):
+            try:
+                image = MarketingScreenshots().read(path.lstrip("/"))
+            except FileNotFoundError:
+                self.send_error(404, "Screenshot not found")
+                return
+            except OSError:
+                logging.exception("Unable to read marketing screenshot")
+                self.send_error(503, "Screenshot unavailable")
+                return
+            self.respond(200, image, "image/png")
         elif path == "/health":
             self.respond(200, b'{"status":"ok","service":"mycount-control"}', "application/json")
         else:
@@ -93,18 +108,23 @@ class ControlHandler(BaseHTTPRequestHandler):
         if origin and urlsplit(origin).netloc != self.headers.get("Host"):
             self.send_error(403, "Cross-site submission refused")
             return
-        if self.headers.get("Content-Type", "").split(";", 1)[0] != "application/x-www-form-urlencoded":
+        content_type = self.headers.get("Content-Type", "")
+        if content_type.split(";", 1)[0] not in ("application/x-www-form-urlencoded", "multipart/form-data"):
             self.send_error(415, "Expected form data")
             return
         fields = {}
         try:
             length = int(self.headers.get("Content-Length", "0"))
-            if not 0 < length <= DMarketing.MAX_FORM_BYTES:
+            if not 0 < length <= DMarketing.MAX_SCREENSHOT_BYTES + DMarketing.MAX_FORM_BYTES:
                 self.send_error(413, "Invalid form size")
                 return
-            fields = parse_qs(self.rfile.read(length).decode("utf-8"), keep_blank_values=True,
-                              max_num_fields=10)
+            fields, screenshot = MarketingUpload.parse(self.rfile.read(length), content_type)
             post = MarketingForm.parse(fields)
+            if screenshot is not None:
+                MarketingScreenshots.validate(screenshot)
+        except RequestEntityTooLarge:
+            self.send_error(413, "Screenshot or form is too large")
+            return
         except (ValueError, UnicodeError) as error:
             self.respond(400, ControlPages().marketing([], [], error=str(error), fields=fields),
                          "text/html; charset=utf-8")
@@ -112,10 +132,10 @@ class ControlHandler(BaseHTTPRequestHandler):
         try:
             db = DbMgr()
             try:
-                MarketingDb(db).record(post)
+                SaveMarketingPost(MarketingDb(db), MarketingScreenshots()).save(post, screenshot)
             finally:
                 db.close()
-        except pymysql.MySQLError:
+        except (pymysql.MySQLError, OSError):
             logging.exception("Unable to save marketing event")
             self.respond(503, ControlPages().marketing([], [], error="Posting could not be saved. Please retry.", fields=fields),
                          "text/html; charset=utf-8")

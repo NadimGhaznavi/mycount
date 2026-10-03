@@ -13,13 +13,13 @@ class MarketingDb:
     def record(self, post: MarketingPost) -> int:
         with self._db.transaction():
             return self._db.insert("""
-                INSERT INTO marketing_posts (posted_at, platform, url, notes)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO marketing_posts (posted_at, platform, url, notes, screenshot_path)
+                VALUES (%s, %s, %s, %s, %s)
             """, (post.posted_at.astimezone(timezone.utc).replace(tzinfo=None),
-                  post.platform, post.url, post.notes))
+                  post.platform, post.url, post.notes, post.screenshot_path))
 
     def posts(self) -> list[dict[str, object]]:
         return self._db.query("""
-            SELECT id, posted_at, platform, url, notes, created_at
+            SELECT id, posted_at, platform, url, notes, created_at, screenshot_path
             FROM marketing_posts ORDER BY posted_at DESC, id DESC
         """)
