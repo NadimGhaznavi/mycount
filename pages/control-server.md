@@ -16,11 +16,14 @@ the active filter. Last Visited is the latest received
 visit, displayed in browser-local time as `YYYY-MM-DD HH:MM`.
 
 The Report filters box starts with the last 30 calendar days, including today,
-and **Exclude bots** checked. Choose From and Through dates (inclusive), a
-report timezone, and the bot filter, then select **Apply filters**. Ranges are
-limited to 366 days. With JavaScript, the initial report selects the browser's
-IANA timezone automatically; without JavaScript it starts in UTC. Filters and
-pagination links retain the selected timezone and range in the URL.
+and **Exclude bots** checked. Choose From and Through dates (inclusive) and the
+bot filter, then select **Apply filters**. Ranges are limited to 366 days.
+Reports and displayed dates and times use the browser's local timezone
+automatically, including when opening a report link from another timezone.
+The browser supplies its IANA timezone in a hidden field so database queries
+use the same local calendar days. Filters and pagination links retain it and
+the date range in the URL. JavaScript is required for local-time conversion;
+without it, reports use UTC.
 
 The range and bot filter apply together to site totals, expanded pages,
 locations, recent visits, referrers, and charts. Last Visited is the latest
@@ -116,7 +119,7 @@ and allow systemd write access specifically to it. Upgrades and uninstallation
 preserve uploaded screenshots alongside the retained database records.
 
 The Marketing line chart shows daily visit totals across all sites in the
-selected report timezone and date range, including zero-visit days, with bots
+browser's local timezone and selected date range, including zero-visit days, with bots
 excluded by default. The promotional-post table and markers use the same range.
 Daily visit totals are calculated in the database using UTC intervals for each
 local calendar day, including 23- and 25-hour daylight-saving days. MariaDB

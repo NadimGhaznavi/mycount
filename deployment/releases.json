@@ -476,7 +476,7 @@
       ]
     },
     "mycount/server/templates/marketing_chart.html": {
-      "digest": "9094afeed4110dbc23bede989f11ab5e4f5b5c6f60672f13f054599ef1d5786d",
+      "digest": "be5ae3fb4ac5da03a884c7e8e40e2f846bde66dc2180b90ee81fded80c30154c",
       "targets": [
         "report-server"
       ]
@@ -500,7 +500,7 @@
       ]
     },
     "mycount/server/templates/report_filters.html": {
-      "digest": "e2c938c7321a70f71b0b1e517b274d4c2e5e7131f264475f86bc1fbd40744003",
+      "digest": "314d8ac8419b294896c5bc9449a10bdaff4ea448dcf460549087e978e7e7b592",
       "targets": [
         "report-server"
       ]
@@ -752,6 +752,12 @@
         "report-server"
       ],
       "version": "1.1.0"
+    },
+    {
+      "targets": [
+        "report-server"
+      ],
+      "version": "1.2.0"
     }
   ]
 }
