@@ -14,6 +14,9 @@ from mycount.constants.DMarketing import DMarketing
 from mycount.interface.MarketingForm import MarketingForm
 from mycount.server.ControlHandler import ControlHandler
 from mycount.server.ControlPages import ControlPages
+from mycount.entity.Report import Report
+from mycount.interface.ReportQuery import ReportQuery
+from mycount.interface.DbCommitUncertain import DbCommitUncertain
 
 
 class MarketingTests(unittest.TestCase):
@@ -21,7 +24,7 @@ class MarketingTests(unittest.TestCase):
         return {key: [value] for key, value in {
             "posted_at": "2026-10-03 14:05", "timezone_offset": "240",
             "platform": "Reddit", "url": "https://reddit.com/r/example/comments/123",
-            "notes": "A promotional post", **changes,
+            "notes": "A promotional post", "submission_id": "a" * 32, **changes,
         }.items()}
 
     def test_local_timestamp_conversion_and_optional_notes(self):
@@ -37,7 +40,8 @@ class MarketingTests(unittest.TestCase):
                        dict(url="javascript:alert(1)"), dict(url="https://"),
                        dict(url="https://example.com:bad"), dict(url="https://example.com/a b"),
                        dict(url="https://example.com/\x00hidden"), dict(created_at="2026-10-03"),
-                       dict(url="https://example.com/" + "a" * 2048), dict(notes="a" * 4001)]:
+                       dict(url="https://example.com/" + "a" * 2048), dict(notes="a" * 4001),
+                       dict(submission_id=""), dict(submission_id="A" * 32)]:
             with self.subTest(change=change), self.assertRaises(ValueError):
                 MarketingForm.parse(self.fields(**change))
         fields = self.fields()
@@ -48,7 +52,7 @@ class MarketingTests(unittest.TestCase):
     def test_form_choices_and_saved_event_escaping(self):
         post = {"id": 1, "posted_at": datetime(2026, 10, 3, 18, 5), "platform": "Reddit",
                 "url": "https://example.com/?a=1&b=2", "notes": "<script>alert(1)</script>", "screenshot_path": None}
-        body = ControlPages().marketing([post], [{"received_at": datetime(2026, 10, 3, 18)}]).decode()
+        body = ControlPages().marketing(Report(ReportQuery.resolve({}), [{"day": "2026-10-03", "page_views": 1}], None, posts=[post])).decode()
         self.assertEqual(DMarketing.PLATFORMS, tuple(sorted(DMarketing.PLATFORMS)))
         indices = [body.index(f'<option value="{platform}"') for platform in DMarketing.PLATFORMS]
         self.assertEqual(indices, sorted(indices))
@@ -59,7 +63,8 @@ class MarketingTests(unittest.TestCase):
 
     @patch("mycount.server.ControlHandler.DbMgr")
     def test_save_redirect_validation_and_database_failure(self, factory):
-        with ThreadingHTTPServer(("127.0.0.1", 0), ControlHandler) as server:
+        factory.return_value.query.return_value = []
+        with patch("mycount.activity.ReadReports.DbMgr", factory), ThreadingHTTPServer(("127.0.0.1", 0), ControlHandler) as server:
             thread = Thread(target=server.serve_forever)
             thread.start()
             connection = HTTPConnection("127.0.0.1", server.server_port, timeout=5)
@@ -95,6 +100,15 @@ class MarketingTests(unittest.TestCase):
                 self.assertIn(b'keep these notes', body)
                 self.assertNotIn(b'private details', body)
                 factory.return_value.close.assert_called_once()
+                factory.reset_mock()
+                factory.return_value.insert.side_effect = DbCommitUncertain(2013, "private details")
+                with self.assertLogs(level="ERROR"):
+                    status, location, body = submit(self.fields())
+                self.assertEqual(status, 503)
+                self.assertIn(b'name="submission_id" value="' + b'a' * 32 + b'"', body)
+                self.assertIn(b'Retry this form to confirm the same posting.', body)
+                self.assertNotIn(b'window.location.replace', body)
+                self.assertNotIn(b'private details', body)
                 factory.reset_mock()
                 factory.return_value.query.side_effect = pymysql.OperationalError("private details")
                 with self.assertLogs(level="ERROR"):

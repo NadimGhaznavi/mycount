@@ -7,14 +7,7 @@
 {% set chart_outlines = ['#ff5252', '#42a5ff', '#ffeb59', '#fffdf5', '#737373'] %}
 <div class="metrics-tables">
 <div class="metrics-site-column">
-<form class="metrics-filters" method="get" action="/">
-  <fieldset>
-    <legend>Filters</legend>
-    <input type="hidden" name="exclude_bots" value="0">
-    <label><input type="checkbox" name="exclude_bots" value="1"{% if exclude_bots %} checked{% endif %} onchange="this.form.requestSubmit()"> Exclude bots</label>
-    <noscript><button type="submit">Apply filters</button></noscript>
-  </fieldset>
-</form>
+{% include 'report_filters.html' %}
 <div class="table-wrap">
   <table aria-label="Site visits">
     <thead><tr><th scope="col">Visits by Site</th><th scope="col" class="visits">Visits</th><th scope="col">Last Visited</th></tr></thead>
@@ -66,6 +59,10 @@
     </tbody>
   </table>
 </div>
+<nav aria-label="Recent visit pages">
+  {% if options.before %}<a href="{{ newest_url }}">Newest visits</a>{% endif %}
+  {% if older_url %}<a href="{{ older_url }}">Older visits</a>{% endif %}
+</nav>
 </div>
 <div class="metrics-location-column">
 <section class="country-chart" aria-labelledby="country-chart-title">
@@ -137,17 +134,17 @@
 </section>
 <section class="traffic-chart" aria-labelledby="traffic-chart-title">
   <h2 id="traffic-chart-title">All Traffic</h2>
-  {% if traffic_times %}
+  {% if daily %}
   <div id="all-traffic" role="img" aria-label="Daily hits across all sites. Hover over a bar for its date and total."></div>
   {% else %}
   <p>No visits match the current filters.</p>
   {% endif %}
 </section>
 </div>
-{% if country_slices or sites or traffic_times %}
+{% if country_slices or sites or daily %}
 {% include 'chart_theme.html' %}
 {% include 'pie_charts.html' %}
-{% if traffic_times %}{% include 'all_traffic.html' %}{% endif %}
+{% if daily %}{% include 'all_traffic.html' %}{% endif %}
 {% endif %}
 <script>
   for (const wrapper of document.querySelectorAll('.table-scroll')) {

@@ -15,7 +15,11 @@ from mycount.interface.MarketingDb import MarketingDb
 from mycount.interface.MarketingForm import MarketingForm
 from mycount.interface.MarketingScreenshots import MarketingScreenshots
 from mycount.interface.MarketingUpload import MarketingUpload
-from mycount.interface.VisitDb import VisitDb
+from mycount.activity.ReadReports import ReadReports
+from mycount.entity.Report import Report
+from mycount.entity.ReportOptions import ReportOptions
+from mycount.interface.ReportQuery import ReportQuery
+from mycount.interface.DbCommitUncertain import DbCommitUncertain
 from mycount.server.ControlPages import ControlPages
 
 
@@ -27,43 +31,31 @@ class ControlHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         request = urlsplit(self.path)
         path = request.path
-        if path == "/":
-            exclude_bots = parse_qs(request.query).get("exclude_bots", ["1"])[-1] != "0"
+        if path in ("/", "/marketing"):
+            query = parse_qs(request.query, keep_blank_values=True)
             try:
-                db = DbMgr()
-                try:
-                    with db.transaction(read_only=True):
-                        visits = VisitDb(db)
-                        sites = visits.totals_by_site(exclude_bots=exclude_bots)
-                        pages = visits.totals_by_page(exclude_bots=exclude_bots)
-                        locations = visits.totals_by_location(exclude_bots=exclude_bots)
-                        recent = visits.recent_visits(exclude_bots=exclude_bots)
-                        referrers = visits.totals_by_referrer(exclude_bots=exclude_bots)
-                        first_visit_at = visits.first_visit_at()
-                finally:
-                    db.close()
+                options = ReportQuery.resolve(query)
+            except ValueError as error:
+                self.send_error(400, str(error))
+                return
+            if path == "/marketing":
+                self.marketing(options, saved=query.get("saved") == ["1"])
+                return
+            try:
+                report = ReadReports().metrics(options)
             except pymysql.MySQLError:
                 logging.exception("Unable to read site visits")
-                self.respond(503, ControlPages().render([], [], [], [], [], exclude_bots=exclude_bots, error="Site visits unavailable."),
+                self.respond(503, ControlPages().render(Report(options, [], None), error="Site visits unavailable."),
                              "text/html; charset=utf-8")
                 return
-            self.respond(200, ControlPages().render(sites, pages, locations, recent, referrers,
-                                                  first_visit_at=first_visit_at, exclude_bots=exclude_bots), "text/html; charset=utf-8")
+            self.respond(200, ControlPages().render(report), "text/html; charset=utf-8")
         elif path == "/reference":
             first_visit_at = None
             try:
-                db = DbMgr()
-                try:
-                    first_visit_at = VisitDb(db).first_visit_at()
-                finally:
-                    db.close()
+                first_visit_at = ReadReports().first_visit_at()
             except pymysql.MySQLError:
                 logging.exception("Unable to read first visit for reference header")
             self.respond(200, ControlPages().reference(first_visit_at), "text/html; charset=utf-8")
-        elif path == "/marketing":
-            query = parse_qs(request.query)
-            self.marketing(exclude_bots=query.get("exclude_bots", ["1"])[-1] != "0",
-                           saved=query.get("saved") == ["1"])
         elif path.startswith("/pages/marketing/"):
             try:
                 image = MarketingScreenshots().read(path.lstrip("/"))
@@ -80,25 +72,15 @@ class ControlHandler(BaseHTTPRequestHandler):
         else:
             self.send_error(404, "Page not found")
 
-    def marketing(self, *, exclude_bots: bool = True, saved: bool = False) -> None:
+    def marketing(self, options: ReportOptions, *, saved: bool = False) -> None:
         try:
-            db = DbMgr()
-            try:
-                with db.transaction(read_only=True):
-                    posts = MarketingDb(db).posts()
-                    visits = VisitDb(db)
-                    recent = visits.recent_visits(exclude_bots=exclude_bots)
-                    first_visit_at = visits.first_visit_at()
-            finally:
-                db.close()
+            report = ReadReports().marketing(options)
         except pymysql.MySQLError:
             logging.exception("Unable to read marketing events")
-            self.respond(503, ControlPages().marketing([], [], error="Marketing data unavailable."),
+            self.respond(503, ControlPages().marketing(Report(options, [], None), error="Marketing data unavailable."),
                          "text/html; charset=utf-8")
             return
-        self.respond(200, ControlPages().marketing(posts, recent, first_visit_at=first_visit_at,
-                                                  exclude_bots=exclude_bots, saved=saved),
-                     "text/html; charset=utf-8")
+        self.respond(200, ControlPages().marketing(report, saved=saved), "text/html; charset=utf-8")
 
     def do_POST(self) -> None:
         if urlsplit(self.path).path != "/marketing":
@@ -138,7 +120,7 @@ class ControlHandler(BaseHTTPRequestHandler):
             self.send_error(413, "Screenshot or form is too large")
             return
         except (ValueError, UnicodeError) as error:
-            self.respond(400, ControlPages().marketing([], [], error=str(error), fields=fields),
+            self.respond(400, ControlPages().marketing(Report(ReportQuery.resolve({}), [], None), error=str(error), fields=fields),
                          "text/html; charset=utf-8")
             return
         try:
@@ -147,9 +129,15 @@ class ControlHandler(BaseHTTPRequestHandler):
                 SaveMarketingPost(MarketingDb(db), MarketingScreenshots()).save(post, screenshot)
             finally:
                 db.close()
+        except DbCommitUncertain:
+            logging.exception("Marketing save outcome uncertain")
+            self.respond(503, ControlPages().marketing(Report(ReportQuery.resolve({}), [], None),
+                         error="Save could not be confirmed. Retry this form to confirm the same posting.", fields=fields),
+                         "text/html; charset=utf-8")
+            return
         except (pymysql.MySQLError, OSError):
             logging.exception("Unable to save marketing event")
-            self.respond(503, ControlPages().marketing([], [], error="Posting could not be saved. Please retry.", fields=fields),
+            self.respond(503, ControlPages().marketing(Report(ReportQuery.resolve({}), [], None), error="Posting could not be saved. Please retry.", fields=fields),
                          "text/html; charset=utf-8")
             return
         self.respond(303, b"", "text/html; charset=utf-8", location="/marketing?saved=1")

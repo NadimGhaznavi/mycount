@@ -9,6 +9,31 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-03 @ 16:19
+
+### Summary
+
+Preserve marketing screenshots when a save may already have committed and make
+retries confirm the same posting. Bound control reports by date range, paginate
+recent visits, and move report orchestration into an activity.
+
+- Distinguish uncertain database commits, retain affected screenshots, and use
+  unique marketing submission IDs to prevent duplicate retry effects.
+- Add explicit reconciliation for old unreferenced screenshots, preserving
+  referenced files and recent uploads.
+- Default reports to 30 local calendar days, allow ranges up to 366 days, and
+  paginate recent visits in groups of 50 using receipt time and record ID.
+- Query daily chart aggregates using timezone-aware UTC day boundaries instead
+  of loading every visit timestamp into the browser.
+- Move report queries, snapshot transactions, and connection cleanup to
+  `ReadReports`; keep filters and pagination in the report URLs.
+
+- Add `scripts/clear-upnpc-routes.sh` to clear MyCount's TCP port 80/443 router
+  mappings and matching UDP destinations, verify removal, and preserve other
+  ports and unmatched UDP mappings.
+- Invoke router cleanup during uninstall before removing application files;
+  stop file removal if cleanup fails.
+
 ## [1.0.0] - 2026-10-03 @ 15:22
 
 ### Summary

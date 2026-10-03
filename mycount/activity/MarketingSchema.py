@@ -22,3 +22,10 @@ class MarketingSchema:
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
         """)
         self._db.execute("ALTER TABLE marketing_posts ADD COLUMN IF NOT EXISTS screenshot_path VARCHAR(255) NULL")
+        self._db.execute("""
+            ALTER TABLE marketing_posts
+                ADD COLUMN IF NOT EXISTS submission_id CHAR(32)
+                    CHARACTER SET ascii COLLATE ascii_bin NULL,
+                ADD UNIQUE INDEX IF NOT EXISTS uq_marketing_submission (submission_id),
+                ADD INDEX IF NOT EXISTS idx_marketing_screenshot (screenshot_path)
+        """)

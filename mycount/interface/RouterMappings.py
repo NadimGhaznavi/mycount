@@ -6,6 +6,24 @@ import subprocess
 
 
 class RouterMappings:
+    def clear(self, ports: tuple[int, ...]) -> None:
+        listing = self._listing()
+        existing = self._mappings(listing)
+        udp = self._mappings(listing, 'UDP')
+        selected = []
+        for port in ports:
+            if port in existing:
+                selected.append((port, 'TCP'))
+                if udp.get(port) == existing[port]:
+                    selected.append((port, 'UDP'))
+        for port, protocol in selected:
+            subprocess.run(['upnpc', '-d', str(port), protocol], check=True)
+        listing = self._listing()
+        current = {protocol: self._mappings(listing, protocol) for protocol in ('TCP', 'UDP')}
+        for port, protocol in selected:
+            if port in current[protocol]:
+                raise RuntimeError(f"UPnP {protocol} port {port} mapping remains after deletion.")
+
     def forward(self, ports: tuple[int, ...]) -> None:
         listing = self._listing()
         local = re.search(r"^Local LAN ip address\s*:\s*(\S+)\s*$", listing, re.MULTILINE)
@@ -29,6 +47,6 @@ class RouterMappings:
         return subprocess.run(['upnpc', '-l'], check=True, capture_output=True, text=True).stdout
 
     @staticmethod
-    def _mappings(listing: str) -> dict[int, tuple[str, int]]:
+    def _mappings(listing: str, protocol: str = 'TCP') -> dict[int, tuple[str, int]]:
         return {int(port): (address, int(internal)) for port, address, internal in re.findall(
-            r"^\s*\d+\s+TCP\s+(\d+)->([\d.]+):(\d+)\s", listing, re.MULTILINE)}
+            rf"^\s*\d+\s+{protocol}\s+(\d+)->([\d.]+):(\d+)\s", listing, re.MULTILINE)}
