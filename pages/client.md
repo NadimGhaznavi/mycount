@@ -25,7 +25,7 @@ Add this script once to a page with Jekyll front matter, or to its layout:
 
 {% raw %}
 ```html
-<script defer src="{{ '/client/mycount.js' | relative_url }}"
+<script defer src="{{ '/client/mycount.js' | relative_url }}?v={{ site.time | date: '%s' }}"
         data-endpoint="{{ site.mycount.endpoint | escape }}"
         data-site="mycount"></script>
 ```
@@ -34,6 +34,10 @@ Add this script once to a page with Jekyll front matter, or to its layout:
 Use a fixed, non-personal label for `data-site`, such as `mycount` or `ax3l`.
 Labels may contain ASCII letters, digits, underscores, and hyphens, must start
 with a letter or digit, and must be at most 100 characters long.
+
+The build timestamp in the script URL changes when Jekyll rebuilds the site,
+so browsers fetch the current client after publication. Publish `client/mycount.js`
+alongside the page; updating the collector alone does not update website assets.
 
 The endpoint uses standard HTTPS port 443 and the path `DMyCount.COLLECTION_PATH`.
 Keep this static Jekyll setting in sync when changing the hostname or path;
@@ -114,8 +118,10 @@ stored as metadata; they do not currently change collection behavior.
 
 Deploy the collector and apply its schema upgrade **before** copying the updated
 `client/mycount.js` to each website (for Ax3l/R3el, the deployed copy is at
-`assets/js/mycount.js`). Older cached clients remain accepted; they omit `search` and send only the
-referring origin, so full referrer details require the updated client. Historical rows cannot have missing details reconstructed.
+`assets/js/mycount.js`). Older clients remain accepted but can omit visitor IDs,
+query strings, referrers, and browser details; some earlier versions send only
+the referring origin. These fields require the updated client. Historical rows
+cannot have missing details reconstructed.
 An older collector rejects the new optional fields, so upgrade order matters.
 
 ### Unique visitors

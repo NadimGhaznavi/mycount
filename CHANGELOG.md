@@ -9,6 +9,9 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Refresh the documentation site's client example with a build-versioned script
+  URL, the site counter, and current payload verification instructions; document
+  the `/get_count` Caddy route and publication of updated client assets.
 - Remove the date-range and pagination hint from Report Filters.
 - Remove the Report Filters timezone control and automatically use the browser's
   local timezone for report dates and marketing chart posting times, including

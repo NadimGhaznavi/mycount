@@ -35,8 +35,8 @@ For an existing installation, use the [upgrade script]({% link pages/upgrading.m
 to deploy changes.
 
 Runtime defaults are in `mycount/constants/DMyCount.py`. The collector listens
-on `127.0.0.1:36666`. Caddy serves public HTTPS on port `443`, routing `/count`
-and `/health` to the collector and forwarding visitor addresses. The
+on `127.0.0.1:36666`. Caddy serves public HTTPS on port `443`, routing `/count`,
+`/get_count`, and `/health` to the collector and forwarding visitor addresses. The
 separate mydynip service provides dynamic-IP updates and is not modified by
 this installer.
 
@@ -86,7 +86,7 @@ configuration using the default hostname and collector settings:
 
 ```caddyfile
 https://count.osoyalce.com {
-    @collector path /count /health
+    @collector path /count /health /get_count
     handle @collector {
         reverse_proxy 127.0.0.1:36666 {
             header_up X-MyCount-Client-IP {http.request.remote.host}
