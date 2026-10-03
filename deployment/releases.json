@@ -183,7 +183,7 @@
       ]
     },
     "mycount/constants/DMarketing.py": {
-      "digest": "6e0a556c2d7a7a0119d77e4b72f2063273e5c539f3861295c609ad768c0a632b",
+      "digest": "38132169f9f4df41e152f31ac9c18c98b65cdad3d2a9190d2464bee89391458e",
       "targets": [
         "filesystem",
         "report-server"
@@ -687,6 +687,13 @@
         "report-server"
       ],
       "version": "0.14.0"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "report-server"
+      ],
+      "version": "0.14.1"
     }
   ]
 }
