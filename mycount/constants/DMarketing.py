@@ -1,0 +1,10 @@
+"""Marketing form choices and input limits."""
+
+from typing import Final
+
+
+class DMarketing:
+    PLATFORMS: Final[tuple[str, ...]] = ("Email", "Facebook", "LinkedIn", "Reddit", "X")
+    MAX_URL_LENGTH: Final[int] = 2048
+    MAX_NOTES_LENGTH: Final[int] = 4000
+    MAX_FORM_BYTES: Final[int] = 65536

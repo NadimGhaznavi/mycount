@@ -9,8 +9,11 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Add a simple Marketing form for promotional posts with browser-local posting time, alphabetized platforms, posting URL, and notes; store posting events in UTC with system-generated creation timestamps.
+- Plot daily total visits on Marketing with vertical posting markers and a bot filter, alongside the saved posting details.
 - Show the creator's GitHub account in the documentation author profile.
 - Remove brackets from the top-right navigation, hide the current page's link, and add a blank Marketing page.
+- Added mycount site name to the `_config.yml`.
 
 ## [0.13.2] - 2026-10-01 @ 03:05
 

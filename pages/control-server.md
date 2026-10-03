@@ -61,7 +61,21 @@ expanding a row does not reload the report. Reloading collapses the rows.
 
 The title bar has **Metrics** (`/`), **Reference** (`/reference`), and
 **Marketing** (`/marketing`) links without brackets. Each page hides its own
-navigation link. Marketing currently has an empty content area.
+navigation link.
+Marketing records promotional posts using a simple form: Posted At defaults to
+the current browser-local time as `yyyy-mm-dd hh:mm` and remains editable;
+Platform offers Email, Facebook, LinkedIn, Reddit, and X in alphabetical order;
+Posting URL accepts an HTTP(S) link; Notes is optional. Saving stores the posting
+time in UTC and generates `created_at` in the database. Installation and upgrade
+create the `marketing_posts` table without replacing existing events.
+
+The Marketing line chart shows daily visit totals across all sites in the
+browser timezone, including zero-visit days, with bots excluded by default.
+Each promotional post adds a vertical line at its posting time. Hover over its
+diamond marker to see the platform and timestamp; click it to scroll to the
+post's URL and notes in the table below. Markers also appear when no visits have
+been recorded. These totals describe traffic changes; they do not attribute
+visits to a specific post or project.
 Reference displays one [data inventory table]({% link pages/collected-data.md %})
 with Source, Source Details, Table, Column, and Details. It includes optional browser details,
 all GeoIP source fields, and storage mappings; unretained values show `---` in
@@ -69,7 +83,7 @@ both storage columns. The reference content is static; its title bar queries the
 earliest recorded visit. If that query fails, Reference remains available with
 the Counting since line hidden, and the error is logged.
 
-Both pages display Counting since followed by the earliest recorded visit's
+All three pages display Counting since followed by the earliest recorded visit's
 date (for example, September 23, 2026), in the browser's local timezone.
 This date includes all sites and bots regardless of the current filter. The
 line is hidden when no visits have been recorded or the date is unavailable.

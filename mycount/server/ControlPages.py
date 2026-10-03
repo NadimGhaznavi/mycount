@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 import pycountry
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
+from mycount.constants.DMarketing import DMarketing
 
 
 class ControlPages:
@@ -57,9 +58,17 @@ class ControlPages:
             refreshed_at=datetime.now(timezone.utc), active_page="reference", first_visit_at=first_visit_at,
         ).encode("utf-8")
 
-    def marketing(self) -> bytes:
+    def marketing(self, posts: list[dict[str, object]], recent: list[dict[str, object]], *,
+                  first_visit_at: datetime | None = None, exclude_bots: bool = True,
+                  error: str | None = None, fields: dict[str, list[str]] | None = None,
+                  saved: bool = False) -> bytes:
         return self._templates.get_template("marketing.html").render(
-            refreshed_at=datetime.now(timezone.utc), active_page="marketing", first_visit_at=None,
+            refreshed_at=datetime.now(timezone.utc), active_page="marketing", first_visit_at=first_visit_at,
+            platforms=DMarketing.PLATFORMS, posts=posts, error=error, fields=fields or {}, saved=saved,
+            exclude_bots=exclude_bots,
+            traffic_times=[visit["received_at"].replace(tzinfo=timezone.utc).isoformat() for visit in recent],
+            posting_times=[{"posted_at": post["posted_at"].replace(tzinfo=timezone.utc).isoformat(),
+                            "platform": post["platform"], "id": post["id"]} for post in posts],
         ).encode("utf-8")
 
     @staticmethod

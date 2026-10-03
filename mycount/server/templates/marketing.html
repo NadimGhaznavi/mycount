@@ -1,2 +1,53 @@
 {% extends 'base.html' %}
-{% block content %}{% endblock %}
+{% block content %}
+<h1>Marketing</h1>
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+{% if saved %}<p role="status">Posting saved.</p>{% endif %}
+<form id="marketing-form" class="marketing-form" method="post" action="/marketing">
+  <label for="posted-at">Posted At</label>
+  <input id="posted-at" name="posted_at" type="text" required placeholder="yyyy-mm-dd hh:mm" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}" value="{{ fields.get('posted_at', [''])[0] }}" aria-describedby="posting-time-help">
+  <small id="posting-time-help">Your local time (yyyy-mm-dd hh:mm).</small>
+  <input id="timezone-offset" name="timezone_offset" type="hidden">
+  <label for="platform">Platform</label>
+  <select id="platform" name="platform" required>
+    {% for platform in platforms %}<option value="{{ platform }}"{% if fields.get('platform', [''])[0] == platform %} selected{% endif %}>{{ platform }}</option>{% endfor %}
+  </select>
+  <label for="posting-url">Posting URL</label>
+  <input id="posting-url" name="url" type="url" required maxlength="2048" value="{{ fields.get('url', [''])[0] }}">
+  <label for="posting-notes">Notes</label>
+  <textarea id="posting-notes" name="notes" rows="3" maxlength="4000">{{ fields.get('notes', [''])[0] }}</textarea>
+  <button type="submit">Save Posting</button>
+</form>
+<form class="metrics-filters" method="get" action="/marketing">
+  <input type="hidden" name="exclude_bots" value="0">
+  <label><input type="checkbox" name="exclude_bots" value="1"{% if exclude_bots %} checked{% endif %} onchange="this.form.submit()"> Exclude bots</label>
+</form>
+<section class="traffic-chart" aria-labelledby="marketing-traffic-heading">
+  <h2 id="marketing-traffic-heading">Total Visits and Promotional Posts</h2>
+  <p>Daily visit totals across all sites. Vertical lines mark promotional posting times.</p>
+  {% if traffic_times or posts %}<div id="marketing-traffic" aria-label="Daily visits with promotional posting markers"></div>
+  {% else %}<p>No visits or promotional posts recorded yet.</p>{% endif %}
+</section>
+<div class="table-wrap marketing-posts">
+  <table aria-label="Promotional Posts">
+    <caption>Promotional Posts</caption>
+    <thead><tr><th>Posted At</th><th>Platform</th><th>Posting URL</th><th>Notes</th></tr></thead>
+    <tbody>
+      {% for post in posts %}
+      <tr id="posting-{{ post.id }}">
+        <td><time datetime="{{ post.posted_at | utc_iso }}" data-local-time="date">{{ post.posted_at }}</time></td>
+        <td>{{ post.platform }}</td><td><a href="{{ post.url }}" target="_blank" rel="noopener noreferrer">{{ post.url }}</a></td><td class="posting-notes">{{ post.notes }}</td>
+      </tr>
+      {% else %}<tr><td colspan="4">No promotional posts recorded yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+<noscript><p>Enable JavaScript to set your local posting time and view the chart.</p></noscript>
+{% include 'marketing_form.html' %}
+{% if traffic_times or posts %}
+{% set chart_colors = ['#e13b32', '#f2ce35'] %}
+{% set chart_outlines = ['#ff6258', '#ffe477'] %}
+{% include 'chart_theme.html' %}
+{% include 'marketing_chart.html' %}
+{% endif %}
+{% endblock %}

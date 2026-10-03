@@ -1,6 +1,7 @@
 """Explicit visitor schema setup for installation and upgrades."""
 
 from mycount.interface.DbMgr import DbMgr
+from mycount.activity.MarketingSchema import MarketingSchema
 from mycount.interface.CountryNameMigration import CountryNameMigration
 from mycount.constants.DMyCount import DMyCount
 from mycount.constants.DGeoIp import DGeoIp
@@ -98,6 +99,7 @@ class VisitorSchema:
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
         """)
         CountryNameMigration(self._db).apply("page_views")
+        MarketingSchema(self._db).apply()
 
 
 if __name__ == "__main__":

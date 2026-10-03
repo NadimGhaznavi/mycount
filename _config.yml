@@ -5,6 +5,8 @@ url: "https://mycount.osoyalce.com"
 baseurl: ""
 mycount:
   endpoint: "https://count.osoyalce.com/count"
+  site: "mycount"
+
 repository: "NadimGhaznavi/mycount"
 locale: "en-US"
 remote_theme: "NadimGhaznavi/minimal-mistakes"
