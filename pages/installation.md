@@ -13,9 +13,10 @@ sudo scripts/install.sh
 ```
 
 The machine needs Python 3.11 or later with virtual-environment support,
-MariaDB server and client, systemd, and cron. MariaDB must be running with
+MariaDB server and client, and systemd. MariaDB must be running with
 root administrative access through its local socket. Installation needs
-network access for Python dependencies and the initial GeoIP download.
+network access for Python dependencies and HTTP access to BMGeoIP at
+`geoip.osoyalce.com:54300`.
 The automatic package installation uses apt on Debian/Ubuntu systems. Run
 deployment from a checkout separate from `/opt/prod/mycount`.
 
@@ -23,7 +24,7 @@ The installer creates the `mycount` database and database account, a Linux
 service account, and `/etc/mycount/database.env` with root-only permissions.
 It reuses existing credentials without resetting the database password.
 It copies the application to `/opt/prod/mycount`, creates its `.venv`, applies
-the schema, imports GeoIP data, and installs and starts `mycount-server.service`
+the visitor schema and installs and starts `mycount-server.service`
 and `mycount-control.service`. It checks both local health endpoints before
 configuring Caddy. Upgrades stop both services before updating dependencies
 and code; an installation failure can leave them stopped. Correct the reported error and
@@ -31,7 +32,7 @@ rerun the installer. Installation is not a transactional rollback mechanism.
 
 See [Uninstall]({% link pages/uninstall.md %}) for removal that preserves data.
 For an existing installation, use the [upgrade script]({% link pages/upgrading.md %})
-to deploy changes without repeating the GeoIP import.
+to deploy changes.
 
 Runtime defaults are in `mycount/constants/DMyCount.py`. The collector listens
 on `127.0.0.1:36666`. Caddy serves public HTTPS on port `443`, routing `/count`
@@ -50,10 +51,13 @@ import, validates the combined configuration, and reloads Caddy. The original
 Caddyfile is saved as `/etc/caddy/Caddyfile.before-mycount` on the first run.
 Access logging is not enabled for the collector site.
 
-Review `mycount/constants/DCaddy.py` before installation. `LAN_HOST` is the
-machine's LAN IPv4 address; reserve that address in DHCP. The public hostname
-must resolve to this router's public address. UPnP maps TCP ports 80 and
-443 to this machine. Port 80 supports automatic public certificate
+Review the public hostname in `mycount/constants/DCaddy.py` before installation.
+The installer discovers the router with `upnpc` and uses the reported local LAN
+IPv4 address of the host running the installer, such as wintermute. Reserve that
+address in DHCP. The public hostname must resolve to this router's public address.
+The installer deletes existing TCP mappings for ports 80 and 443, creates its own
+mappings to this machine, and reads the router's rules again to verify them. Other
+ports and UDP mappings are preserved. Port 80 supports automatic public certificate
 issuance and renewal; keep it reachable. Existing LAN-only site restrictions
 remain in place. After a router reset, rerun the Caddy setup to restore mappings.
 
@@ -149,44 +153,28 @@ curl -i https://count.osoyalce.com/health
 Expect HTTP 204. This checks HTTPS and proxy connectivity; use the
 [browser client verification]({% link pages/client.md %}) to check collection.
 
-## GeoIP updates
+## BMGeoIP service
 
-GeoIP imports retain country names, latitude, longitude, ZIP/postal code, and timezone
-alongside country codes, region, and city. New visits copy the available values.
-Coordinates, ZIP/postal code, and timezone added to existing ranges remain
-empty until the next scheduled or manual GeoIP refresh; those fields are not
-backfilled on historical visits.
+MyCount calls `http://geoip.osoyalce.com:54300/api/lookup` for each public visitor
+address. The hostname, port, and five-second timeout are defined in
+`mycount/constants/DGeoIp.py`. BMGeoIP must be reachable from the deployed host;
+its API is intended for a trusted network and has no authentication. BMGeoIP owns
+dataset downloads, imports, and refresh scheduling. MyCount does not create local
+range tables, download datasets, or require cron. Full setup removes a legacy
+`/etc/cron.d/mycount-geoip` schedule; existing reference tables are left untouched.
 
-Upgrades add nullable `country_name` columns to reference ranges and visits,
-backfill missing names from recognized ISO country codes using `pycountry`,
-and drop the obsolete `continent` columns. Backfills scan primary keys in
-batches of 1,000 rows, log progress, and commit each batch separately. Retrying
-an interrupted upgrade preserves completed names and fills remaining gaps. Unknown codes remain unnamed.
-New imports retain the CSV country name; later refreshes do not rewrite names
-on existing visits.
+Both IPv4 and IPv6 are supported. IPv4-mapped IPv6 addresses are normalized to
+IPv4; non-global addresses receive an empty location without a service request.
+When ranges overlap, MyCount selects the greatest numeric start address and then
+the smallest end address, preserving its former local lookup behavior.
 
-MyCount uses the free ipapi.is
-[IPv4](https://github.com/ipapi-is/ipapi/blob/main/databases/geolocationDatabaseIPv4.csv.zip)
-and [IPv6](https://github.com/ipapi-is/ipapi/blob/main/databases/geolocationDatabaseIPv6.csv.zip)
-datasets. Public reference data is imported into MariaDB for local lookups.
-The archives are temporary and removed after processing.
-The initial download and import can take several minutes after Python dependency
-installation. The installer reports each stage; GeoIP imports report row counts
-about every ten seconds while batches complete, followed by publication of both
-datasets. Download stages report their start and completion through the transition
-to importing.
+New visits store country code and name, region, city, latitude, longitude, postal
+code, and timezone as a location snapshot. Empty provider values become NULL,
+coordinates become numbers, and postal codes remain text. Historical snapshots
+are preserved. Existing missing country names are backfilled from recognized ISO
+codes during visitor schema setup; supplied names remain unchanged.
 
-Installation creates `/etc/cron.d/mycount-geoip`. Its default schedule is
-Sunday at 03:17 in the machine's timezone. The download URLs and schedule are
-defined in `mycount/constants/DGeoIp.py`.
-
-Each refresh stages both address families before replacing the active data.
-A failed download or import leaves the previous dataset available. No service
-restart is needed. Allow disk space for both the active and replacement data
-and the temporary downloads.
-
-To refresh manually after installation:
-
-```sh
-sudo /opt/prod/mycount/scripts/update-geoip.sh
-```
+A successful lookup with no matching range records the visit with an empty
+location. A timeout, service error, or invalid response returns HTTP 503 from
+`/count` and does not save that visit. The browser does not retry failed collection.
+The collector's `/health` endpoint checks the HTTP listener, not BMGeoIP availability.

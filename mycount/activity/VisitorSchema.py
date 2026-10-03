@@ -98,7 +98,7 @@ class VisitorSchema:
                     REFERENCES page_views(page_view_id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
         """)
-        CountryNameMigration(self._db).apply("page_views")
+        CountryNameMigration(self._db).apply()
         MarketingSchema(self._db).apply()
 
 

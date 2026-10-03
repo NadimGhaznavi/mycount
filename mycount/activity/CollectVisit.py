@@ -17,9 +17,9 @@ class CollectVisit:
     def record(self, payload: object, address: str, origin: str) -> int:
         visit, user_agent = self._payload.resolve(payload, origin)
         visit = self._browser.enrich(visit, user_agent)
+        location = GeoIp().locate(address)
         db = DbMgr()
         try:
-            location = GeoIp(db).locate(address)
             visit = replace(visit, ip_address=address, country_code=location.country_code,
                             country_name=location.country_name, region_name=location.region_name,
                             city_name=location.city_name,

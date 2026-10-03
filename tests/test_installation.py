@@ -49,6 +49,7 @@ class DeploymentTests(unittest.TestCase):
             self.stack.enter_context(patch.object(cls, key, value))
         self.run = self.stack.enter_context(patch('subprocess.run'))
         self.run.return_value = subprocess.CompletedProcess([], 0)
+        self.router = self.stack.enter_context(patch('mycount.interface.RouterMappings.RouterMappings.forward'))
         self.stack.enter_context(redirect_stdout(io.StringIO()))
 
     def execute(self, script):
@@ -123,6 +124,8 @@ class DeploymentTests(unittest.TestCase):
         self.assertIn(self.other_sites.strip(), self.config.read_text())
         self.assertEqual(self.config.with_name('Caddyfile.before-mycount').read_text(), original)
         self.assertIn('reverse_proxy', self.site.read_text())
+        self.assertEqual(self.router.call_count, 2)
+        self.router.assert_called_with((80, 443))
 
     def test_caddy_reload_failure_restores_previous_files(self):
         original = self.config.read_text()
@@ -132,6 +135,18 @@ class DeploymentTests(unittest.TestCase):
             self.execute('install-caddy.sh')
         self.assertEqual(self.config.read_text(), original)
         self.assertEqual(self.site.read_text(), 'previous site')
+
+    def test_full_setup_removes_legacy_geoip_schedule_and_runner(self):
+        legacy = self.app / 'scripts/update-geoip.sh'
+        legacy.parent.mkdir()
+        legacy.write_text('old importer')
+        source = (ROOT / 'scripts/install-services.sh').read_text().split('render_definitions() {', 1)[1]
+        source = source.split("<<'PY'\n", 1)[1].split('\nPY', 1)[0]
+        with patch('sys.argv', ['installer', str(ROOT), 'true']):
+            exec(compile(source, 'install-services.sh', 'exec'), {'__name__': '__main__'})
+        self.assertFalse(self.cron.exists())
+        self.assertFalse(legacy.exists())
+        self.assertEqual(self.credentials.read_text(), 'preserve credentials')
 
 
 if __name__ == '__main__':

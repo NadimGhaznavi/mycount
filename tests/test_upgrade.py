@@ -142,10 +142,12 @@ fi
         self.assertNotIn('systemctl', self.log.read_text())
         self.assertNotIn('version-committed', self.log.read_text())
 
-    def test_install_still_refreshes_geoip(self):
+    def test_install_uses_external_geoip_without_refresh_or_cron(self):
         result = self.run_script('install-services.sh')
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn('geoip', self.log.read_text().splitlines())
+        commands = self.log.read_text().splitlines()
+        self.assertNotIn('geoip', commands)
+        self.assertNotIn('systemctl enable --now cron.service', commands)
 
     def test_missing_installation_fails_before_deployment(self):
         self.credentials.unlink()

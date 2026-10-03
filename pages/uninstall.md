@@ -20,7 +20,7 @@ sudo /opt/prod/mycount/scripts/uninstall.sh
 
 The script removes MyCount's Caddy import and site file, disables and stops
 `mycount-server.service` and `mycount-control.service`, removes both units and
-the weekly GeoIP schedule, and
+any legacy MyCount GeoIP schedule, and
 deletes the application files under `/opt/prod/mycount`, preserving uploaded
 PNGs in `pages/marketing` when that folder exists. It validates the remaining Caddy configuration
 before changing it and reloads Caddy if active. Other Caddy sites are preserved;
@@ -33,8 +33,8 @@ packages installed through apt, the Caddyfile backup, and router port mappings
 are also retained because they may be shared. Remove router mappings manually
 only when no other site uses them. The separate mydynip service is untouched.
 
-Run removal after any manual or scheduled GeoIP refresh has finished; removing
-the cron file prevents future runs but does not stop an existing refresh.
+For a legacy deployment, finish any in-progress GeoIP refresh before removal.
+The external BMGeoIP service and its data are untouched.
 The directory-removal guard accepts only `/opt/prod/mycount`; deployments using
 a customized application directory require manual removal of that directory.
 
