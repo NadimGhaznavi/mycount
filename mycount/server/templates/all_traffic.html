@@ -1,24 +1,8 @@
 <script>
   (() => {
-    const timestamps = {{ traffic_times | tojson }};
-    const dateKey = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    const counts = new Map();
-    for (const timestamp of timestamps) {
-      const key = dateKey(new Date(timestamp));
-      counts.set(key, (counts.get(key) || 0) + 1);
-    }
-    const firstDay = [...counts.keys()].sort()[0];
-    const [year, month, day] = firstDay.split('-').map(Number);
-    const cursor = new Date(year, month - 1, day);
-    const lastDay = [...counts.keys(), dateKey(new Date())].sort().at(-1);
-    const dates = [];
-    const hits = [];
-    while (dateKey(cursor) <= lastDay) {
-      const key = dateKey(cursor);
-      dates.push(key);
-      hits.push(counts.get(key) || 0);
-      cursor.setDate(cursor.getDate() + 1);
-    }
+    const daily = {{ daily | tojson }};
+    const dates = daily.map(day => day.day);
+    const hits = daily.map(day => day.page_views);
     Plotly.newPlot('all-traffic', [{
       type: 'bar', x: dates, y: hits,
       marker: {color: chartTheme.colors[1], line: {color: chartTheme.outlines[1], width: 4}},

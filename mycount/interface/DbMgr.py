@@ -9,6 +9,7 @@ import pymysql
 from pymysql.cursors import DictCursor
 
 from mycount.constants.DDbMgr import DDbMgr
+from mycount.interface.DbCommitUncertain import DbCommitUncertain
 
 
 class DbMgr:
@@ -67,7 +68,12 @@ class DbMgr:
             self._connection.begin()
         try:
             yield
-            self._connection.commit()
+            try:
+                self._connection.commit()
+            except (pymysql.OperationalError, pymysql.InterfaceError, OSError) as error:
+                if not read_only:
+                    raise DbCommitUncertain(2013, "Transaction commit outcome is unknown.") from error
+                raise
         except BaseException as error:
             try:
                 self._connection.rollback()

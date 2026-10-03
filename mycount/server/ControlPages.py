@@ -4,6 +4,10 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 import pycountry
+from uuid import uuid4
+
+from mycount.entity.Report import Report
+from mycount.interface.ReportQuery import ReportQuery
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 from mycount.constants.DMarketing import DMarketing
@@ -19,20 +23,24 @@ class ControlPages:
         self._templates.filters["country_flag"] = self._country_flag
         self._templates.filters["utc_iso"] = lambda value: value.replace(tzinfo=timezone.utc).isoformat()
 
-    def render(self, sites: list[dict[str, object]], pages: list[dict[str, object]],
-               locations: list[dict[str, object]], recent: list[dict[str, object]],
-               referrers: list[dict[str, object]], *, first_visit_at: datetime | None = None,
-               exclude_bots: bool = True, error: str | None = None) -> bytes:
+    def render(self, report: Report, *, error: str | None = None) -> bytes:
         pages_by_site = {}
-        for page in pages:
+        for page in report.pages:
             pages_by_site.setdefault(page["site"], []).append(page)
         return self._templates.get_template("control.html").render(
-            sites=sites, pages_by_site=pages_by_site, locations=locations, recent=recent, referrers=referrers,
-            country_slices=self._country_slices(locations),
-            traffic_times=[visit["received_at"].replace(tzinfo=timezone.utc).isoformat() for visit in recent],
-            first_visit_at=first_visit_at,
-            error=error, exclude_bots=exclude_bots, refreshed_at=datetime.now(timezone.utc), active_page="metrics",
+            sites=report.sites, pages_by_site=pages_by_site, locations=report.locations,
+            recent=report.recent, referrers=report.referrers,
+            country_slices=self._country_slices(report.locations),
+            error=error, active_page="metrics", **self._report_context(report, "/"),
         ).encode("utf-8")
+
+    @staticmethod
+    def _report_context(report: Report, path: str) -> dict[str, object]:
+        return dict(options=report.options, daily=report.daily,
+                    first_visit_at=report.first_visit_at, exclude_bots=report.options.exclude_bots,
+                    refreshed_at=datetime.now(timezone.utc),
+                    newest_url=ReportQuery.link(path, report.options),
+                    older_url=ReportQuery.link(path, report.options, report.older) if report.older else None)
 
     @staticmethod
     def _country_slices(locations: list[dict[str, object]]) -> list[dict[str, object]]:
@@ -58,17 +66,14 @@ class ControlPages:
             refreshed_at=datetime.now(timezone.utc), active_page="reference", first_visit_at=first_visit_at,
         ).encode("utf-8")
 
-    def marketing(self, posts: list[dict[str, object]], recent: list[dict[str, object]], *,
-                  first_visit_at: datetime | None = None, exclude_bots: bool = True,
-                  error: str | None = None, fields: dict[str, list[str]] | None = None,
-                  saved: bool = False) -> bytes:
+    def marketing(self, report: Report, *, error: str | None = None,
+                  fields: dict[str, list[str]] | None = None, saved: bool = False) -> bytes:
         return self._templates.get_template("marketing.html").render(
-            refreshed_at=datetime.now(timezone.utc), active_page="marketing", first_visit_at=first_visit_at,
-            platforms=DMarketing.PLATFORMS, posts=posts, error=error, fields=fields or {}, saved=saved,
-            exclude_bots=exclude_bots,
-            traffic_times=[visit["received_at"].replace(tzinfo=timezone.utc).isoformat() for visit in recent],
+            active_page="marketing", platforms=DMarketing.PLATFORMS, posts=report.posts,
+            error=error, fields=fields or {}, saved=saved, submission_id=uuid4().hex,
             posting_times=[{"posted_at": post["posted_at"].replace(tzinfo=timezone.utc).isoformat(),
-                            "platform": post["platform"], "id": post["id"]} for post in posts],
+                            "platform": post["platform"], "id": post["id"]} for post in report.posts],
+            **self._report_context(report, "/marketing"),
         ).encode("utf-8")
 
     @staticmethod

@@ -1,7 +1,7 @@
 """Integration checks against a disposable local MariaDB instance only."""
 
 from dataclasses import replace
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from hashlib import sha256
 import json
 import os
@@ -25,6 +25,10 @@ from mycount.entity.MarketingPost import MarketingPost
 from mycount.entity.Visit import Visit
 from mycount.interface.VisitPayload import VisitPayload
 from mycount.activity.BrowserMetadata import BrowserMetadata
+from mycount.activity.SaveMarketingPost import SaveMarketingPost
+from mycount.entity.ReportOptions import ReportOptions
+from mycount.interface.DbCommitUncertain import DbCommitUncertain
+from mycount.interface.MarketingScreenshots import MarketingScreenshots
 
 
 @unittest.skipUnless(shutil.which("mariadb-install-db") and shutil.which("mariadbd"),
@@ -102,7 +106,7 @@ class DatabaseTests(unittest.TestCase):
         post = MarketingPost(posted_at, "Reddit", "https://reddit.com/r/example/", "Some notes")
         before = self.db.query("SELECT UTC_TIMESTAMP(6) AS now")[0]['now']
         first = marketing.record(post)
-        second = marketing.record(replace(post, notes=""))
+        second = marketing.record(replace(post, notes="", submission_id=uuid4().hex))
         VisitorSchema(self.db).apply()
         VisitorSchema(self.db).apply()
         rows = marketing.posts()
@@ -116,7 +120,7 @@ class DatabaseTests(unittest.TestCase):
         VisitorSchema(self.db).apply()
         self.assertIsNone(marketing.posts()[0]['screenshot_path'])
         reference = "pages/marketing/" + "a" * 32 + ".png"
-        image_post = marketing.record(replace(post, screenshot_path=reference))
+        image_post = marketing.record(replace(post, screenshot_path=reference, submission_id=uuid4().hex))
         VisitorSchema(self.db).apply()
         self.assertEqual(marketing.posts()[0]['id'], image_post)
         self.assertEqual(marketing.posts()[0]['screenshot_path'], reference)
@@ -135,6 +139,78 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(rows[0], rows[1])
         self.assertEqual(rows[0]["city_name"], city)
         self.assertEqual(self.db.query("SELECT COUNT(*) AS n FROM page_view_languages")[0]["n"], 4)
+
+    def test_lost_commit_reply_keeps_committed_screenshot_and_retry_deduplicates(self):
+        marketing = MarketingDb(self.db)
+        post = MarketingPost(datetime.now(timezone.utc), 'X', 'https://example.com/', 'Original')
+        commit = self.db._connection.commit
+
+        def lost_reply():
+            commit()
+            raise pymysql.OperationalError(2013, 'Lost commit reply')
+
+        with tempfile.TemporaryDirectory() as directory:
+            screenshots = MarketingScreenshots(Path(directory))
+            saver = SaveMarketingPost(marketing, screenshots)
+            with patch.object(self.db._connection, 'commit', side_effect=lost_reply):
+                with self.assertRaises(DbCommitUncertain):
+                    saver.save(post, b'image')
+            rows = marketing.posts()
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(screenshots.read(rows[0]['screenshot_path']), b'image')
+            self.assertEqual(saver.save(post, b'reselected'), rows[0]['id'])
+            # The unique database constraint also handles simultaneous submissions.
+            self.assertEqual(marketing.record(replace(post, notes='Changed')), rows[0]['id'])
+            self.assertEqual(marketing.posts()[0]['notes'], 'Original')
+            self.assertEqual(len(list((Path(directory) / 'pages/marketing').iterdir())), 1)
+
+    def test_submission_migration_preserves_legacy_posts(self):
+        self.db.execute('ALTER TABLE marketing_posts DROP INDEX uq_marketing_submission, DROP COLUMN submission_id')
+        identifier = self.db.insert("INSERT INTO marketing_posts(posted_at, platform, url, notes) "
+                                    "VALUES (UTC_TIMESTAMP(), 'X', 'https://example.com/', '')")
+        VisitorSchema(self.db).apply()
+        VisitorSchema(self.db).apply()
+        self.assertEqual(self.db.query('SELECT id, submission_id FROM marketing_posts'),
+                         [dict(id=identifier, submission_id=None)])
+
+    def test_daily_totals_use_local_dst_boundaries_and_include_empty_days(self):
+        visits = VisitDb(self.db)
+        options = ReportOptions(date(2026, 3, 7), date(2026, 3, 10), 'America/Toronto')
+        base = Visit(site='example', url='https://example.com/', received_at=datetime.now(timezone.utc))
+        for timestamp, bot in [
+            (datetime(2026, 3, 7, 4, 59), False),  # Before the selected range.
+            (datetime(2026, 3, 7, 5), False),
+            (datetime(2026, 3, 8, 4, 59), False),
+            (datetime(2026, 3, 8, 5), False),
+            (datetime(2026, 3, 8, 7, 30), False),
+            (datetime(2026, 3, 9, 3, 59), False),
+            (datetime(2026, 3, 9, 4), True),
+            (datetime(2026, 3, 10, 4), False),
+            (datetime(2026, 3, 11, 4), False),  # Exclusive end.
+        ]:
+            visits.record(replace(base, received_at=timestamp.replace(tzinfo=timezone.utc), is_bot=bot))
+        daily = visits.daily_totals(options.day_ranges(), exclude_bots=True)
+        self.assertEqual(daily, [dict(day=day, page_views=count) for day, count in
+                                [('2026-03-07', 2), ('2026-03-08', 3), ('2026-03-09', 0), ('2026-03-10', 1)]])
+        days = options.day_ranges()
+        filters = dict(start=days[0][1], end=days[-1][2], exclude_bots=True)
+        for query in (visits.totals_by_site, visits.totals_by_page, visits.totals_by_location, visits.totals_by_referrer):
+            self.assertEqual(sum(row['page_views'] for row in query(**filters)), 6)
+        self.assertEqual(visits.daily_totals(days, exclude_bots=False)[2]['page_views'], 1)
+
+    def test_recent_visit_pages_break_ties_without_skipping_or_duplicating_rows(self):
+        visits = VisitDb(self.db)
+        timestamp = datetime(2026, 3, 8, 12, tzinfo=timezone.utc)
+        visit = Visit(site='example', url='https://example.com/', received_at=timestamp)
+        identifiers = [visits.record(visit) for _ in range(120)]
+        first = visits.recent_visits()
+        self.assertEqual(len(first), 50)
+        cursor = first[-1]['received_at'], first[-1]['page_view_id']
+        visits.record(visit)  # A new visit must not shift the older-page position.
+        second = visits.recent_visits(before=cursor)
+        cursor = second[-1]['received_at'], second[-1]['page_view_id']
+        third = visits.recent_visits(before=cursor)
+        self.assertEqual([row['page_view_id'] for row in first + second + third], list(reversed(identifiers)))
 
     def test_visitor_details_migration_preserves_old_rows_and_new_round_trip(self):
         columns = ('referrer_host', 'user_agent', 'browser_version', 'os_version',

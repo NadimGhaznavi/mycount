@@ -11,6 +11,7 @@ from tempfile import TemporaryDirectory
 import unittest
 
 from mycount.server.ControlPages import ControlPages
+from mycount.interface.ReportQuery import ReportQuery
 
 
 CHROME = shutil.which('google-chrome') or shutil.which('chromium')
@@ -22,8 +23,9 @@ class MarketingBrowserTests(unittest.TestCase):
     def test_posting_offsets_and_daily_totals_in_browser_timezone(self):
         pages = ControlPages()
         chart = pages._templates.get_template('marketing_chart.html').render(
-            traffic_times=['2026-03-08T04:30:00+00:00', '2026-03-08T07:30:00+00:00',
-                           '2026-03-10T04:30:00+00:00'],
+            daily=[{"day": day, "page_views": count} for day, count in
+                   [('2026-03-07', 1), ('2026-03-08', 1), ('2026-03-09', 0), ('2026-03-10', 1)]],
+            options=ReportQuery.resolve({'start': ['2026-03-07'], 'end': ['2026-03-10'], 'timezone': ['America/Toronto']}),
             posting_times=[{'id': 1, 'platform': 'Reddit', 'posted_at': '2026-03-08T07:30:00+00:00'}])
         setup = '''
             const NativeDate = Date;

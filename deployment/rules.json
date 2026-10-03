@@ -60,9 +60,11 @@
       "scripts/install.sh",
       "scripts/upgrade.sh",
       "scripts/uninstall.sh",
+      "scripts/clear-upnpc-routes.sh",
       "mycount/constants/DDeployment.py",
       "scripts/update-deployment-dependencies.py",
-      "deployment_tools/__main__.py"
+      "deployment_tools/__main__.py",
+      "mycount/activity/ReconcileMarketingScreenshots.py"
     ],
     "listener": [
       "systemd/mycount-server.service",
