@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-03 @ 16:19
+
 ### Summary
 
 Preserve marketing screenshots when a save may already have committed and make
