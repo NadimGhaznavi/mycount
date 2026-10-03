@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Remove the Report Filters timezone control and automatically use the browser's
+  local timezone for report dates and marketing chart posting times, including
+  when following report links from another timezone.
+
 ## [1.1.0] - 2026-10-03 @ 16:19
 
 ### Summary

@@ -3,21 +3,23 @@
     <legend>Report filters</legend>
     <label>From <input type="date" name="start" value="{{ options.start.isoformat() }}" required></label>
     <label>Through <input type="date" name="end" value="{{ options.end.isoformat() }}" required></label>
-    <label>Timezone <input name="timezone" value="{{ options.timezone }}" required></label>
+    <input type="hidden" name="timezone" value="{{ options.timezone }}">
     <input type="hidden" name="exclude_bots" value="0">
     <label><input type="checkbox" name="exclude_bots" value="1"{% if exclude_bots %} checked{% endif %}> Exclude bots</label>
     <button type="submit">Apply filters</button>
     <small>Choose up to 366 days. Recent visits show 50 records per page.</small>
   </fieldset>
 </form>
-{% if not error %}
 <script>
   (() => {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    document.querySelector('.metrics-filters input[name="timezone"]').value = timezone;
+    {% if not error %}
     const url = new URL(window.location.href);
-    if (!url.searchParams.has('timezone')) {
-      url.searchParams.set('timezone', Intl.DateTimeFormat().resolvedOptions().timeZone);
+    if (url.searchParams.get('timezone') !== timezone) {
+      url.searchParams.set('timezone', timezone);
       window.location.replace(url.href);
     }
+    {% endif %}
   })();
 </script>
-{% endif %}
