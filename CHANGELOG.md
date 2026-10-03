@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-03 @ 15:22
+
 ### Summary
 
 Use BMGeoIP for geolocation and detect the deployment host when routing public
