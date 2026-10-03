@@ -24,7 +24,7 @@ class DeploymentFilesTests(unittest.TestCase):
             "mycount/setup.py": [DDeployment.FILESYSTEM],
             "mycount/constants/DMyCount.py": list(DDeployment.TARGETS),
         }
-        for name in (*self.paths, "requirements.txt", "scripts/update-geoip.sh", "scripts/uninstall.sh"):
+        for name in (*self.paths, "requirements.txt", "scripts/uninstall.sh"):
             for root, content in ((self.source, "new"), (self.installed, "old")):
                 path = root / name
                 path.parent.mkdir(parents=True, exist_ok=True)
@@ -74,7 +74,7 @@ class DeploymentFilesTests(unittest.TestCase):
         self.files.copy_application(frozenset(DDeployment.TARGETS))
         self.files.copy_setup()
         self.assertEqual(screenshot.read_bytes(), b"uploaded PNG")
-        for name in (*self.paths, "requirements.txt", "scripts/update-geoip.sh", "scripts/uninstall.sh"):
+        for name in (*self.paths, "requirements.txt", "scripts/uninstall.sh"):
             self.assertEqual((self.installed / name).read_text(), "new")
 
     def test_completion_without_impact_only_updates_release_bookkeeping(self):

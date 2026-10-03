@@ -5,8 +5,8 @@ from typing import Final
 
 class DMarketing:
     PLATFORMS: Final[tuple[str, ...]] = (
-        "Email",
         "Discord",
+        "Email",
         "Facebook",
         "LinkedIn",
         "Reddit",

@@ -33,9 +33,10 @@ class MarketingTests(unittest.TestCase):
 
     def test_invalid_external_fields_are_rejected(self):
         for change in [dict(posted_at="2026-02-30 12:00"), dict(posted_at="2026-1-03 14:05"),
-                       dict(timezone_offset=""), dict(timezone_offset="841"), dict(platform="Discord"),
+                       dict(timezone_offset=""), dict(timezone_offset="841"), dict(platform="Unsupported"),
                        dict(url="javascript:alert(1)"), dict(url="https://"),
                        dict(url="https://example.com:bad"), dict(url="https://example.com/a b"),
+                       dict(url="https://example.com/\x00hidden"), dict(created_at="2026-10-03"),
                        dict(url="https://example.com/" + "a" * 2048), dict(notes="a" * 4001)]:
             with self.subTest(change=change), self.assertRaises(ValueError):
                 MarketingForm.parse(self.fields(**change))
@@ -83,6 +84,9 @@ class MarketingTests(unittest.TestCase):
                 self.assertEqual(submit(self.fields(platform="invalid"))[0], 400)
                 factory.assert_not_called()
                 self.assertEqual(submit(self.fields(), Origin="https://other.example")[0], 403)
+                self.assertEqual(submit(self.fields(), Origin="https://[")[0], 403)
+                self.assertEqual(submit(self.fields(), Origin="null")[0], 403)
+                self.assertEqual(submit(self.fields(), **{"Transfer-Encoding": "chunked"})[0], 400)
                 factory.assert_not_called()
                 factory.return_value.insert.side_effect = pymysql.OperationalError("private details")
                 with self.assertLogs(level="ERROR"):

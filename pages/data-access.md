@@ -46,15 +46,14 @@ the credentials present in the environment, the schema entry point is:
 python3 -B -m mycount.activity.VisitorSchema
 ```
 
-The installer explicitly applies `VisitorSchema` and `GeoIpSchema`. Setup
+The installer explicitly applies `VisitorSchema`. Setup
 creates missing tables and preserves existing visitor records on repeated
 runs. Changes to existing tables use explicit migrations; rerunning
 `CREATE TABLE IF NOT EXISTS` does not alter them.
 
 The schema provides relational constraints and reporting indexes. Its
-definition lives in the source code. GeoIP source access, reference-data
-refresh, lookups, and visit persistence each have a separate component using
-the shared database bridge. `VisitDb.totals_by_site()` reports page views,
+definition lives in the source code. The `GeoIp` interface calls BMGeoIP over HTTP before the visitor database
+connection is opened. Visit persistence uses the shared database bridge. `VisitDb.totals_by_site()` reports page views,
 unique browser IDs, unidentified views, and known bot views. Browser IDs use
 first-party local storage.
 
@@ -69,7 +68,7 @@ python3 -B -m unittest discover -s tests -p 'test_geoip.py' -v
 PATH="/usr/sbin:$PATH" python3 -B -m unittest discover -s tests -p 'test_database.py' -v
 ```
 
-The first two commands test database mechanics and CSV parsing locally. The
+The first two commands test database mechanics and the BMGeoIP HTTP contract using local fixtures. The
 last starts a disposable MariaDB instance under a temporary directory,
 tests the actual schema and transactions, and removes the instance afterward.
 It requires `mariadb-install-db` and `mariadbd` on `PATH` and permission to

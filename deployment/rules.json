@@ -14,8 +14,7 @@
     ],
     "scripts/install-services.sh": [
       "requirements.txt",
-      "scripts/install-caddy.sh",
-      "scripts/update-geoip.sh"
+      "scripts/install-caddy.sh"
     ],
     "scripts/install.sh": [
       "scripts/install-services.sh"
@@ -25,9 +24,6 @@
     ],
     "scripts/update-deployment-dependencies.py": [
       "deployment/rules.json"
-    ],
-    "scripts/update-geoip.sh": [
-      "mycount/activity/UpdateGeoIp.py"
     ],
     "scripts/upgrade.sh": [
       "scripts/install-services.sh"
@@ -64,7 +60,6 @@
       "scripts/install.sh",
       "scripts/upgrade.sh",
       "scripts/uninstall.sh",
-      "scripts/update-geoip.sh",
       "mycount/constants/DDeployment.py",
       "scripts/update-deployment-dependencies.py",
       "deployment_tools/__main__.py"

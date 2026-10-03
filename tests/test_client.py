@@ -129,11 +129,18 @@ class ClientTests(unittest.TestCase):
                         return Promise.resolve({ok: failure !== 'get',
                             json: () => Promise.resolve({site: 'r3el', visits: failure === 'invalid' ? -1 : 1234})});
                     };
-                    setTimeout(() => {
+                    let attempts = 0;
+                    function capture() {
+                        const labels = Array.from(document.querySelectorAll('[data-mycount-counter]'), node => node.textContent);
+                        if (labels.some(label => label === '…') && ++attempts < 50) {
+                            setTimeout(capture, 10);
+                            return;
+                        }
                         document.getElementById('result').textContent = JSON.stringify({calls,
-                            labels: Array.from(document.querySelectorAll('[data-mycount-counter]'), node => node.textContent),
+                            labels,
                             expected: (1234).toLocaleString()});
-                    }, 100);
+                    }
+                    setTimeout(capture, 10);
                 """)
                 self.assertEqual([call['method'] for call in captured['calls']], ['POST', 'GET'])
                 self.assertTrue(captured['calls'][1]['postFinished'])

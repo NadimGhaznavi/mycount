@@ -24,7 +24,7 @@ installed version, so skipping a release does not skip required work.
 - Report-server changes stop, update, start, and health-check only `mycount-control`.
 - Listener changes select `mycount-server` instead. Both flags select both services.
 - Filesystem/setup changes run the full workflow: both services, Python dependencies,
-  database schemas, service/cron definitions, and Caddy/router setup.
+  database schemas, service definitions, and Caddy/router setup.
 - Releases with no deployment impact update the release files/version without restarting services.
 
 The deployment script separates file copying, dependency installation, schema
@@ -47,14 +47,10 @@ so a retry selects the same required work. The installed release manifest is als
 published only after the selected stages succeed. Unknown versions or incomplete release
 history stop the upgrade rather than guessing restart flags.
 
-Existing visits, database credentials, database and Linux accounts, and GeoIP
-data are preserved. No MariaDB administrator access is needed. The lengthy
-GeoIP download/import is skipped; the weekly job continues to refresh it.
-For an immediate refresh, run:
-
-```sh
-sudo /opt/prod/mycount/scripts/update-geoip.sh
-```
+Existing visits, database credentials, database and Linux accounts are preserved.
+No MariaDB administrator access is needed. Geolocation uses the external BMGeoIP
+service; full setup removes the former MyCount GeoIP cron schedule without
+dropping old range tables or changing historical visits.
 
 Upgrading needs root access; full setup also needs network access for dependencies
 and router setup. Collection continues during report-only upgrades. A failure can leave a service

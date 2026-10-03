@@ -9,6 +9,20 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Summary
+
+Use BMGeoIP for geolocation and detect the deployment host when routing public
+traffic, so MyCount can be installed on wintermute without local GeoIP datasets.
+
+- Query BMGeoIP at `geoip.osoyalce.com:54300`, validate its response, and preserve
+  location snapshots and overlapping-range selection. Service failures return 503.
+- Remove local GeoIP import code and refresh scheduling; retain visitor data and
+  remove legacy schedules during full setup.
+- Discover the install host through UPnP, replace TCP port 80/443 mappings, and
+  verify that both mappings point to the detected host.
+- Restore alphabetical platform ordering, including Discord.
+- Tighten marketing form, URL, Origin, and request framing validation.
+
 ## [0.14.2] - 2026-10-03 @ 04:55
 
 - Smooth the Marketing visits line with Plotly spline interpolation.

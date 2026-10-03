@@ -31,7 +31,6 @@ class DDeployment:
             "scripts/new-release.sh",
             "scripts/uninstall.sh",
             "scripts/update-deployment-dependencies.py",
-            "scripts/update-geoip.sh",
             "scripts/upgrade.sh",
         ),
         "listener": (
@@ -110,14 +109,6 @@ class DDeployment:
             "mycount/activity/__init__.py",
             "mycount/constants/DDeployment.py",
         ),
-        "mycount/activity/GeoIpSchema.py": (
-            "mycount/__init__.py",
-            "mycount/activity/__init__.py",
-            "mycount/constants/DGeoIp.py",
-            "mycount/constants/DMyCount.py",
-            "mycount/interface/CountryNameMigration.py",
-            "mycount/interface/DbMgr.py",
-        ),
         "mycount/activity/MarketingSchema.py": (
             "mycount/__init__.py",
             "mycount/activity/__init__.py",
@@ -135,16 +126,6 @@ class DDeployment:
             "mycount/entity/MarketingPost.py",
             "mycount/interface/MarketingDb.py",
             "mycount/interface/MarketingScreenshots.py",
-        ),
-        "mycount/activity/UpdateGeoIp.py": (
-            "mycount/__init__.py",
-            "mycount/activity/__init__.py",
-            "mycount/constants/DGeoIp.py",
-            "mycount/constants/DMyCount.py",
-            "mycount/interface/DatabaseEnvironment.py",
-            "mycount/interface/DbMgr.py",
-            "mycount/interface/GeoIpImportDb.py",
-            "mycount/interface/GeoIpSource.py",
         ),
         "mycount/activity/VisitorSchema.py": (
             "mycount/__init__.py",
@@ -200,11 +181,6 @@ class DDeployment:
         "mycount/constants/__init__.py": (
             "mycount/__init__.py",
         ),
-        "mycount/entity/GeoIpRange.py": (
-            "mycount/__init__.py",
-            "mycount/entity/GeoLocation.py",
-            "mycount/entity/__init__.py",
-        ),
         "mycount/entity/GeoLocation.py": (
             "mycount/__init__.py",
             "mycount/entity/__init__.py",
@@ -225,6 +201,7 @@ class DDeployment:
             "mycount/activity/CollectVisit.py",
             "mycount/activity/CountVisits.py",
             "mycount/constants/DMyCount.py",
+            "mycount/interface/GeoIpUnavailable.py",
             "mycount/interface/VisitPayload.py",
             "mycount/interface/VisitorAddress.py",
             "mycount/interface/__init__.py",
@@ -258,23 +235,14 @@ class DDeployment:
         ),
         "mycount/interface/GeoIp.py": (
             "mycount/__init__.py",
-            "mycount/entity/GeoLocation.py",
-            "mycount/interface/DbMgr.py",
-            "mycount/interface/__init__.py",
-        ),
-        "mycount/interface/GeoIpImportDb.py": (
-            "mycount/__init__.py",
-            "mycount/constants/DGeoIp.py",
-            "mycount/entity/GeoIpRange.py",
-            "mycount/interface/DbMgr.py",
-            "mycount/interface/__init__.py",
-        ),
-        "mycount/interface/GeoIpSource.py": (
-            "mycount/__init__.py",
             "mycount/constants/DGeoIp.py",
             "mycount/constants/DMyCount.py",
-            "mycount/entity/GeoIpRange.py",
             "mycount/entity/GeoLocation.py",
+            "mycount/interface/GeoIpUnavailable.py",
+            "mycount/interface/__init__.py",
+        ),
+        "mycount/interface/GeoIpUnavailable.py": (
+            "mycount/__init__.py",
             "mycount/interface/__init__.py",
         ),
         "mycount/interface/MarketingDb.py": (
@@ -303,6 +271,10 @@ class DDeployment:
             "deployment_tools/ReleaseFiles.py",
             "mycount/__init__.py",
             "mycount/interface/DeploymentConfiguration.py",
+            "mycount/interface/__init__.py",
+        ),
+        "mycount/interface/RouterMappings.py": (
+            "mycount/__init__.py",
             "mycount/interface/__init__.py",
         ),
         "mycount/interface/ServiceLogger.py": (
@@ -426,9 +398,9 @@ class DDeployment:
             "caddy/mycount.caddy",
             "mycount/constants/DCaddy.py",
             "mycount/constants/DMyCount.py",
+            "mycount/interface/RouterMappings.py",
         ),
         "scripts/install-services.sh": (
-            "mycount/activity/GeoIpSchema.py",
             "mycount/activity/ReleaseDeployment.py",
             "mycount/activity/VisitorSchema.py",
             "mycount/constants/DControl.py",
@@ -441,7 +413,6 @@ class DDeployment:
             "mycount/interface/ReleaseFiles.py",
             "requirements.txt",
             "scripts/install-caddy.sh",
-            "scripts/update-geoip.sh",
         ),
         "scripts/install.sh": (
             "mycount/constants/DDbMgr.py",
@@ -465,9 +436,6 @@ class DDeployment:
         "scripts/update-deployment-dependencies.py": (
             "deployment/rules.json",
             "deployment_tools/DependencyGenerator.py",
-        ),
-        "scripts/update-geoip.sh": (
-            "mycount/activity/UpdateGeoIp.py",
         ),
         "scripts/upgrade.sh": (
             "scripts/install-services.sh",

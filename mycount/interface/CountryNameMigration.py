@@ -2,7 +2,6 @@
 
 import logging
 from time import monotonic
-from typing import Literal
 
 import pycountry
 
@@ -14,8 +13,9 @@ class CountryNameMigration:
     def __init__(self, db: DbMgr) -> None:
         self._db = db
 
-    def apply(self, table: Literal["geoip_ranges", "page_views"]) -> None:
-        keys = ("ip_version", "start_ip", "end_ip") if table == "geoip_ranges" else ("page_view_id",)
+    def apply(self) -> None:
+        table = "page_views"
+        keys = ("page_view_id",)
         columns = ", ".join(keys)
         after = ""
         parameters = ()
@@ -58,7 +58,7 @@ class CountryNameMigration:
             if monotonic() - last_report >= 10:
                 logger.info("Country names in %s: scanned %d rows, updated %d", table, scanned, updated)
                 last_report = monotonic()
-            # Expand lexicographic comparison so MariaDB can seek the composite PK.
+            # Seek the next batch by visitor primary key.
             clauses = []
             parameters = ()
             for index, key in enumerate(keys):

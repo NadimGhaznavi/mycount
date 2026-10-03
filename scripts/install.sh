@@ -4,14 +4,13 @@ set -euo pipefail
 umask 022
 
 if [[ ${1:-} == --help ]]; then
-    printf 'Usage: sudo scripts/install.sh\nInstall MyCount, initialize its databases, and schedule weekly GeoIP updates.\n'
+    printf 'Usage: sudo scripts/install.sh\nInstall MyCount, initialize its database, and configure HTTPS and router forwarding.\n'
     exit 0
 fi
 [[ $# == 0 && $EUID == 0 ]] || { printf 'Run scripts/install.sh as root, without arguments.\n' >&2; exit 1; }
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 command -v mariadb >/dev/null
 command -v systemctl >/dev/null
-command -v cron >/dev/null
 command -v systemd-analyze >/dev/null
 python3 -B - <<'PY'
 import sys

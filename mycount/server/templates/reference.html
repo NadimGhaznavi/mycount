@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>Visitor Data</h1>
-<p>Static inventory of external data available through the current browser integration, incoming request, and all 14 GeoIP CSV fields. Optional values depend on browser support and GeoIP coverage; historical visits may lack newer fields.</p>
-<p>Table and Column name the storage destinations. --- means no value is stored. Optional browser fields share the client_details JSON column; Details names each JSON key. Geographic values retained in both the reference dataset and visits list both destination tables.</p>
+<p>Static inventory of external data available through the current browser integration, incoming request, and all 14 BMGeoIP fields. Optional values depend on browser support and GeoIP coverage; historical visits may lack newer fields.</p>
+<p>Table and Column name the storage destinations. --- means no value is stored. Optional browser fields share the client_details JSON column; Details names each JSON key. Geographic values returned by BMGeoIP are stored as snapshots in visits.</p>
 <div class="table-wrap"><table aria-label="Data reference">
 <thead><tr><th scope="col">Source</th><th scope="col">Source Details</th><th scope="col">Table</th><th scope="col">Column</th><th scope="col">Details</th></tr></thead>
 <tbody>
@@ -41,20 +41,20 @@
 <tr><td>Browser</td><td>screen.height</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>screen_height</code>. Screen height.</td></tr>
 <tr><td>Browser</td><td>screen.pixelDepth</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>pixel_depth</code>. Screen pixel depth.</td></tr>
 <tr><td>Browser</td><td>screen.width</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>screen_width</code>. Screen width.</td></tr>
-<tr><td>GeoIP CSV</td><td>accuracy</td><td>---</td><td>---</td><td>Upstream accuracy value; discarded during import, not interpreted by MyCount.</td></tr>
-<tr><td>GeoIP CSV</td><td>city</td><td><code>geoip_ranges</code>, <code>page_views</code></td><td><code>city_name</code></td><td>City name; empty values become NULL. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits.</td></tr>
-<tr><td>GeoIP CSV</td><td>continent</td><td>---</td><td>---</td><td>Discarded during import.</td></tr>
-<tr><td>GeoIP CSV</td><td>country</td><td><code>geoip_ranges</code>, <code>page_views</code></td><td><code>country_name</code></td><td>Full country name from the CSV; empty becomes NULL. Copied into new visits as a location snapshot. Existing records are backfilled from recognized ISO country codes without replacing stored names.</td></tr>
-<tr><td>GeoIP CSV</td><td>country_code</td><td><code>geoip_ranges</code>, <code>page_views</code></td><td><code>country_code</code></td><td>Two-character country code; empty values become NULL. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits.</td></tr>
-<tr><td>GeoIP CSV</td><td>end_ip</td><td><code>geoip_ranges</code></td><td><code>end_ip</code></td><td>Range end, converted to a 16-byte binary value.</td></tr>
-<tr><td>GeoIP CSV</td><td>ip_version</td><td><code>geoip_ranges</code></td><td><code>ip_version</code></td><td>IP family, 4 or 6.</td></tr>
-<tr><td>GeoIP CSV</td><td>latitude</td><td><code>geoip_ranges</code>, <code>page_views</code></td><td><code>latitude</code></td><td>Approximate GeoIP latitude in degrees (-90 to 90); missing values remain NULL. Copied into new visits when available; existing ranges need a GeoIP refresh and historical visits are unchanged.</td></tr>
-<tr><td>GeoIP CSV</td><td>longitude</td><td><code>geoip_ranges</code>, <code>page_views</code></td><td><code>longitude</code></td><td>Approximate GeoIP longitude in degrees (-180 to 180); missing values remain NULL. Copied into new visits when available; existing ranges need a GeoIP refresh and historical visits are unchanged.</td></tr>
-<tr><td>GeoIP CSV</td><td>source</td><td>---</td><td>---</td><td>Upstream source value; discarded during import.</td></tr>
-<tr><td>GeoIP CSV</td><td>start_ip</td><td><code>geoip_ranges</code></td><td><code>start_ip</code></td><td>Range start, converted to a 16-byte binary value.</td></tr>
-<tr><td>GeoIP CSV</td><td>state</td><td><code>geoip_ranges</code>, <code>page_views</code></td><td><code>region_name</code></td><td>State/region name; empty values become NULL. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits.</td></tr>
-<tr><td>GeoIP CSV</td><td>timezone</td><td><code>geoip_ranges</code>, <code>page_views</code></td><td><code>timezone</code></td><td>GeoIP timezone, stored separately from the browser timezone in client_details. Empty values become NULL. Available after the next GeoIP refresh and copied into new visits; historical visits are unchanged.</td></tr>
-<tr><td>GeoIP CSV</td><td>zip</td><td><code>geoip_ranges</code>, <code>page_views</code></td><td><code>zip</code></td><td>GeoIP ZIP/postal code, stored as text to preserve leading zeros. Empty values become NULL. Available after the next GeoIP refresh and copied into new visits; historical visits are unchanged.</td></tr>
+<tr><td>BMGeoIP</td><td>accuracy</td><td>---</td><td>---</td><td>Provider accuracy text; not retained or interpreted by MyCount.</td></tr>
+<tr><td>BMGeoIP</td><td>city</td><td><code>page_views</code></td><td><code>city_name</code></td><td>City name; empty values become NULL. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits.</td></tr>
+<tr><td>BMGeoIP</td><td>continent</td><td>---</td><td>---</td><td>Returned by BMGeoIP; not retained by MyCount.</td></tr>
+<tr><td>BMGeoIP</td><td>country</td><td><code>page_views</code></td><td><code>country_name</code></td><td>Full provider country name; empty becomes NULL. Copied into new visits as a location snapshot. Existing records are backfilled from recognized ISO country codes without replacing stored names.</td></tr>
+<tr><td>BMGeoIP</td><td>country_code</td><td><code>page_views</code></td><td><code>country_code</code></td><td>Two-character country code; empty values become NULL. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits.</td></tr>
+<tr><td>BMGeoIP</td><td>end_ip</td><td>---</td><td>---</td><td>Inclusive provider range end; used to select a match, not retained.</td></tr>
+<tr><td>BMGeoIP</td><td>ip_version</td><td>---</td><td>---</td><td>Provider IP family text; validated, not retained.</td></tr>
+<tr><td>BMGeoIP</td><td>latitude</td><td><code>page_views</code></td><td><code>latitude</code></td><td>Approximate GeoIP latitude in degrees (-90 to 90); missing values remain NULL. Copied into new visits when available; historical visits are unchanged.</td></tr>
+<tr><td>BMGeoIP</td><td>longitude</td><td><code>page_views</code></td><td><code>longitude</code></td><td>Approximate GeoIP longitude in degrees (-180 to 180); missing values remain NULL. Copied into new visits when available; historical visits are unchanged.</td></tr>
+<tr><td>BMGeoIP</td><td>source</td><td>---</td><td>---</td><td>Provider source text; not retained by MyCount.</td></tr>
+<tr><td>BMGeoIP</td><td>start_ip</td><td>---</td><td>---</td><td>Inclusive provider range start; used to select a match, not retained.</td></tr>
+<tr><td>BMGeoIP</td><td>state</td><td><code>page_views</code></td><td><code>region_name</code></td><td>State/region name; empty values become NULL. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits.</td></tr>
+<tr><td>BMGeoIP</td><td>timezone</td><td><code>page_views</code></td><td><code>timezone</code></td><td>GeoIP timezone, stored separately from the browser timezone in client_details. Empty values become NULL. Copied into new visits; historical visits are unchanged.</td></tr>
+<tr><td>BMGeoIP</td><td>zip</td><td><code>page_views</code></td><td><code>zip</code></td><td>GeoIP ZIP/postal code, stored as text to preserve leading zeros. Empty values become NULL. Copied into new visits; historical visits are unchanged.</td></tr>
 <tr><td>Request</td><td>connection / trusted Caddy visitor header</td><td><code>page_views</code></td><td><code>ip_address</code></td><td>Full IPv4 or IPv6 address used for GeoIP lookup. Historical visits remain NULL; no hash is generated.</td></tr>
 <tr><td>Request</td><td>Origin header</td><td>---</td><td>---</td><td>Checked against configured sites and the page URL; not stored as a separate field.</td></tr>
 </tbody></table></div>
