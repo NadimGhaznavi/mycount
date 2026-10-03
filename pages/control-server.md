@@ -59,7 +59,37 @@ then URL for ties. Multiple sites can remain expanded together. Site, page, and 
 metrics are read in one read-only database transaction when the page loads;
 expanding a row does not reload the report. Reloading collapses the rows.
 
-The title bar has **Metrics** (`/`) and **Reference** (`/reference`) links.
+The title bar has **Metrics** (`/`), **Reference** (`/reference`), and
+**Marketing** (`/marketing`) links without brackets. Each page hides its own
+navigation link.
+Marketing records promotional posts using a simple form: Posted At defaults to
+the current browser-local time as `yyyy-mm-dd hh:mm` and remains editable;
+Platform offers Email, Facebook, LinkedIn, Reddit, and X in alphabetical order;
+Posting URL accepts an HTTP(S) link; Notes is optional. Saving stores the posting
+time in UTC and generates `created_at` in the database. Installation and upgrade
+create the `marketing_posts` table without replacing existing events.
+
+An optional PNG screenshot (up to 10 MiB) can be attached when recording a post.
+The server checks the PNG structure and checksums, saves it with a generated
+filename under `pages/marketing` in the application directory, and stores its
+relative path in `marketing_posts.screenshot_path`. Existing posts have a NULL
+reference. A failed event save removes the new screenshot; after a failed form
+submission, select the file again before retrying.
+
+Use **View Screenshot** in the event table to display the image, then click the
+image to open it at full size. Clicking a chart posting marker also opens that
+event's screenshot. The control server serves only generated PNG filenames from
+this folder. Installation and upgrade create the folder for the service account
+and allow systemd write access specifically to it. Upgrades and uninstallation
+preserve uploaded screenshots alongside the retained database records.
+
+The Marketing line chart shows daily visit totals across all sites in the
+browser timezone, including zero-visit days, with bots excluded by default.
+Each promotional post adds a vertical line at its posting time. Hover over its
+diamond marker to see the platform and timestamp; click it to scroll to the
+post's URL and notes in the table below. Markers also appear when no visits have
+been recorded. These totals describe traffic changes; they do not attribute
+visits to a specific post or project.
 Reference displays one [data inventory table]({% link pages/collected-data.md %})
 with Source, Source Details, Table, Column, and Details. It includes optional browser details,
 all GeoIP source fields, and storage mappings; unretained values show `---` in
@@ -67,7 +97,7 @@ both storage columns. The reference content is static; its title bar queries the
 earliest recorded visit. If that query fails, Reference remains available with
 the Counting since line hidden, and the error is logged.
 
-Both pages display Counting since followed by the earliest recorded visit's
+All three pages display Counting since followed by the earliest recorded visit's
 date (for example, September 23, 2026), in the browser's local timezone.
 This date includes all sites and bots regardless of the current filter. The
 line is hidden when no visits have been recorded or the date is unavailable.

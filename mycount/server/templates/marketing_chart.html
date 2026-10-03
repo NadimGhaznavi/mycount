@@ -1,0 +1,52 @@
+<script>
+  (() => {
+    const timestamps = {{ traffic_times | tojson }};
+    const posts = {{ posting_times | tojson }};
+    const dateKey = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const localTime = date => `${dateKey(date)} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:00`;
+    const counts = new Map();
+    for (const timestamp of timestamps) {
+      const key = dateKey(new Date(timestamp));
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+    const days = [...counts.keys(), ...posts.map(post => dateKey(new Date(post.posted_at))), dateKey(new Date())].sort();
+    const [year, month, day] = days[0].split('-').map(Number);
+    const cursor = new Date(year, month - 1, day);
+    const dates = [], totals = [];
+    while (dateKey(cursor) <= days.at(-1)) {
+      dates.push(dateKey(cursor));
+      totals.push(counts.get(dateKey(cursor)) || 0);
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    // Include the end of the last day so posting markers remain inside the axis.
+    const range = [`${days[0]} 00:00:00`, `${days.at(-1)} 23:59:59`];
+    const markerTimes = posts.map(post => localTime(new Date(post.posted_at)));
+    Plotly.newPlot('marketing-traffic', [{
+      type: 'scatter', mode: 'lines+markers', name: 'Visits', x: dates, y: totals,
+      line: {color: chartTheme.colors[1], width: 3},
+      hovertemplate: '%{x|%b %d, %Y}<br>%{y} visits<extra></extra>',
+    }, {
+      type: 'scatter', mode: 'markers', name: 'Promotional posts', x: markerTimes,
+      y: posts.map(() => 0), marker: {color: chartTheme.colors[0], size: 10, symbol: 'diamond'},
+      customdata: posts.map(post => [post.platform, post.id]),
+      hovertemplate: '%{x|%Y-%m-%d %H:%M}<br>%{customdata[0]} · Post #%{customdata[1]}<extra></extra>',
+    }], {
+      ...chartTheme.layout, height: 350, margin: {l: 55, r: 20, t: 15, b: 65},
+      xaxis: {type: 'date', range, tickformat: '%b %d', showgrid: false},
+      yaxis: {title: {text: 'Visits per day'}, rangemode: 'tozero', tickformat: ',d', gridcolor: '#62412b'},
+      legend: {orientation: 'h', y: -0.2},
+      shapes: markerTimes.map(time => ({type: 'line', x0: time, x1: time, y0: 0, y1: 1,
+        yref: 'paper', line: {color: chartTheme.colors[0], width: 2, dash: 'dot'}})),
+    }, {responsive: true, displayModeBar: false}).then(plot => {
+      plot.on('plotly_click', event => {
+        const point = event.points[0];
+        if (point.curveNumber === 1) {
+          const row = document.getElementById(`posting-${point.customdata[1]}`);
+          const screenshot = row.querySelector('details');
+          if (screenshot) screenshot.open = true;
+          row.scrollIntoView({behavior: 'smooth'});
+        }
+      });
+    });
+  })();
+</script>

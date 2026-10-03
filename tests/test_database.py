@@ -24,6 +24,8 @@ from mycount.activity.UpdateGeoIp import UpdateGeoIp
 from mycount.interface.GeoIp import GeoIp
 from mycount.interface.GeoIpImportDb import GeoIpImportDb
 from mycount.interface.VisitDb import VisitDb
+from mycount.interface.MarketingDb import MarketingDb
+from mycount.entity.MarketingPost import MarketingPost
 from mycount.entity.Visit import Visit
 from mycount.interface.VisitPayload import VisitPayload
 from mycount.activity.BrowserMetadata import BrowserMetadata
@@ -94,9 +96,35 @@ class DatabaseTests(unittest.TestCase):
             cls.server.wait(timeout=5)
 
     def tearDown(self):
+        self.db.execute("DELETE FROM marketing_posts")
         self.db.execute("DELETE FROM page_views")
         self.db.execute("DELETE FROM pages")
         self.db.execute("DELETE FROM geoip_ranges")
+
+    def test_marketing_posts_persist_and_schema_reapplication_preserves_them(self):
+        marketing = MarketingDb(self.db)
+        posted_at = datetime(2026, 10, 3, 18, 5, tzinfo=timezone.utc)
+        post = MarketingPost(posted_at, "Reddit", "https://reddit.com/r/example/", "Some notes")
+        before = self.db.query("SELECT UTC_TIMESTAMP(6) AS now")[0]['now']
+        first = marketing.record(post)
+        second = marketing.record(replace(post, notes=""))
+        VisitorSchema(self.db).apply()
+        VisitorSchema(self.db).apply()
+        rows = marketing.posts()
+        self.assertEqual([row['id'] for row in rows], [second, first])
+        self.assertEqual(rows[1]['posted_at'], posted_at.replace(tzinfo=None))
+        self.assertEqual(rows[1]['notes'], "Some notes")
+        self.assertEqual(rows[0]['notes'], "")
+        self.assertIsNone(rows[0]['screenshot_path'])
+        self.assertGreaterEqual(rows[1]['created_at'], before)
+        self.db.execute("ALTER TABLE marketing_posts DROP COLUMN screenshot_path")
+        VisitorSchema(self.db).apply()
+        self.assertIsNone(marketing.posts()[0]['screenshot_path'])
+        reference = "pages/marketing/" + "a" * 32 + ".png"
+        image_post = marketing.record(replace(post, screenshot_path=reference))
+        VisitorSchema(self.db).apply()
+        self.assertEqual(marketing.posts()[0]['id'], image_post)
+        self.assertEqual(marketing.posts()[0]['screenshot_path'], reference)
 
     def test_geoip_refresh_and_both_address_families(self):
         counts = UpdateGeoIp(FixtureGeoIpSource(), GeoIpImportDb(self.db)).run()

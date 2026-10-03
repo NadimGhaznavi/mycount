@@ -68,8 +68,12 @@ class DeploymentFilesTests(unittest.TestCase):
         self.assertTrue((self.installed / "mycount/old_listener.py").exists())
 
     def test_full_setup_copies_package_and_setup_files(self):
+        screenshot = self.installed / "pages/marketing/saved.png"
+        screenshot.parent.mkdir(parents=True)
+        screenshot.write_bytes(b"uploaded PNG")
         self.files.copy_application(frozenset(DDeployment.TARGETS))
         self.files.copy_setup()
+        self.assertEqual(screenshot.read_bytes(), b"uploaded PNG")
         for name in (*self.paths, "requirements.txt", "scripts/update-geoip.sh", "scripts/uninstall.sh"):
             self.assertEqual((self.installed / name).read_text(), "new")
 

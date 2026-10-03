@@ -224,3 +224,6 @@ _site/
 .sass-cache/
 .bundle/
 vendor/bundle/
+
+# Uploaded promotional screenshots
+/pages/marketing/
