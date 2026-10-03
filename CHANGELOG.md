@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-03 @ 16:55
+
 - Refresh the documentation site's client example with a build-versioned script
   URL, the site counter, and current payload verification instructions; document
   the `/get_count` Caddy route and publication of updated client assets.
