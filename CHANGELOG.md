@@ -9,6 +9,7 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Show the creator's GitHub account in the documentation author profile.
 - Remove brackets from the top-right navigation, hide the current page's link, and add a blank Marketing page.
 
 ## [0.13.2] - 2026-10-01 @ 03:05
