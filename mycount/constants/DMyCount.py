@@ -4,7 +4,7 @@ from typing import Final
 
 
 class DMyCount:
-    VERSION: Final[str] = "0.14.1"
+    VERSION: Final[str] = "0.14.2"
     BASE_DIR: Final[str] = "/opt/prod/mycount"
     DATABASE_ENV: Final[str] = "/etc/mycount/database.env"
     DATABASE_NAME: Final[str] = "mycount"
