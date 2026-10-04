@@ -9,6 +9,9 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Allow `https://bmgeoip.osoyalce.com` and `https://bmdynip.osoyalce.com`
+  to submit page views to the collector.
+
 ## [1.4.0] - 2026-10-04 @ 07:15
 
 - Add a MyCount event to track system events.
