@@ -10,6 +10,10 @@ Installation and upgrade enable and start `mycount-control.service` alongside
 the visitor collector. Open `http://<server>:61777/` to see the MyCount Control
 banner, using R3el's masthead layout with a dark orange palette.
 
+All nine Metrics boxes start collapsed, showing only their title bars. Click
+a title or focus it and press Enter or Space to expand or collapse that box.
+Reloading the page collapses the boxes again.
+
 The site table shows Visits by Site, Visits, and Last Visited, ordered by visit count
 (highest first), then site name. Visits counts recorded page views across all pages for that site, subject to
 the active filter. Last Visited is the latest received
@@ -56,7 +60,8 @@ when timestamps tie), with Date (`YYYY-MM-DD`), Time (`HH:MM AM/PM`), City, and 
 is recognized. Unknown cities display `---`; unknown countries have no flag.
 Dates and times use the browser timezone. Visits by Location and Last refresh
 keep their positions. Recent visits are read in the same transaction as the
-other metrics. **Older visits** loads the next page; **Newest visits** returns
+other metrics. Pagination links appear right-aligned in the Recent Visits title
+bar and remain available when collapsed. **Older visits** loads the next page; **Newest visits** returns
 to the first page. Paging uses receipt time and record ID, so new arrivals do
 not shift the older-page position. Chart totals cover the entire selected
 range regardless of the recent-visit page.

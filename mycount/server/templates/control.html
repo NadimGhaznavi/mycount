@@ -15,10 +15,15 @@
 ] %}
 <div class="metrics-tables">
 <div class="metrics-site-column">
+<details class="metric-panel">
+  <summary>Report filters</summary>
 {% include 'report_filters.html' %}
+</details>
+<details class="metric-panel">
+  <summary>Visits by Site</summary>
 <div class="table-wrap">
   <table aria-label="Site visits">
-    <thead><tr><th scope="col">Visits by Site</th><th scope="col" class="visits">Visits</th><th scope="col">Last Visited</th></tr></thead>
+    <thead><tr><th scope="col">Site</th><th scope="col" class="visits">Visits</th><th scope="col">Last Visited</th></tr></thead>
     <tbody>
       {% for site in sites %}
       <tr class="site-row">
@@ -49,9 +54,14 @@
     <tfoot><tr><th scope="row">Total:</th><td class="visits">{{ sites | sum(attribute='page_views') }}</td><td></td></tr></tfoot>
   </table>
 </div>
+</details>
+<details class="metric-panel">
+  <summary><span>Recent Visits</span><nav aria-label="Recent visit pages">
+    {% if options.before %}<a href="{{ newest_url }}">Newest visits</a>{% endif %}
+    {% if older_url %}<a href="{{ older_url }}">Older visits</a>{% endif %}
+  </nav></summary>
 <div class="table-wrap table-scroll" tabindex="0" role="region" aria-label="Recent Visits scroll area">
   <table class="recent-visits" aria-label="Recent Visits">
-    <caption>Recent Visits</caption>
     <thead><tr><th scope="col">Date</th><th scope="col">Time</th><th scope="col">City</th><th scope="col">URL</th></tr></thead>
     <tbody>
       {% for visit in recent %}
@@ -67,15 +77,13 @@
     </tbody>
   </table>
 </div>
-<nav aria-label="Recent visit pages">
-  {% if options.before %}<a href="{{ newest_url }}">Newest visits</a>{% endif %}
-  {% if older_url %}<a href="{{ older_url }}">Older visits</a>{% endif %}
-</nav>
+</details>
 </div>
 <div class="metrics-location-column">
 <div class="metrics-preference-charts">
 <section class="country-chart" aria-labelledby="country-chart-title">
-  <h2 id="country-chart-title">Visits by Location</h2>
+<details class="metric-panel">
+  <summary><h2 id="country-chart-title">Visits by Location</h2></summary>
   {% if country_slices %}
   <div class="country-chart-content">
     <div id="country-pie" class="country-pie" role="img" aria-label="Visits by country. Counts and percentages are listed in the legend."></div>
@@ -88,9 +96,11 @@
   {% else %}
   <p>No visits match the current filters.</p>
   {% endif %}
+</details>
 </section>
 <section class="country-chart" aria-labelledby="language-chart-title">
-  <h2 id="language-chart-title">Visits by Language</h2>
+<details class="metric-panel">
+  <summary><h2 id="language-chart-title">Visits by Language</h2></summary>
   {% if language_slices %}
   <div class="country-chart-content">
     <div id="language-pie" class="country-pie" role="img" aria-label="Visits by first browser language preference. Counts and percentages are listed in the legend."></div>
@@ -104,11 +114,13 @@
   {% else %}
   <p>No visits match the current filters.</p>
   {% endif %}
+</details>
 </section>
 </div>
+<details class="metric-panel">
+  <summary>Visits by Location</summary>
 <div class="table-wrap table-scroll" tabindex="0" role="region" aria-label="Visits by Location scroll area">
   <table aria-label="Visits by Location">
-    <caption>Visits by Location</caption>
     <thead><tr><th scope="col">Country</th><th scope="col">State/Province</th><th scope="col">City</th><th scope="col" class="visits">Visits</th></tr></thead>
     <tbody>
       {% for location in locations %}
@@ -125,9 +137,11 @@
     <tfoot><tr><th scope="row" colspan="3">Total:</th><td class="visits">{{ locations | sum(attribute='page_views') }}</td></tr></tfoot>
   </table>
 </div>
+</details>
+<details class="metric-panel">
+  <summary>Referrers</summary>
 <div class="table-wrap table-scroll" tabindex="0" role="region" aria-label="Referrers scroll area">
   <table aria-label="Referrers">
-    <caption>Referrers</caption>
     <thead><tr><th scope="col">Referrer</th><th scope="col" class="visits">Visits</th></tr></thead>
     <tbody>
       {% for referrer in referrers %}
@@ -139,11 +153,13 @@
     <tfoot><tr><th scope="row">Total:</th><td class="visits">{{ referrers | sum(attribute='page_views') }}</td></tr></tfoot>
   </table>
 </div>
+</details>
 </div>
 </div>
 <div class="metrics-charts">
 <section class="site-chart" aria-labelledby="site-chart-title">
-  <h2 id="site-chart-title">Visits by Site</h2>
+<details class="metric-panel">
+  <summary><h2 id="site-chart-title">Visits by Site</h2></summary>
   {% if sites %}
   <div class="site-chart-content">
     <div id="site-pie" role="img" aria-label="Visits by site. Counts and percentages are listed in the legend."></div>
@@ -157,14 +173,17 @@
   {% else %}
   <p>No visits match the current filters.</p>
   {% endif %}
+</details>
 </section>
 <section class="traffic-chart" aria-labelledby="traffic-chart-title">
-  <h2 id="traffic-chart-title">All Traffic</h2>
+<details class="metric-panel">
+  <summary><h2 id="traffic-chart-title">All Traffic</h2></summary>
   {% if daily %}
   <div id="all-traffic" role="img" aria-label="Daily hits across all sites. Hover over a bar for its date and total."></div>
   {% else %}
   <p>No visits match the current filters.</p>
   {% endif %}
+</details>
 </section>
 </div>
 {% if country_slices or language_slices or sites or daily %}
@@ -173,10 +192,20 @@
 {% if daily %}{% include 'all_traffic.html' %}{% endif %}
 {% endif %}
 <script>
+  for (const panel of document.querySelectorAll('.metric-panel')) {
+    panel.addEventListener('toggle', () => {
+      if (panel.open) {
+        for (const chart of panel.querySelectorAll('.js-plotly-plot')) {
+          Plotly.Plots.resize(chart);
+        }
+      }
+    });
+  }
   for (const wrapper of document.querySelectorAll('.table-scroll')) {
     const table = wrapper.querySelector('table');
     const body = table.tBodies[0];
     const sizeViewport = () => {
+      if (!table.getClientRects().length) return;
       if (body.rows.length <= 10) {
         wrapper.style.maxHeight = '';
         return;

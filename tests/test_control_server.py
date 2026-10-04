@@ -31,6 +31,8 @@ class ControlServerTests(unittest.TestCase):
              "city_name": None, "url": "https://two.example/"},
         ]
         body = ControlPages().render(Report(ReportOptions(date(2026, 9, 27), date(2026, 9, 27), "UTC"), [{"day": "2026-09-27", "page_views": 2}], None, recent=recent)).decode()
+        self.assertEqual(body.count('<details class="metric-panel">'), 9)
+        self.assertNotIn('<details class="metric-panel" open', body)
         self.assertGreater(body.index('<section class="traffic-chart"'), body.rindex('</table>'))
         self.assertIn('>All Traffic</h2>', body)
         self.assertIn('const daily = [{"day": "2026-09-27", "page_views": 2}]', body)
@@ -152,14 +154,14 @@ class ControlServerTests(unittest.TestCase):
                     self.assertIn(b'aria-expanded="false"', body)
                     self.assertIn(b'aria-controls="site-pages-1"', body)
                     self.assertIn(b'class="site-pages" hidden', body)
-                    self.assertIn(b'<caption>Recent Visits</caption>', body)
+                    self.assertIn(b'<span>Recent Visits</span><nav aria-label="Recent visit pages">', body)
                     self.assertIn(b'https://example.com/&lt;recent&gt;', body)
                     self.assertIn(b'data-local-time="date-only"', body)
                     self.assertIn(b'data-local-time="time-12"', body)
-                    self.assertIn(b'>Visits by Site</th>', body)
-                    self.assertIn(b'<caption>Visits by Location</caption>', body)
+                    self.assertIn(b'<summary>Visits by Site</summary>', body)
+                    self.assertIn(b'<summary>Visits by Location</summary>', body)
                     referrers = body.split(b'<table aria-label="Referrers">', 1)[1].split(b'</table>', 1)[0]
-                    self.assertIn(b'<caption>Referrers</caption>', referrers)
+                    self.assertIn(b'<summary>Referrers</summary>', body)
                     self.assertIn(b'<td>&lt;referrer&gt;</td><td class="visits">8</td>', referrers)
                     self.assertIn(b'<td>Direct / Unknown</td><td class="visits">4</td>', referrers)
                     self.assertIn(b'<tfoot><tr><th scope="row">Total:</th><td class="visits">12</td>', referrers)
@@ -187,7 +189,7 @@ class ControlServerTests(unittest.TestCase):
                         filtered = response.read()
                         self.assertEqual(b'value="1" checked' in filtered, excluded)
                         self.assertEqual(filtered.count(b'class="visits">0</td>'), 3)
-                        self.assertIn(b'<caption>Referrers</caption>', filtered)
+                        self.assertIn(b'<summary>Referrers</summary>', filtered)
                         self.assertIn(b'data-local-time="long-date">September 23, 2026</time>', filtered)
                         for call in factory.return_value.query.call_args_list[:-1]:
                             self.assertEqual('COALESCE(v.is_bot, 0) = 0' in call.args[0], excluded)
