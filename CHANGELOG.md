@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.5.2] - 2026-10-04 @ 19:52
+
 - Make all Metrics boxes collapsible and collapsed by default, and move Recent
   Visits pagination links to the right of its title bar.
 
