@@ -111,7 +111,7 @@
       ]
     },
     "mycount/activity/ReadReports.py": {
-      "digest": "db83ccb3d96471efdfcb22b39752daf891ac8d90d907bbfa3516a68bbd25ad32",
+      "digest": "653d5ecc3bf8e7ac4064a9f95b3120b6b157f543713c5834d29290234ad2017a",
       "targets": [
         "report-server"
       ]
@@ -248,7 +248,7 @@
       ]
     },
     "mycount/entity/Report.py": {
-      "digest": "430fdadb9d2165da4c2e54f4b15acb05cbf57e3bccd871c87610c3e5806bacc4",
+      "digest": "b8a50fb7a766b2ceb5b3fceb79c6de1e1ea8a49f2d5265dacfe5644cf2234828",
       "targets": [
         "report-server"
       ]
@@ -384,7 +384,7 @@
       ]
     },
     "mycount/interface/VisitDb.py": {
-      "digest": "8b2fafb2d37195fbdeb02b220823a2016e2baa89cea24306ae31bc09896e6661",
+      "digest": "6cb4d345d02940f3a4bdfff95bc716d7ccf0373f8fa47272a8c9bf298d164307",
       "targets": [
         "listener",
         "report-server"
@@ -423,7 +423,7 @@
       ]
     },
     "mycount/server/ControlPages.py": {
-      "digest": "0f1879f507170e9366eb377df0606fefa89ce742fdc64831b484d37f699e81e2",
+      "digest": "cd8080fa58beb651bba18168a00b446d538186074f681a4f19c7d906d9e0f084",
       "targets": [
         "report-server"
       ]
@@ -478,7 +478,7 @@
       ]
     },
     "mycount/server/templates/control.html": {
-      "digest": "c01d6f6562a1c1c4e252d47ce6edc7d90c7f18db219c70d53f758b8a41b961eb",
+      "digest": "469dfa78d43ffe8dd33b63f324d98174f128b9a56e1a071b96b8bd573000151f",
       "targets": [
         "report-server"
       ]
@@ -508,7 +508,7 @@
       ]
     },
     "mycount/server/templates/pie_charts.html": {
-      "digest": "674afd42792e54211c09c5260f2284b54d5df9dfd0ccc6ed3ec4d69806f24861",
+      "digest": "e725eae8d84a11684768a77425872d83af50eb4ab4847a8f74393a9f24535d8f",
       "targets": [
         "report-server"
       ]
@@ -526,7 +526,7 @@
       ]
     },
     "mycount/server/templates/styles.html": {
-      "digest": "fe5f9b9c6654c2633d4393f8c0513926facf7357e0f543f308303daf6ea5bb27",
+      "digest": "62964bfcb8476545803702a7e675f95863568860634515534b26f0cccad76587",
       "targets": [
         "report-server"
       ]
@@ -810,6 +810,13 @@
         "report-server"
       ],
       "version": "1.4.1"
+    },
+    {
+      "targets": [
+        "listener",
+        "report-server"
+      ],
+      "version": "1.5.0"
     }
   ]
 }

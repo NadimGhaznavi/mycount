@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-10-04 @ 19:32
+
 - Split the location pie chart cell into Visits by Location and Visits by
   Language, using each visit's first browser language preference and the
   current report filters. Include missing preferences as Unknown.
