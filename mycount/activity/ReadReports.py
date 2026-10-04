@@ -23,6 +23,7 @@ class ReadReports:
                 locations = visits.totals_by_location(**filters)
                 recent = visits.recent_visits(**filters, before=options.before, limit=DReports.PAGE_SIZE + 1)
                 referrers = visits.totals_by_referrer(**filters)
+                languages = visits.totals_by_language(**filters)
                 daily = visits.daily_totals(days, exclude_bots=options.exclude_bots)
                 first = visits.first_visit_at()
             older = None
@@ -30,7 +31,7 @@ class ReadReports:
                 recent = recent[:DReports.PAGE_SIZE]
                 older = (recent[-1]["received_at"], recent[-1]["page_view_id"])
             return Report(options, daily, first, sites=sites, pages=pages, locations=locations,
-                          recent=recent, referrers=referrers, older=older)
+                          recent=recent, referrers=referrers, languages=languages, older=older)
         finally:
             db.close()
 

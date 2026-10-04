@@ -65,6 +65,7 @@
 </nav>
 </div>
 <div class="metrics-location-column">
+<div class="metrics-preference-charts">
 <section class="country-chart" aria-labelledby="country-chart-title">
   <h2 id="country-chart-title">Visits by Location</h2>
   {% if country_slices %}
@@ -80,6 +81,23 @@
   <p>No visits match the current filters.</p>
   {% endif %}
 </section>
+<section class="country-chart" aria-labelledby="language-chart-title">
+  <h2 id="language-chart-title">Visits by Language</h2>
+  {% if language_slices %}
+  <div class="country-chart-content">
+    <div id="language-pie" class="country-pie" role="img" aria-label="Visits by first browser language preference. Counts and percentages are listed in the legend."></div>
+    <ul class="country-legend" aria-label="Visits by language">
+      {% set total = language_slices | sum(attribute='visits') %}
+      {% for language in language_slices %}
+      <li><span class="country-swatch" aria-hidden="true" style="background: {{ chart_colors[loop.index0 % chart_colors | length] }};"></span><span>{{ language.name }}</span><span class="country-value">{{ language.visits }} ({{ '%.1f' | format(language.visits / total * 100) }}%)</span></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% else %}
+  <p>No visits match the current filters.</p>
+  {% endif %}
+</section>
+</div>
 <div class="table-wrap table-scroll" tabindex="0" role="region" aria-label="Visits by Location scroll area">
   <table aria-label="Visits by Location">
     <caption>Visits by Location</caption>
@@ -141,7 +159,7 @@
   {% endif %}
 </section>
 </div>
-{% if country_slices or sites or daily %}
+{% if country_slices or language_slices or sites or daily %}
 {% include 'chart_theme.html' %}
 {% include 'pie_charts.html' %}
 {% if daily %}{% include 'all_traffic.html' %}{% endif %}

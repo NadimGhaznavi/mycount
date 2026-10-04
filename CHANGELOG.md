@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Split the location pie chart cell into Visits by Location and Visits by
+  Language, using each visit's first browser language preference and the
+  current report filters. Include missing preferences as Unknown.
+
 ## [1.4.1] - 2026-10-04 @ 19:09
 
 - Allow `https://bmgeoip.osoyalce.com` and `https://bmdynip.osoyalce.com`

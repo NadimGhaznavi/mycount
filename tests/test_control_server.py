@@ -72,6 +72,24 @@ class ControlServerTests(unittest.TestCase):
         self.assertIn('No visits match the current filters.', empty)
         self.assertNotIn('conic-gradient(', empty)
 
+    def test_language_pie_preserves_tags_counts_and_unknown_preferences(self):
+        options = ReportOptions(date(2026, 9, 27), date(2026, 9, 27), "UTC")
+        languages = [dict(language_tag='en-CA', page_views=6),
+                     dict(language_tag='fr', page_views=3),
+                     dict(language_tag=None, page_views=1)]
+        body = ControlPages().render(Report(options, [], None, languages=languages)).decode()
+        chart = body.split('aria-labelledby="language-chart-title"', 1)[1].split('</section>', 1)[0]
+        self.assertIn('>Visits by Language</h2>', chart)
+        self.assertIn('>en-CA</span><span class="country-value">6 (60.0%)', chart)
+        self.assertIn('>fr</span><span class="country-value">3 (30.0%)', chart)
+        self.assertIn('>Unknown</span><span class="country-value">1 (10.0%)', chart)
+        self.assertIn("drawPie('language-pie', [\"en-CA\", \"fr\", \"Unknown\"]", body)
+        self.assertEqual(body.count('src="https://cdn.plot.ly/'), 1)
+        empty = ControlPages().render(Report(options, [], None)).decode()
+        chart = empty.split('aria-labelledby="language-chart-title"', 1)[1].split('</section>', 1)[0]
+        self.assertIn('No visits match the current filters.', chart)
+        self.assertNotIn("drawPie('language-pie'", empty)
+
     def test_site_pie_uses_site_totals_and_escapes_legend_names(self):
         sites = [
             {"site": "<one>", "page_views": 3, "last_visited": datetime(2026, 9, 27)},
@@ -98,6 +116,7 @@ class ControlServerTests(unittest.TestCase):
             [{"received_at": datetime(2026, 9, 27, 15, 5), "country_code": "CA", "city_name": "Hamilton", "url": "https://example.com/<recent>"}],
             [{"referrer_host": "<referrer>", "page_views": 8},
              {"referrer_host": None, "page_views": 4}],
+            [{"language_tag": "en-CA", "page_views": 12}],
             [{"day": "2026-09-27", "page_views": 12}],
             [{"first_visit_at": datetime(2026, 9, 23, 12)}],
         ]
@@ -150,7 +169,7 @@ class ControlServerTests(unittest.TestCase):
                     self.assertNotIn('WHERE', factory.return_value.query.call_args_list[-1].args[0])
                     for query, excluded in [('exclude_bots=0', False), ('exclude_bots=0&exclude_bots=1', True)]:
                         factory.reset_mock()
-                        factory.return_value.query.side_effect = [[], [], [], [], [], [], [{"first_visit_at": datetime(2026, 9, 23, 12)}]]
+                        factory.return_value.query.side_effect = [[], [], [], [], [], [], [], [{"first_visit_at": datetime(2026, 9, 23, 12)}]]
                         connection.request("GET", "/?" + query)
                         response = connection.getresponse()
                         self.assertEqual(response.status, 200)

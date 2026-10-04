@@ -96,6 +96,20 @@ class VisitDb:
             ORDER BY page_views DESC, country_name, country_code, region_name, city_name
         """, params)
 
+    def totals_by_language(self, *, exclude_bots: bool = False,
+                           start: datetime | None = None, end: datetime | None = None) -> list[dict[str, object]]:
+        """Count each visit once using its first browser language preference."""
+        where, params = self._filter(exclude_bots, start, end)
+        return self._db.query(f"""
+            SELECT l.language_tag, COUNT(*) AS page_views
+            FROM page_views v
+            LEFT JOIN page_view_languages l ON l.page_view_id = v.page_view_id
+                AND l.preference_order = 1
+            {where}
+            GROUP BY l.language_tag
+            ORDER BY page_views DESC, l.language_tag
+        """, params)
+
     def totals_by_referrer(self, *, exclude_bots: bool = False,
                        start: datetime | None = None, end: datetime | None = None) -> list[dict[str, object]]:
         """Rank referrer hosts by visits, including visits with no known referrer."""
