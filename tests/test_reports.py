@@ -68,7 +68,8 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(ReportQuery.resolve(query).before, report.older)
         self.assertEqual(query['timezone'], ['America/Toronto'])
         html = ControlPages().render(report).decode()
-        self.assertIn('Older visits', html)
+        recent_summary = html.split('<span>Recent Visits</span>', 1)[1].split('</summary>', 1)[0]
+        self.assertIn('Older visits', recent_summary)
         self.assertIn('"page_views": 5000', html)
         self.assertNotIn('const timestamps', html)
 
