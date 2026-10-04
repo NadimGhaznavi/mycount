@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-10-04 @ 07:15
+
 - Add a MyCount event to track system events.
 
 ## [1.3.1] - 2026-10-04 @ 05:52
