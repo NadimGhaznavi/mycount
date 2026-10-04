@@ -9,6 +9,9 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Expand all pie charts and legends to 11 Mondrian colors with dark and
+  darker red, blue, and yellow shades, plus matching slice outlines.
+
 - Show readable language names in the Visits by Language legend and hover
   text, including country and script names. Preserve unrecognized tags and
   keep regional preferences separate.
