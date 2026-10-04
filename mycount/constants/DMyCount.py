@@ -21,6 +21,8 @@ class DMyCount:
         "https://snakelab.osoyalce.com",
         "https://snakelabserver.osoyalce.com",
         "https://bmca.osoyalce.com",
+        "https://bmgeoip.osoyalce.com",
+        "https://bmdynip.osoyalce.com",
         "https://cmdb.osoyalce.com",
         "https://db4e.osoyalce.com",
         "https://kb.osoyalce.com",

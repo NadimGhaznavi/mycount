@@ -69,7 +69,7 @@ class CollectorHttpTests(unittest.TestCase):
 
     def test_sites_pass_preflight_and_payload_validation(self):
         self.collector.record.side_effect = lambda payload, address, origin: VisitPayload().resolve(payload, origin)
-        for site in ('mycount', 'ax3l', 'r3el'):
+        for site in ('mycount', 'ax3l', 'r3el', 'bmgeoip', 'bmdynip'):
             origin = f'https://{site}.osoyalce.com'
             with self.subTest(site=site):
                 response = self.client.options('/count', headers={
