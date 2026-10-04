@@ -9,6 +9,11 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.5.2] - 2026-10-04 @ 19:52
+
+- Make all Metrics boxes collapsible and collapsed by default, and move Recent
+  Visits pagination links to the right of its title bar.
+
 ## [1.5.1] - 2026-10-04 @ 19:40
 
 - Expand all pie charts and legends to 11 Mondrian colors with dark and
