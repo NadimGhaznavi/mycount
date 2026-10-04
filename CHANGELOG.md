@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-10-04 @ 05:52
+
 ## [1.3.0] - 2026-10-03 @ 21:00
 
 - Add a background UPnP worker that checks TCP ports 80 and 443 every five
