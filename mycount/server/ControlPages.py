@@ -31,7 +31,7 @@ class ControlPages:
             sites=report.sites, pages_by_site=pages_by_site, locations=report.locations,
             recent=report.recent, referrers=report.referrers,
             country_slices=self._country_slices(report.locations),
-            language_slices=[{"name": row["language_tag"] or "Unknown", "visits": row["page_views"]}
+            language_slices=[{"name": self._language_label(row["language_tag"]), "visits": row["page_views"]}
                              for row in report.languages],
             error=error, active_page="metrics", **self._report_context(report, "/"),
         ).encode("utf-8")
@@ -62,6 +62,34 @@ class ControlPages:
                 "percent": country["visits"] / total * 100,
             })
         return slices
+
+    @staticmethod
+    def _language_label(tag: str | None) -> str:
+        """Name known language, script, and country codes; retain unfamiliar tags."""
+        if not tag:
+            return "Unknown"
+        parts = tag.split("-")
+        code = parts[0].lower()
+        if len(code) == 2:
+            language = pycountry.languages.get(alpha_2=code)
+        elif len(code) == 3:
+            language = pycountry.languages.get(alpha_3=code)
+        else:
+            return tag
+        if language is None:
+            return tag
+        qualifiers = []
+        for part in parts[1:]:
+            if len(part) == 4:
+                qualifier = pycountry.scripts.get(alpha_4=part.title())
+            elif len(part) == 2:
+                qualifier = pycountry.countries.get(alpha_2=part.upper())
+            else:
+                return tag
+            if qualifier is None:
+                return tag
+            qualifiers.append(qualifier.name)
+        return language.name + (f" ({', '.join(qualifiers)})" if qualifiers else "")
 
     def reference(self, first_visit_at: datetime | None = None) -> bytes:
         return self._templates.get_template("reference.html").render(

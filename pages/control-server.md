@@ -30,7 +30,9 @@ locations, recent visits, referrers, and charts. Last Visited is the latest
 matching visit within that range. Visits by Location stays at the top of the
 right column beside Visits by Language. The language pie counts each visit once,
 using the first entry in the browser's language preference list. Full tags such
-as `en-CA` are kept separate; missing preferences appear as Unknown. Both pies
+as `en-CA` are kept separate and displayed with readable names such as
+English (Canada). Unrecognized tags retain their codes; missing preferences
+appear as Unknown. Both pies
 show counts and percentages and stack on narrow screens.
 Uncheck Exclude bots to include bots.
 The filter excludes visits flagged as bots and historical Googlebot/GoogleOther
