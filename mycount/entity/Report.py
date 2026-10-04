@@ -16,5 +16,6 @@ class Report:
     locations: list[dict[str, object]] = field(default_factory=list)
     recent: list[dict[str, object]] = field(default_factory=list)
     referrers: list[dict[str, object]] = field(default_factory=list)
+    languages: list[dict[str, object]] = field(default_factory=list)
     posts: list[dict[str, object]] = field(default_factory=list)
     older: tuple[datetime, int] | None = None

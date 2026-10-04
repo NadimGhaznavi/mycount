@@ -21,5 +21,9 @@
     drawPie('site-pie', {{ sites | map(attribute='site') | list | tojson }},
             {{ sites | map(attribute='page_views') | list | tojson }});
     {% endif %}
+    {% if language_slices %}
+    drawPie('language-pie', {{ language_slices | map(attribute='name') | list | tojson }},
+            {{ language_slices | map(attribute='visits') | list | tojson }});
+    {% endif %}
   })();
 </script>

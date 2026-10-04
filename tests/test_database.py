@@ -584,6 +584,27 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(row["url_hash"], sha256(url.encode()).digest())
         self.assertEqual(self.db.query("SELECT COUNT(*) AS n FROM pages")[0]["n"], 5)
 
+    def test_language_totals_use_first_preference_and_include_missing_with_filters(self):
+        visits = VisitDb(self.db)
+        self.assertEqual(visits.totals_by_language(), [])
+        visit = Visit(site='language-test', url='https://example.com/',
+                      received_at=datetime(2026, 9, 27, 12, tzinfo=timezone.utc),
+                      languages=('en-CA', 'fr'))
+        visits.record(visit)
+        visits.record(replace(visit, languages=('fr', 'en-CA')))
+        visits.record(replace(visit, languages=()))
+        visits.record(replace(visit, languages=('en-CA',), is_bot=True))
+        visits.record(replace(visit, received_at=datetime(2026, 9, 26, tzinfo=timezone.utc)))
+        filters = dict(start=datetime(2026, 9, 27), end=datetime(2026, 9, 28))
+        self.assertEqual(visits.totals_by_language(exclude_bots=True, **filters), [
+            dict(language_tag=None, page_views=1), dict(language_tag='en-CA', page_views=1),
+            dict(language_tag='fr', page_views=1),
+        ])
+        self.assertEqual(visits.totals_by_language(**filters), [
+            dict(language_tag='en-CA', page_views=2), dict(language_tag=None, page_views=1),
+            dict(language_tag='fr', page_views=1),
+        ])
+
     def test_view_and_languages_roll_back_together(self):
         page_id = self.page()
         with self.assertRaises(pymysql.IntegrityError):

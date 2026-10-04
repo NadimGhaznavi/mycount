@@ -31,6 +31,8 @@ class ControlPages:
             sites=report.sites, pages_by_site=pages_by_site, locations=report.locations,
             recent=report.recent, referrers=report.referrers,
             country_slices=self._country_slices(report.locations),
+            language_slices=[{"name": row["language_tag"] or "Unknown", "visits": row["page_views"]}
+                             for row in report.languages],
             error=error, active_page="metrics", **self._report_context(report, "/"),
         ).encode("utf-8")
 

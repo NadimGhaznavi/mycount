@@ -48,6 +48,7 @@ class ReportTests(unittest.TestCase):
         rows = [dict(page_view_id=index, received_at=timestamp, country_code=None,
                      city_name=None, url=f'https://example.com/{index}') for index in range(51, 0, -1)]
         factory.return_value.query.side_effect = [[], [], [], rows, [],
+                                                  [dict(language_tag='en-CA', page_views=5000)],
                                                   [dict(day='2026-03-08', page_views=5000)],
                                                   [dict(first_visit_at=timestamp)]]
         options = ReportOptions(date(2026, 3, 8), date(2026, 3, 8), 'America/Toronto')
@@ -55,11 +56,12 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(len(report.recent), 50)
         self.assertEqual(report.older, (timestamp, 2))
         self.assertEqual(report.daily[0]['page_views'], 5000)
+        self.assertEqual(report.languages, [dict(language_tag='en-CA', page_views=5000)])
         factory.return_value.transaction.assert_called_once_with(read_only=True)
         factory.return_value.close.assert_called_once()
         calls = factory.return_value.query.call_args_list
         self.assertEqual(calls[3].args[1][-1], 51)
-        for call in calls[:5]:
+        for call in calls[:6]:
             self.assertIn(datetime(2026, 3, 8, 5), call.args[1])
             self.assertIn(datetime(2026, 3, 9, 4), call.args[1])
         query = parse_qs(urlsplit(ReportQuery.link('/', options, report.older)).query)
