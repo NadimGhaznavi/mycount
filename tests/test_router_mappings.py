@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import patch
 
 from mycount.interface.RouterMappings import RouterMappings
+from mycount.constants.DRouterMappings import DRouterMappings
 
 
 LAN = 'Local LAN ip address : 192.168.0.42\n'
@@ -75,7 +76,7 @@ class RouterMappingsTests(unittest.TestCase):
         run.side_effect = subprocess.CalledProcessError(1, 'upnpc')
         with self.assertRaises(subprocess.CalledProcessError):
             RouterMappings().clear((80, 443))
-        run.assert_called_once_with(['upnpc', '-l'], check=True, capture_output=True, text=True)
+        run.assert_called_once_with(['upnpc', '-l'], check=True, capture_output=True, text=True, timeout=DRouterMappings.COMMAND_TIMEOUT)
 
     @patch('mycount.interface.RouterMappings.subprocess.run')
     def test_detects_host_and_replaces_only_requested_tcp_ports(self, run):
@@ -110,7 +111,7 @@ class RouterMappingsTests(unittest.TestCase):
             run.return_value = subprocess.CompletedProcess([], 0, listing)
             with self.assertRaises((RuntimeError, ValueError)):
                 RouterMappings().forward((80, 443))
-            run.assert_called_once_with(['upnpc', '-l'], check=True, capture_output=True, text=True)
+            run.assert_called_once_with(['upnpc', '-l'], check=True, capture_output=True, text=True, timeout=DRouterMappings.COMMAND_TIMEOUT)
 
     @patch('mycount.interface.RouterMappings.subprocess.run')
     def test_failed_deletion_stops_before_adding(self, run):
@@ -118,3 +119,33 @@ class RouterMappingsTests(unittest.TestCase):
         with self.assertRaises(subprocess.CalledProcessError):
             RouterMappings().forward((80, 443))
         self.assertEqual(run.call_count, 2)
+
+    @patch('mycount.interface.RouterMappings.subprocess.run')
+    def test_correct_mappings_are_not_replaced(self, run):
+        run.return_value = subprocess.CompletedProcess([], 0, AFTER)
+        self.assertEqual(RouterMappings().forward((80, 443)), ())
+        run.assert_called_once_with(['upnpc', '-l'], check=True, capture_output=True,
+                                    text=True, timeout=DRouterMappings.COMMAND_TIMEOUT)
+
+    @patch('mycount.interface.RouterMappings.subprocess.run')
+    def test_repairs_only_missing_port_and_verifies_it(self, run):
+        listings = iter((LAN + " 0 TCP 80->192.168.0.42:80 'http' '' 0\n", AFTER))
+        run.side_effect = lambda command, **kwargs: subprocess.CompletedProcess(
+            command, 0, next(listings) if command == ['upnpc', '-l'] else '')
+        self.assertEqual(RouterMappings().forward((80, 443)), (443,))
+        self.assertEqual([call.args[0] for call in run.call_args_list], [
+            ['upnpc', '-l'], ['upnpc', '-a', '192.168.0.42', '443', '443', 'TCP'],
+            ['upnpc', '-l']])
+        for call in run.call_args_list:
+            self.assertEqual(call.kwargs['timeout'], DRouterMappings.COMMAND_TIMEOUT)
+
+    @patch('mycount.interface.RouterMappings.subprocess.run')
+    def test_wrong_internal_port_is_repaired(self, run):
+        before = AFTER.replace('443->192.168.0.42:443', '443->192.168.0.42:8443')
+        listings = iter((before, AFTER))
+        run.side_effect = lambda command, **kwargs: subprocess.CompletedProcess(
+            command, 0, next(listings) if command == ['upnpc', '-l'] else '')
+        self.assertEqual(RouterMappings().forward((80, 443)), (443,))
+        self.assertEqual([call.args[0] for call in run.call_args_list], [
+            ['upnpc', '-l'], ['upnpc', '-d', '443', 'TCP'],
+            ['upnpc', '-a', '192.168.0.42', '443', '443', 'TCP'], ['upnpc', '-l']])

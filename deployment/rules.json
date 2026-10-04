@@ -35,6 +35,10 @@
     "systemd/mycount-server.service": [
       "mycount/server/__main__.py",
       "mycount/constants/DMyCount.py"
+    ],
+    "systemd/mycount-router.service": [
+      "mycount/server/RouterWorker.py",
+      "mycount/constants/DMyCount.py"
     ]
   },
   "output": "mycount/constants/DDeployment.py",
@@ -68,7 +72,8 @@
     ],
     "listener": [
       "systemd/mycount-server.service",
-      "requirements.txt"
+      "requirements.txt",
+      "systemd/mycount-router.service"
     ],
     "report-server": [
       "systemd/mycount-control.service",

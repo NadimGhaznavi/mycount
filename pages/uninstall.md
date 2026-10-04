@@ -19,7 +19,8 @@ sudo /opt/prod/mycount/scripts/uninstall.sh
 ```
 
 The script removes MyCount's Caddy import and site file, disables and stops
-`mycount-server.service` and `mycount-control.service`, removes both units and
+`mycount-router.service`, `mycount-server.service`, and `mycount-control.service`,
+removes their units and
 any legacy MyCount GeoIP schedule, clears MyCount's router port mappings, and
 deletes the application files under `/opt/prod/mycount`, preserving uploaded
 PNGs in `pages/marketing` when that folder exists. It validates the remaining Caddy configuration

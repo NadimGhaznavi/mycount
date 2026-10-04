@@ -9,6 +9,13 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-03 @ 21:00
+
+- Add a background UPnP worker that checks TCP ports 80 and 443 every five
+  minutes, repairs missing or incorrect mappings, and retries router failures.
+  Preserve correct mappings, bound router commands with timeouts, and manage
+  the worker during installation, upgrades, and uninstall.
+
 ## [1.2.0] - 2026-10-03 @ 16:55
 
 - Refresh the documentation site's client example with a build-versioned script

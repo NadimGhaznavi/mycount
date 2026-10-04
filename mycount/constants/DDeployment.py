@@ -37,6 +37,7 @@ class DDeployment:
         ),
         "listener": (
             "requirements.txt",
+            "systemd/mycount-router.service",
             "systemd/mycount-server.service",
         ),
         "report-server": (
@@ -110,6 +111,14 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/activity/__init__.py",
             "mycount/constants/DDeployment.py",
+        ),
+        "mycount/activity/MaintainRouterMappings.py": (
+            "mycount/__init__.py",
+            "mycount/activity/__init__.py",
+            "mycount/constants/DCaddy.py",
+            "mycount/constants/DMyCount.py",
+            "mycount/constants/DRouterMappings.py",
+            "mycount/interface/RouterMappings.py",
         ),
         "mycount/activity/MarketingSchema.py": (
             "mycount/__init__.py",
@@ -195,6 +204,10 @@ class DDeployment:
             "mycount/constants/__init__.py",
         ),
         "mycount/constants/DReports.py": (
+            "mycount/__init__.py",
+            "mycount/constants/__init__.py",
+        ),
+        "mycount/constants/DRouterMappings.py": (
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
         ),
@@ -319,6 +332,7 @@ class DDeployment:
         ),
         "mycount/interface/RouterMappings.py": (
             "mycount/__init__.py",
+            "mycount/constants/DRouterMappings.py",
             "mycount/interface/__init__.py",
         ),
         "mycount/interface/ServiceLogger.py": (
@@ -399,6 +413,12 @@ class DDeployment:
             "mycount/interface/VisitPayload.py",
             "mycount/server/__init__.py",
         ),
+        "mycount/server/RouterWorker.py": (
+            "mycount/__init__.py",
+            "mycount/activity/MaintainRouterMappings.py",
+            "mycount/interface/RouterMappings.py",
+            "mycount/server/__init__.py",
+        ),
         "mycount/server/__init__.py": (
             "mycount/__init__.py",
         ),
@@ -467,6 +487,7 @@ class DDeployment:
             "mycount/constants/DDeployment.py",
             "mycount/constants/DGeoIp.py",
             "mycount/constants/DMyCount.py",
+            "mycount/constants/DRouterMappings.py",
             "mycount/interface/DatabaseEnvironment.py",
             "mycount/interface/DbMgr.py",
             "mycount/interface/DeploymentFiles.py",
@@ -492,6 +513,7 @@ class DDeployment:
             "mycount/constants/DGeoIp.py",
             "mycount/constants/DMarketing.py",
             "mycount/constants/DMyCount.py",
+            "mycount/constants/DRouterMappings.py",
         ),
         "scripts/update-deployment-dependencies.py": (
             "deployment/rules.json",
@@ -503,6 +525,10 @@ class DDeployment:
         "systemd/mycount-control.service": (
             "mycount/constants/DMyCount.py",
             "mycount/server/ControlServer.py",
+        ),
+        "systemd/mycount-router.service": (
+            "mycount/constants/DMyCount.py",
+            "mycount/server/RouterWorker.py",
         ),
         "systemd/mycount-server.service": (
             "mycount/constants/DMyCount.py",
