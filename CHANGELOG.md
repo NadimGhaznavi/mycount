@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-10-04 @ 19:09
+
 - Allow `https://bmgeoip.osoyalce.com` and `https://bmdynip.osoyalce.com`
   to submit page views to the collector.
 

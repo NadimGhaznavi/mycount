@@ -197,7 +197,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "1904795b205c5b07e8bf9174fa70177ec328777d6f1975f33285592fd5f4f45e",
+      "digest": "481862388ebe64b56c511ece3f304a741fd9eaf1fd05980dc270ef2d8b3e00eb",
       "targets": [
         "filesystem",
         "listener",
@@ -802,6 +802,14 @@
         "report-server"
       ],
       "version": "1.4.0"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "1.4.1"
     }
   ]
 }
