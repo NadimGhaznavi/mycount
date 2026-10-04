@@ -47,3 +47,12 @@ class DeploymentImpactTests(unittest.TestCase):
     def test_unknown_target_surfaces_caller_error(self):
         with self.assertRaises(KeyError):
             self.impact.is_impacted("unknown", "requirements.txt")
+
+    def test_router_worker_is_deployed_with_listener(self):
+        for artifact in ('systemd/mycount-router.service',
+                         'mycount/server/RouterWorker.py',
+                         'mycount/activity/MaintainRouterMappings.py'):
+            with self.subTest(artifact=artifact):
+                self.assertEqual(self.impact.affected_targets(artifact), {DDeployment.LISTENER})
+        self.assertIn(DDeployment.LISTENER, self.impact.affected_targets(
+            'mycount/interface/RouterMappings.py'))

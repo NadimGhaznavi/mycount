@@ -36,7 +36,7 @@ class UpgradeTests(unittest.TestCase):
         self.executable(python, '''#!/bin/bash
 input=$(cat)
 if [[ $input == *'print(DMyCount.BASE_DIR)'* ]]; then
-    printf '%s\\n' "$TEST_APP" "$TEST_CREDENTIALS" mycount mycount-server.service mycount-control.service
+    printf '%s\\n' "$TEST_APP" "$TEST_CREDENTIALS" mycount mycount-server.service mycount-control.service mycount-router.service
 elif [[ $input == *'upgrade_targets(previous'* ]]; then
     echo flags >> "$TEST_LOG"
     if [[ ${TEST_FLAGS_FAILURE:-0} != 0 ]]; then exit 1; fi
@@ -86,6 +86,7 @@ fi
         commands = self.log.read_text().splitlines()
         self.assertNotIn('geoip', commands)
         self.assertIn('systemctl enable --now mycount-server.service', commands)
+        self.assertIn('systemctl enable --now mycount-router.service', commands)
         self.assertIn('systemctl enable --now mycount-control.service', commands)
         self.assertIn('caddy', commands)
         self.assertIn('Upgraded MyCount', result.stdout)
@@ -122,10 +123,11 @@ fi
         self.assertEqual(result.returncode, 0, result.stderr)
         commands = self.log.read_text().splitlines()
         self.assertIn('systemctl enable --now mycount-server.service', commands)
+        self.assertIn('systemctl enable --now mycount-router.service', commands)
         self.assertNotIn('systemctl enable --now mycount-control.service', commands)
         self.assertNotIn('schema', commands)
         self.assertNotIn('caddy', commands)
-        self.assertTrue(any(line.startswith('health ') and line.endswith('mycount-server.service') for line in commands))
+        self.assertTrue(any(line.startswith('health ') and line.endswith('mycount-server.service mycount-router.service') for line in commands))
 
     def test_health_failure_does_not_publish_release_metadata(self):
         self.env['TEST_FLAGS'] = 'report-server'

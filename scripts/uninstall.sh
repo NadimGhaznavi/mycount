@@ -19,6 +19,7 @@ from mycount.constants.DGeoIp import DGeoIp
 from mycount.constants.DMyCount import DMyCount
 from mycount.constants.DControl import DControl
 from mycount.constants.DMarketing import DMarketing
+from mycount.constants.DRouterMappings import DRouterMappings
 
 application = Path(DMyCount.BASE_DIR)
 if application.is_symlink() or application.parent != Path('/opt/prod') or application.name != 'mycount':
@@ -46,7 +47,7 @@ site.unlink(missing_ok=True)
 
 # Remove the schedule first so no new refresh is launched during removal.
 Path(DGeoIp.CRON_FILE).unlink(missing_ok=True)
-for name in (DControl.SERVICE_UNIT, DMyCount.SERVICE_UNIT):
+for name in (DRouterMappings.SERVICE_UNIT, DControl.SERVICE_UNIT, DMyCount.SERVICE_UNIT):
     unit = Path('/etc/systemd/system') / name
     if unit.exists():
         subprocess.run(['systemctl', 'disable', '--now', name], check=True)

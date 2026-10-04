@@ -11,6 +11,7 @@ from unittest.mock import patch
 from mycount.constants.DCaddy import DCaddy
 from mycount.constants.DGeoIp import DGeoIp
 from mycount.constants.DMyCount import DMyCount
+from mycount.constants.DRouterMappings import DRouterMappings
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,6 +35,8 @@ class DeploymentTests(unittest.TestCase):
         self.unit.write_text('unit')
         self.control_unit = self.unit_dir / 'mycount-control.service'
         self.control_unit.write_text('unit')
+        self.router_unit = self.unit_dir / DRouterMappings.SERVICE_UNIT
+        self.router_unit.write_text('unit')
         self.credentials = self.root / 'database.env'
         self.credentials.write_text('preserve credentials')
         self.site.write_text('previous site')
@@ -63,12 +66,14 @@ class DeploymentTests(unittest.TestCase):
         self.execute('uninstall.sh')
         self.assertEqual(self.config.read_text(), self.other_sites)
         self.assertEqual(self.credentials.read_text(), 'preserve credentials')
-        for path in (self.app, self.cron, self.unit, self.control_unit, self.site):
+        for path in (self.app, self.cron, self.unit, self.control_unit, self.router_unit, self.site):
             self.assertFalse(path.exists())
         commands = [call.args[0] for call in self.run.call_args_list]
         self.assertIn(['systemctl', 'disable', '--now', DMyCount.SERVICE_UNIT], commands)
         self.assertIn(['systemctl', 'disable', '--now', 'mycount-control.service'], commands)
         self.assertEqual(commands.count(['bash', 'scripts/clear-upnpc-routes.sh']), 2)
+        self.assertLess(commands.index(['systemctl', 'disable', '--now', DRouterMappings.SERVICE_UNIT]),
+                        commands.index(['bash', 'scripts/clear-upnpc-routes.sh']))
         self.assertFalse(any(command[0] in ('mariadb', 'userdel', 'groupdel', 'upnpc') for command in commands))
 
     def test_uninstall_clears_routes_before_removing_application(self):
@@ -77,6 +82,7 @@ class DeploymentTests(unittest.TestCase):
                 self.assertTrue((self.app / 'application.py').exists())
                 self.assertFalse(self.unit.exists())
                 self.assertFalse(self.control_unit.exists())
+                self.assertFalse(self.router_unit.exists())
             return subprocess.CompletedProcess(command, 0)
 
         self.run.side_effect = run
@@ -103,7 +109,7 @@ class DeploymentTests(unittest.TestCase):
         with self.assertRaises(subprocess.CalledProcessError):
             self.execute('uninstall.sh')
         self.assertEqual(self.config.read_text(), original)
-        for path in (self.app, self.cron, self.unit, self.control_unit, self.site):
+        for path in (self.app, self.cron, self.unit, self.control_unit, self.router_unit, self.site):
             self.assertTrue(path.exists())
 
     def test_uninstall_preserves_marketing_screenshots(self):
