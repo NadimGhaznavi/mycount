@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Show readable language names in the Visits by Language legend and hover
+  text, including country and script names. Preserve unrecognized tags and
+  keep regional preferences separate.
+
 ## [1.5.0] - 2026-10-04 @ 19:32
 
 - Split the location pie chart cell into Visits by Location and Visits by
