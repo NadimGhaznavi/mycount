@@ -3,8 +3,16 @@
 {% if error %}
 <p role="alert">{{ error }}</p>
 {% else %}
-{% set chart_colors = ['#c62828', '#1565c0', '#f2c230', '#d7d3c8', '#303030'] %}
-{% set chart_outlines = ['#ff5252', '#42a5ff', '#ffeb59', '#fffdf5', '#737373'] %}
+{% set chart_colors = [
+  '#c62828', '#1565c0', '#f2c230', '#d7d3c8', '#303030',
+  '#8f1d1d', '#10498c', '#b18d23',
+  '#5c1313', '#0b305c', '#735c17'
+] %}
+{% set chart_outlines = [
+  '#ff5252', '#42a5ff', '#ffeb59', '#fffdf5', '#737373',
+  '#e04848', '#3285db', '#dfb53d',
+  '#ae3434', '#2566a6', '#bd9730'
+] %}
 <div class="metrics-tables">
 <div class="metrics-site-column">
 {% include 'report_filters.html' %}

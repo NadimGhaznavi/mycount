@@ -80,15 +80,26 @@ class ControlServerTests(unittest.TestCase):
         body = ControlPages().render(Report(options, [], None, languages=languages)).decode()
         chart = body.split('aria-labelledby="language-chart-title"', 1)[1].split('</section>', 1)[0]
         self.assertIn('>Visits by Language</h2>', chart)
-        self.assertIn('>en-CA</span><span class="country-value">6 (60.0%)', chart)
-        self.assertIn('>fr</span><span class="country-value">3 (30.0%)', chart)
+        self.assertIn('>English (Canada)</span><span class="country-value">6 (60.0%)', chart)
+        self.assertIn('>French</span><span class="country-value">3 (30.0%)', chart)
         self.assertIn('>Unknown</span><span class="country-value">1 (10.0%)', chart)
-        self.assertIn("drawPie('language-pie', [\"en-CA\", \"fr\", \"Unknown\"]", body)
+        self.assertIn("drawPie('language-pie', [\"English (Canada)\", \"French\", \"Unknown\"]", body)
         self.assertEqual(body.count('src="https://cdn.plot.ly/'), 1)
         empty = ControlPages().render(Report(options, [], None)).decode()
         chart = empty.split('aria-labelledby="language-chart-title"', 1)[1].split('</section>', 1)[0]
         self.assertIn('No visits match the current filters.', chart)
         self.assertNotIn("drawPie('language-pie'", empty)
+
+    def test_language_labels_keep_regions_separate_and_escape_unrecognized_tags(self):
+        options = ReportOptions(date(2026, 9, 27), date(2026, 9, 27), "UTC")
+        languages = [dict(language_tag=tag, page_views=1)
+                     for tag in ('en-US', 'fr-CA', 'EN-ca', 'eng', 'zh-Hant', 'zz', 'en-ZZ', 'en-x-private', '<tag>')]
+        body = ControlPages().render(Report(options, [], None, languages=languages)).decode()
+        for label in ('English (United States)', 'French (Canada)', 'English (Canada)',
+                      'English', 'Chinese (Han (Traditional variant))', 'zz', 'en-ZZ', 'en-x-private', '&lt;tag&gt;'):
+            self.assertIn(f'>{label}</span><span class="country-value">1 (11.1%)', body)
+        self.assertIn('[1, 1, 1, 1, 1, 1, 1, 1, 1]', body)
+        self.assertNotIn('><tag></span>', body)
 
     def test_site_pie_uses_site_totals_and_escapes_legend_names(self):
         sites = [
