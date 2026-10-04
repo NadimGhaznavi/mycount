@@ -17,6 +17,8 @@
   th[aria-sort="descending"] .column-sort::after { content: ' ↓'; }
   .metrics-tables { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
   .metrics-site-column, .metrics-location-column { min-width: 0; display: grid; gap: 1.5rem; }
+  .metrics-preference-charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+  .metrics-preference-charts .country-chart-content { gap: .75rem; padding: .75rem; }
   .country-chart, .traffic-chart, .site-chart { min-width: 0; border: 1px solid #62412b; border-radius: .4rem; overflow: hidden; }
   .country-chart h2, .traffic-chart h2, .site-chart h2 { margin: 0; padding: .8rem; font-size: .9rem; background: #291d15; }
   .metrics-charts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 1.5rem; margin-top: 1.5rem; }
@@ -37,7 +39,7 @@
   .metrics-filters label, .metrics-filters input { cursor: pointer; }
   caption { padding: .8rem; font-weight: 700; text-align: left; background: #291d15; }
   @media (max-width: 1000px) { .metrics-tables { grid-template-columns: 1fr; } }
-  @media (max-width: 700px) { .metrics-charts { grid-template-columns: 1fr; } }
+  @media (max-width: 700px) { .metrics-charts, .metrics-preference-charts { grid-template-columns: 1fr; } }
   .table-wrap { overflow-x: auto; border: 1px solid #62412b; border-radius: .4rem; }
   .table-scroll { overflow-y: auto; scrollbar-gutter: stable; }
   table { border-collapse: collapse; width: 100%; text-align: left; font-size: .9rem; }

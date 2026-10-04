@@ -28,7 +28,11 @@ without it, reports use UTC.
 The range and bot filter apply together to site totals, expanded pages,
 locations, recent visits, referrers, and charts. Last Visited is the latest
 matching visit within that range. Visits by Location stays at the top of the
-right column. Uncheck Exclude bots to include bots.
+right column beside Visits by Language. The language pie counts each visit once,
+using the first entry in the browser's language preference list. Full tags such
+as `en-CA` are kept separate; missing preferences appear as Unknown. Both pies
+show counts and percentages and stack on narrow screens.
+Uncheck Exclude bots to include bots.
 The filter excludes visits flagged as bots and historical Googlebot/GoogleOther
 records identified by browser family, including older missing or incorrect bot
 flags. Other unknown bot statuses remain included. The choice is retained in
