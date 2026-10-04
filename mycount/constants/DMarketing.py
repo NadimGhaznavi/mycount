@@ -11,6 +11,7 @@ class DMarketing:
         "LinkedIn",
         "Reddit",
         "X",
+        "MyCount",
     )
     MAX_URL_LENGTH: Final[int] = 2048
     MAX_NOTES_LENGTH: Final[int] = 4000
