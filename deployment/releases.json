@@ -423,7 +423,7 @@
       ]
     },
     "mycount/server/ControlPages.py": {
-      "digest": "cd8080fa58beb651bba18168a00b446d538186074f681a4f19c7d906d9e0f084",
+      "digest": "23313d21a6d452190ef39d6753d361324a00bd96847ed5fda89545e9ff3ea903",
       "targets": [
         "report-server"
       ]
@@ -478,7 +478,7 @@
       ]
     },
     "mycount/server/templates/control.html": {
-      "digest": "469dfa78d43ffe8dd33b63f324d98174f128b9a56e1a071b96b8bd573000151f",
+      "digest": "9cfa402dbff9957e40a421ba7e7d1ae7437e67eba89bc3a73defa04b201a9ffa",
       "targets": [
         "report-server"
       ]
@@ -817,6 +817,12 @@
         "report-server"
       ],
       "version": "1.5.0"
+    },
+    {
+      "targets": [
+        "report-server"
+      ],
+      "version": "1.5.1"
     }
   ]
 }

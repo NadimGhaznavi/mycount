@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-10-04 @ 19:40
+
 - Expand all pie charts and legends to 11 Mondrian colors with dark and
   darker red, blue, and yellow shades, plus matching slice outlines.
 
