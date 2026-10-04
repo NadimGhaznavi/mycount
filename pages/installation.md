@@ -25,8 +25,9 @@ service account, and `/etc/mycount/database.env` with root-only permissions.
 It reuses existing credentials without resetting the database password.
 It copies the application to `/opt/prod/mycount`, creates its `.venv`, applies
 the visitor schema and installs and starts `mycount-server.service`
-and `mycount-control.service`. It checks both local health endpoints before
-configuring Caddy. Upgrades stop both services before updating dependencies
+and `mycount-control.service`, plus the `mycount-router.service` background worker.
+It checks both local health endpoints before
+configuring Caddy. Upgrades stop the affected services before updating dependencies
 and code; an installation failure can leave them stopped. Correct the reported error and
 rerun the installer. Installation is not a transactional rollback mechanism.
 
@@ -55,11 +56,18 @@ Review the public hostname in `mycount/constants/DCaddy.py` before installation.
 The installer discovers the router with `upnpc` and uses the reported local LAN
 IPv4 address of the host running the installer, such as wintermute. Reserve that
 address in DHCP. The public hostname must resolve to this router's public address.
-The installer deletes existing TCP mappings for ports 80 and 443, creates its own
-mappings to this machine, and reads the router's rules again to verify them. Other
+The installer repairs missing or incorrect TCP mappings for ports 80 and 443
+to this machine and reads the router's rules again to verify changes. Correct
+mappings are left in place. Other
 ports and UDP mappings are preserved. Port 80 supports automatic public certificate
 issuance and renewal; keep it reachable. Existing LAN-only site restrictions
-remain in place. After a router reset, rerun the Caddy setup to restore mappings.
+remain in place. The installer also enables `mycount-router.service`, a separate
+background worker that checks immediately on startup and every five minutes.
+It restores missing or incorrect mappings after router resets and verifies the
+result. Router discovery and command failures are logged and retried on the
+next check; each `upnpc` command has a 30-second timeout. Inspect the worker with
+`journalctl -u mycount-router.service`. It runs as the MyCount service user and
+does not need database credentials or root privileges.
 
 The imported `/etc/caddy/mycount.caddy` declares `https://count.osoyalce.com`;
 Caddy automatically listens on 443 and obtains and renews its certificate.

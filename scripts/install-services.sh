@@ -12,11 +12,13 @@ checkout=$PWD
 settings_output=$(python3 -B - <<'PY'
 from mycount.constants.DMyCount import DMyCount
 from mycount.constants.DControl import DControl
+from mycount.constants.DRouterMappings import DRouterMappings
 print(DMyCount.BASE_DIR)
 print(DMyCount.DATABASE_ENV)
 print(DMyCount.SERVICE_USER)
 print(DMyCount.SERVICE_UNIT)
 print(DControl.SERVICE_UNIT)
+print(DRouterMappings.SERVICE_UNIT)
 PY
 )
 mapfile -t settings <<< "$settings_output"
@@ -65,7 +67,7 @@ PYFLAGS
         [[ -n $target ]] || continue
         targets+=("$target")
         case "$target" in
-            listener) units+=("${settings[3]}") ;;
+            listener) units+=("${settings[3]}" "${settings[5]}") ;;
             report-server) units+=("${settings[4]}") ;;
             filesystem) full_setup=true ;;
         esac
