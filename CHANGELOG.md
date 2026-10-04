@@ -9,7 +9,11 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Add a MyCount event to track system events.
+
 ## [1.3.1] - 2026-10-04 @ 05:52
+
+- Add sidebar content.
 
 ## [1.3.0] - 2026-10-03 @ 21:00
 
