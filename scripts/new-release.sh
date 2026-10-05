@@ -4,8 +4,8 @@
 set -Eeuo pipefail
 
 # Project settings: keep adaptations to other Python projects in this block.
-readonly project_name="BMGeoIP"
-readonly version_file="bmgeoip/constants/DBMGeoIP.py"
+readonly project_name="MyCount"
+readonly version_file="mycount/constants/DMyCount.py"
 readonly version_constant="VERSION"
 readonly codename_constant="CMDB_CODENAME"
 readonly changelog_file="CHANGELOG.md"
