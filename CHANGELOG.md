@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Restore deployment metadata preparation and dependency checks in the release
+  script, repair the missing 1.5.3 deployment baseline, and identify version
+  mismatches in upgrade errors.
+
 ## [1.5.3] - 2026-10-05 @ 18:34
 
 - Add CMDB scanner metadata: subtype `Web Analytics`, supplier `Nadim-Daniel`,
