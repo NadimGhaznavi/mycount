@@ -503,7 +503,6 @@ class DDeployment:
         ),
         "scripts/new-release.sh": (
             "mycount/activity/ReleaseDeployment.py",
-            "mycount/constants/DMyCount.py",
             "mycount/interface/ReleaseFiles.py",
             "scripts/update-deployment-dependencies.py",
         ),

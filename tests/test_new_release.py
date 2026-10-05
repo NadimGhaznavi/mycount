@@ -89,7 +89,10 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(self.git("cat-file", "-t", "v0.1.0"), "tag")
         self.assertIn('VERSION: Final[str] = "0.1.0"', (self.repo / CONSTANTS).read_text())
         metadata = json.loads((self.repo / DDeployment.RELEASE_MANIFEST).read_text())
-        self.assertEqual(metadata['releases'][-1], {'version': '0.1.0', 'targets': []})
+        self.assertEqual(metadata['releases'][-1], {
+            'version': '0.1.0',
+            'targets': sorted((DDeployment.LISTENER, DDeployment.REPORT_SERVER)),
+        })
         released = (self.repo / "CHANGELOG.md").read_text()
         self.assertIn("## [0.1.0] - ", released)
         self.assertEqual(released.count("## [Unreleased]"), 1)

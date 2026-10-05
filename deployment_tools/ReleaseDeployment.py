@@ -39,8 +39,17 @@ class ReleaseDeployment:
     def upgrade_targets(self, installed_version: str, version: str) -> frozenset[str]:
         data = self._files.read()
         versions = [release["version"] for release in data["releases"]]
-        if version != versions[-1] or installed_version not in versions:
-            raise ValueError("No complete deployment history for this upgrade")
+        if version != versions[-1]:
+            raise ValueError(
+                f"No complete deployment history for this upgrade: checkout version {version}, "
+                f"latest prepared release {versions[-1]}. "
+                "The release must include prepared deployment metadata."
+            )
+        if installed_version not in versions:
+            raise ValueError(
+                f"No complete deployment history for this upgrade: installed version "
+                f"{installed_version} is absent from the prepared release history."
+            )
         # Verify release inputs, without recalculating their dependency impact.
         expected = {name: entry["digest"] for name, entry in data["artifacts"].items()}
         if self._files.snapshot() != expected:

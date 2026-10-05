@@ -14,6 +14,8 @@ readonly dev_branch="dev"
 readonly main_branch="main"
 readonly feature_prefix="feat/maint-"
 readonly python_command="python3"
+readonly deployment_manifest="deployment/releases.json"
+readonly dependency_script="scripts/update-deployment-dependencies.py"
 
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 
@@ -149,7 +151,8 @@ ${feature_prefix}<version with patch incremented>.
 After interactive confirmation, updates ${version_constant}, ${codename_constant}
 in ${version_file} and ${changelog_file}, merges through ${dev_branch} to
 ${main_branch}, tags and pushes the release, then creates the next local feature
-branch. The message becomes the codename. Requires Git and ${python_command}.
+branch. Records deployment impact in ${deployment_manifest} before committing.
+The message becomes the codename. Requires Git and ${python_command}.
 HELP
 }
 
@@ -235,7 +238,8 @@ confirm_release() {
 }
 
 update_release_files() {
-    current_version >/dev/null
+    local previous_version
+    previous_version=$(current_version)
     check_changelog
     project_metadata update "${version}" "${description}"
     local release_date
@@ -243,7 +247,16 @@ update_release_files() {
     sed -i "/^## \[Unreleased\]$/a\\
 \\
 ## [${version}] - ${release_date}" "${changelog_file}"
-    git add -- "${version_file}" "${changelog_file}"
+    "${python_command}" -B - "${previous_version}" "${version}" <<'PYRELEASE'
+from pathlib import Path
+import sys
+from mycount.activity.ReleaseDeployment import ReleaseDeployment
+from mycount.interface.ReleaseFiles import ReleaseFiles
+
+targets = ReleaseDeployment(ReleaseFiles(Path.cwd())).prepare(sys.argv[1], sys.argv[2])
+print('Release deployment targets: ' + (', '.join(sorted(targets)) or 'none'))
+PYRELEASE
+    git add -- "${version_file}" "${changelog_file}" "${deployment_manifest}"
     git commit -m "${message}"
 }
 
@@ -260,11 +273,13 @@ main() {
     fi
     step "Validate release arguments" validate_arguments "$@"
     step "Check local release prerequisites" preflight_local
+    step "Check deployment dependencies" "${python_command}" -B "${dependency_script}" --check
     step "Fetch refs from ${remote}" git fetch --prune --tags "${remote}"
     step "Check remote refs and branch ancestry" preflight_remote
     step "Confirm release" confirm_release
     step "Switch to ${dev_branch}" git switch "${dev_branch}"
     step "Merge ${source_branch} into ${dev_branch}" git merge --no-ff "${source_branch}" -m "Merge ${source_branch} for ${tag}"
+    step "Check merged deployment dependencies" "${python_command}" -B "${dependency_script}" --check
     step "Update release constants and changelog" update_release_files
     step "Switch to ${main_branch}" git switch "${main_branch}"
     step "Merge ${dev_branch} into ${main_branch}" git merge --no-ff "${dev_branch}" -m "${message}"
