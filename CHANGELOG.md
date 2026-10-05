@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.5.3] - 2026-10-05 @ 18:34
+
 - Add CMDB scanner metadata: subtype `Web Analytics`, supplier `Nadim-Daniel`,
   and codename `Insight`.
 - Updated `scripts/new-release.sh` script.
