@@ -9,6 +9,12 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.5.3] - 2026-10-05 @ 18:34
+
+- Add CMDB scanner metadata: subtype `Web Analytics`, supplier `Nadim-Daniel`,
+  and codename `Insight`.
+- Updated `scripts/new-release.sh` script.
+
 ## [1.5.2] - 2026-10-04 @ 19:52
 
 - Make all Metrics boxes collapsible and collapsed by default, and move Recent
