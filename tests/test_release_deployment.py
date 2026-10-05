@@ -63,6 +63,27 @@ class ReleaseDeploymentTests(unittest.TestCase):
         self.assertEqual(self.releases.prepare("1.0.1", "1.0.2"),
                          {DDeployment.REPORT_SERVER, DDeployment.LISTENER})
 
+    def test_release_script_records_updated_constants_and_stages_metadata(self):
+        # Exercise only embedded metadata preparation, without invoking the
+        # release script, Git, or any host deployment operations.
+        script = (Path(__file__).resolve().parents[1] / 'scripts/new-release.sh').read_text()
+        preparation = script.split("<<'PYRELEASE'\n", 1)[1].split('\nPYRELEASE', 1)[0]
+        self.assertIn('git add -- "${version_file}" "${changelog_file}" "${deployment_manifest}"', script)
+        path = self.root / self.shared
+        path.write_text('class DMyCount:\n    VERSION: Final[str] = "1.0.1"\n'
+                        '    CMDB_CODENAME: Final[str] = "New release"\n')
+        with patch('sys.argv', ['-', '1.0.0', '1.0.1']), \
+                patch('mycount.interface.ReleaseFiles.ReleaseFiles', return_value=self.files), \
+                patch('builtins.print'):
+            exec(compile(preparation, 'release metadata preparation', 'exec'), {})
+        data = self.files.read()
+        self.assertEqual(data['releases'][-1], {
+            'version': '1.0.1',
+            'targets': sorted((DDeployment.REPORT_SERVER, DDeployment.LISTENER)),
+        })
+        self.assertEqual(self.releases.upgrade_targets('1.0.0', '1.0.1'),
+                         {DDeployment.REPORT_SERVER, DDeployment.LISTENER})
+
     def test_deleted_artifact_retains_previous_owners(self):
         (self.root / self.report).unlink()
         del self.graph[self.report]
@@ -75,9 +96,9 @@ class ReleaseDeploymentTests(unittest.TestCase):
         self.assertEqual(self.releases.upgrade_targets("1.0.0", "1.0.1"), set(self.targets))
 
     def test_unprepared_or_unknown_versions_are_rejected(self):
-        with self.assertRaisesRegex(ValueError, "history"):
+        with self.assertRaisesRegex(ValueError, "installed version 0.0.1 is absent"):
             self.releases.upgrade_targets("0.0.1", "1.0.0")
-        with self.assertRaisesRegex(ValueError, "history"):
+        with self.assertRaisesRegex(ValueError, "checkout version 1.0.1, latest prepared release 1.0.0"):
             self.releases.upgrade_targets("1.0.0", "1.0.1")
         (self.root / self.report).write_text("# uncommitted change\n")
         with self.assertRaisesRegex(ValueError, "differ"):

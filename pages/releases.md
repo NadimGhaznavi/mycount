@@ -62,6 +62,9 @@ after source/rule changes. Release preparation runs its `--check` before
 fetching, merging, or preparing metadata; stale output must be regenerated
 and committed first.
 The metadata is committed with the release; do not edit its flags manually.
+The release script prepares metadata after changing both the version and codename,
+so the recorded hashes match the published constants. It checks dependencies again
+after merging into `dev` and includes the manifest in the release commit.
 
 The initial baseline was read from the installed 0.6.5 application. It contains
 hashes only for retained installed artifacts. Unavailable source inputs, including
