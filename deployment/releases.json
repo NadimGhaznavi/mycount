@@ -216,7 +216,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "c7380495b815e62dcc59a9785ede1d99ee13242f7e202624cba1be1f3ba722e1",
+      "digest": "101e85b0f69a0b91749f1e75c4a96840c569ef6fe28ea3bfa019e86e8795338b",
       "targets": [
         "filesystem",
         "listener",
@@ -517,13 +517,13 @@
       ]
     },
     "mycount/server/templates/city_schedule.html": {
-      "digest": "35e0c08251a941b04d5fdc2d588738b828bd6807f09cd759fb7f1f5a713ddd84",
+      "digest": "d828c2e4a3c4282e88b7515df57f119b644657a749284919c204c7586c4bf591",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/templates/control.html": {
-      "digest": "d79381cd6dddb3a848ab8f9f366b8058587b6b673a063ba266162f8f771d487a",
+      "digest": "efcc96698c6421bf251cc0d4a87ea0b61a90862a9cdc6dfa7f3eebca73026e67",
       "targets": [
         "report-server"
       ]
@@ -928,6 +928,14 @@
         "report-server"
       ],
       "version": "1.6.4"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "1.6.5"
     }
   ]
 }

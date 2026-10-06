@@ -67,7 +67,9 @@ Cron refresh output, including download errors, goes to syslog under the
 
 All nine Metrics boxes start collapsed, showing only their title bars. Click
 a title or focus it and press Enter or Space to expand or collapse that box.
-Reloading the page collapses the boxes again.
+Reloading the page collapses the boxes again. The location and site boxes are
+labeled Visits by Location Chart, Visits by Location Table, Visits by Site
+Chart, and Visits by Site Table to distinguish their contents when collapsed.
 
 The site table shows Visits by Site, Visits, and Last Visited, ordered by visit count
 (highest first), then site name. Visits counts recorded page views across all pages for that site, subject to
