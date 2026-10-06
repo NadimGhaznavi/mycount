@@ -275,6 +275,11 @@ class ControlServerTests(unittest.TestCase):
                 cwd=directory, capture_output=True, text=True, check=True,
             )
             self.assertIn("--port", result.stdout)
+            result = subprocess.run(
+                [sys.executable, "-B", "-m", "mycount.activity.RefreshCities", "--help"],
+                cwd=directory, capture_output=True, text=True, check=True,
+            )
+            self.assertIn("--scheduled", result.stdout)
             subprocess.run(
                 [sys.executable, "-B", "-c",
                  "from mycount.server.ControlPages import ControlPages; "

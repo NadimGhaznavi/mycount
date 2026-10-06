@@ -13,7 +13,7 @@
       ]
     },
     "deployment/rules.json": {
-      "digest": "8bd87536439bb263b1d451d56b505b17241023a3c5c481c8aa698f257e2278fd",
+      "digest": "95451acb713d090b8bb0540f8e33a26d751b4d6bc3b22631bdcf466d0114a4e0",
       "targets": [
         "filesystem"
       ]
@@ -111,7 +111,7 @@
       ]
     },
     "mycount/activity/ReadReports.py": {
-      "digest": "8f8ddcbd5f16de4e9601b3eaa9b6b152d2e66b5233cdb535f06b68c7e6176286",
+      "digest": "0e618bae33bb97c971df5bc9d2945a8acb5f31e0e06b1ff22ecbae3c7ae06e7e",
       "targets": [
         "report-server"
       ]
@@ -122,10 +122,22 @@
         "filesystem"
       ]
     },
+    "mycount/activity/RefreshCities.py": {
+      "digest": "1b187d951ce38f57b4c8508b7c06e4d942faf881efb7408fdb056da64f3e4bc4",
+      "targets": [
+        "filesystem"
+      ]
+    },
     "mycount/activity/ReleaseDeployment.py": {
       "digest": "76a63a64d2ef6faec707830066a9d850ea6e2252b0739a47b3bd1e8fe5dadba0",
       "targets": [
         "filesystem"
+      ]
+    },
+    "mycount/activity/ResolveVisitorLocations.py": {
+      "digest": "19eb57e24629f310beedb24c202839245062379b371844f55b825ad8f57b08c8",
+      "targets": [
+        "report-server"
       ]
     },
     "mycount/activity/SaveMarketingPost.py": {
@@ -155,6 +167,13 @@
         "listener"
       ]
     },
+    "mycount/constants/DCities.py": {
+      "digest": "694b69b26a00e0e4491636a9ff19362c0821c55bb04ea929aed6539682bad92c",
+      "targets": [
+        "filesystem",
+        "report-server"
+      ]
+    },
     "mycount/constants/DControl.py": {
       "digest": "271e6d47c8b587efefe6882ffd17f1b9182ef7735afdaab1d0704a19ab4f2de6",
       "targets": [
@@ -177,7 +196,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "785f1851385b5f29a1c1c3071644a8296da3a69f5a78f85b4ea7fb9a15b1eaf6",
+      "digest": "73745c115b6350d3d77abde20a2d3407c64af109ef78a56a0ce8a03d31ed59e7",
       "targets": [
         "filesystem"
       ]
@@ -197,7 +216,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "22fcf07c4440fde704b88489f5659ae21c7b41d95163cf5eb1f33694b2b12004",
+      "digest": "87d47e8040422af1167d42fd9ea92bc050f7d6938ed63d53fd59f75ad42e4058",
       "targets": [
         "filesystem",
         "listener",
@@ -248,7 +267,7 @@
       ]
     },
     "mycount/entity/Report.py": {
-      "digest": "b8a50fb7a766b2ceb5b3fceb79c6de1e1ea8a49f2d5265dacfe5644cf2234828",
+      "digest": "ac5fe2523435880b2269f9eff1148b0cefae5e23a8ba4bce6559c2bc66b0ea2d",
       "targets": [
         "report-server"
       ]
@@ -271,6 +290,20 @@
       "targets": [
         "filesystem",
         "listener",
+        "report-server"
+      ]
+    },
+    "mycount/interface/CityLocations.py": {
+      "digest": "2f9c77233486d978a013f2cb2c2cf08d6c872c592057d2c2bb9d4a565a36eb04",
+      "targets": [
+        "filesystem",
+        "report-server"
+      ]
+    },
+    "mycount/interface/CitySchedule.py": {
+      "digest": "7b6f490607a0304b8925f9eecd6874d983315ed9e78523a73b5c9cef924ce349",
+      "targets": [
+        "filesystem",
         "report-server"
       ]
     },
@@ -330,6 +363,12 @@
       "digest": "218da37efb4391b1a3a64d5ed229ece03f7fc182e8e84f01334cb2b62efd23f5",
       "targets": [
         "listener"
+      ]
+    },
+    "mycount/interface/GeoNamesSource.py": {
+      "digest": "4ec8288b14b64674a29fb62599f548d03eb32e6831f64f9dc3d301ebd0a4d355",
+      "targets": [
+        "filesystem"
       ]
     },
     "mycount/interface/MarketingDb.py": {
@@ -417,13 +456,13 @@
       ]
     },
     "mycount/server/ControlHandler.py": {
-      "digest": "dd4a3ec4096d78955b29da938c06b59b69260cce8a58aa81e6c401c397dbdf7f",
+      "digest": "1969472d874c2f284d13f08c2686c7e383e8b851ed9e382502f6231122e2364c",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/ControlPages.py": {
-      "digest": "606948d22df945ab69b704e459f17900737a2fb470ab1733881e300f424ac21d",
+      "digest": "8cea879aff2d68656210cda327d376ca56c4fe8b237e2fc7632cb5a93760bc53",
       "targets": [
         "report-server"
       ]
@@ -473,6 +512,12 @@
     },
     "mycount/server/templates/chart_theme.html": {
       "digest": "5acc2544fe82727c9878ebe382b0eac19d27147dc097b976c56ffc20b91edb48",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/server/templates/city_schedule.html": {
+      "digest": "5e388cad54741e87cba1915576bff9617246e47e2abfc230891ce7772db7920f",
       "targets": [
         "report-server"
       ]
@@ -538,13 +583,13 @@
       ]
     },
     "mycount/server/templates/visitor_map.html": {
-      "digest": "b53795a9cfd454933d3652692b61aed0deb70bc18901f8126aafc5be095006ee",
+      "digest": "a99e8330e8c53647ec144a00f1ad0f0016b0a27770affb97acf1053a8c5937eb",
       "targets": [
         "report-server"
       ]
     },
     "requirements.txt": {
-      "digest": "0f7cf1471a81f3ff16d76acb62bf0e2f0d91f9fbd9074b6d8d9112a7cd6ed61b",
+      "digest": "3e7318bc5350b9122cc4c2684ac90f0d9442eadef75a8e1a032f90e8b249e200",
       "targets": [
         "filesystem",
         "listener",
@@ -564,13 +609,13 @@
       ]
     },
     "scripts/install-services.sh": {
-      "digest": "ea523b5aa40550b5c62b9292aa209dac50b9b1dc3f025c5562873f4d5f6875d8",
+      "digest": "e2308ab850cc46132aee8353a774b2cc6c622130a1dd24a4799fee8bc6fa5c57",
       "targets": [
         "filesystem"
       ]
     },
     "scripts/install.sh": {
-      "digest": "2897e00cc8a98fbbd06ac2bcacf465a6c80b208fb75100615f2c30aba44f4a6c",
+      "digest": "f1148cda93567bff97e0a22af65171b78934398cd74565ea31bc26e3337bc71b",
       "targets": [
         "filesystem"
       ]
@@ -582,7 +627,7 @@
       ]
     },
     "scripts/uninstall.sh": {
-      "digest": "82a1b9a053d3373fa845cdaa6602c8a2e533d57ff4d82f26c96b1abd6e93c7ce",
+      "digest": "90a814411631e64fa173d5534276f9c165dafce8e73a085c3088d34576137c57",
       "targets": [
         "filesystem"
       ]
@@ -600,7 +645,7 @@
       ]
     },
     "systemd/mycount-control.service": {
-      "digest": "16df32a64cb66eef3966a7dc56d2172fe8c668c6e531cabb9d5af6cf022ad8b8",
+      "digest": "d13623cb8c4664af063bffcf85868a3e8ece4810f7ad61762c62a99985a40bf4",
       "targets": [
         "report-server"
       ]
@@ -867,6 +912,14 @@
         "report-server"
       ],
       "version": "1.6.1"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "1.6.2"
     }
   ]
 }

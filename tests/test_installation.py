@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from mycount.constants.DCaddy import DCaddy
 from mycount.constants.DGeoIp import DGeoIp
+from mycount.constants.DCities import DCities
 from mycount.constants.DMyCount import DMyCount
 from mycount.constants.DRouterMappings import DRouterMappings
 
@@ -29,6 +30,8 @@ class DeploymentTests(unittest.TestCase):
         (self.app / 'application.py').write_text('installed')
         self.cron = self.root / 'cron'
         self.cron.write_text('schedule')
+        self.city_cron = self.root / 'city-cron'
+        self.city_cron.write_text('city schedule')
         self.unit_dir = self.root / 'systemd'
         self.unit_dir.mkdir()
         self.unit = self.unit_dir / DMyCount.SERVICE_UNIT
@@ -48,6 +51,7 @@ class DeploymentTests(unittest.TestCase):
             (DMyCount, 'BASE_DIR', str(self.app)),
             (DMyCount, 'DATABASE_ENV', str(self.credentials)),
             (DGeoIp, 'CRON_FILE', str(self.cron)),
+            (DCities, 'CRON_FILE', str(self.city_cron)),
         ):
             self.stack.enter_context(patch.object(cls, key, value))
         self.run = self.stack.enter_context(patch('subprocess.run'))
@@ -66,7 +70,7 @@ class DeploymentTests(unittest.TestCase):
         self.execute('uninstall.sh')
         self.assertEqual(self.config.read_text(), self.other_sites)
         self.assertEqual(self.credentials.read_text(), 'preserve credentials')
-        for path in (self.app, self.cron, self.unit, self.control_unit, self.router_unit, self.site):
+        for path in (self.app, self.cron, self.city_cron, self.unit, self.control_unit, self.router_unit, self.site):
             self.assertFalse(path.exists())
         commands = [call.args[0] for call in self.run.call_args_list]
         self.assertIn(['systemctl', 'disable', '--now', DMyCount.SERVICE_UNIT], commands)
@@ -179,6 +183,9 @@ class DeploymentTests(unittest.TestCase):
             exec(compile(source, 'install-services.sh', 'exec'), {'__name__': '__main__'})
         self.assertFalse(self.cron.exists())
         self.assertFalse(legacy.exists())
+        self.assertIn('* * * * * mycount ', self.city_cron.read_text())
+        self.assertIn('mycount.activity.RefreshCities --scheduled', self.city_cron.read_text())
+        self.assertEqual(self.city_cron.stat().st_mode & 0o777, 0o644)
         self.assertEqual(self.credentials.read_text(), 'preserve credentials')
 
 
