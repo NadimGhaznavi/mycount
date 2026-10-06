@@ -8,6 +8,8 @@ from mycount.entity.ReportOptions import ReportOptions
 from mycount.interface.DbMgr import DbMgr
 from mycount.interface.MarketingDb import MarketingDb
 from mycount.interface.VisitDb import VisitDb
+from mycount.interface.CityLocations import CityLocations
+from mycount.activity.ResolveVisitorLocations import ResolveVisitorLocations
 
 
 class ReadReports:
@@ -44,9 +46,10 @@ class ReadReports:
                 locations = visits.totals_by_coordinates(
                     exclude_bots=options.exclude_bots, start=days[0][1], end=days[-1][2])
                 first = visits.first_visit_at()
-            return Report(options, [], first, locations=locations)
         finally:
             db.close()
+        mapped = ResolveVisitorLocations(CityLocations()).resolve(locations)
+        return Report(options, [], first, locations=locations, map_locations=mapped)
 
     def marketing(self, options: ReportOptions) -> Report:
         days = options.day_ranges()

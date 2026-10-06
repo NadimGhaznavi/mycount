@@ -2,6 +2,8 @@
 
 from http.server import BaseHTTPRequestHandler
 import logging
+import json
+import sqlite3
 from urllib.parse import parse_qs, urlsplit
 
 import pymysql
@@ -21,6 +23,8 @@ from mycount.entity.ReportOptions import ReportOptions
 from mycount.interface.ReportQuery import ReportQuery
 from mycount.interface.DbCommitUncertain import DbCommitUncertain
 from mycount.server.ControlPages import ControlPages
+from mycount.interface.CityLocations import CityLocations
+from mycount.interface.CitySchedule import CitySchedule
 
 
 class ControlHandler(BaseHTTPRequestHandler):
@@ -31,7 +35,9 @@ class ControlHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         request = urlsplit(self.path)
         path = request.path
-        if path in ("/", "/marketing", "/map"):
+        if path == "/api/city-schedule":
+            self.city_schedule()
+        elif path in ("/", "/marketing", "/map"):
             query = parse_qs(request.query, keep_blank_values=True)
             try:
                 options = ReportQuery.resolve(query)
@@ -96,7 +102,8 @@ class ControlHandler(BaseHTTPRequestHandler):
         self.respond(200, ControlPages().marketing(report, saved=saved), "text/html; charset=utf-8")
 
     def do_POST(self) -> None:
-        if urlsplit(self.path).path != "/marketing":
+        path = urlsplit(self.path).path
+        if path not in ("/marketing", "/api/city-schedule"):
             self.send_error(404, "Page not found")
             return
         origin = self.headers.get("Origin")
@@ -108,6 +115,12 @@ class ControlHandler(BaseHTTPRequestHandler):
         if parsed_origin and (parsed_origin.scheme not in ("http", "https")
                               or parsed_origin.netloc != self.headers.get("Host")):
             self.send_error(403, "Cross-site submission refused")
+            return
+        if path == "/api/city-schedule":
+            if self.headers.get("Sec-Fetch-Site") == "cross-site":
+                self.send_error(403, "Cross-site submission refused")
+                return
+            self.city_schedule(update=True)
             return
         content_type = self.headers.get("Content-Type", "")
         if content_type.split(";", 1)[0] not in ("application/x-www-form-urlencoded", "multipart/form-data"):
@@ -154,6 +167,40 @@ class ControlHandler(BaseHTTPRequestHandler):
                          "text/html; charset=utf-8")
             return
         self.respond(303, b"", "text/html; charset=utf-8", location="/marketing?saved=1")
+
+    def city_schedule(self, *, update: bool = False) -> None:
+        def respond(status, payload):
+            self.respond(status, json.dumps(payload).encode(), "application/json; charset=utf-8")
+
+        if update:
+            if self.headers.get("Content-Type", "").split(";", 1)[0] != "application/json":
+                respond(415, {"error": "Expected JSON schedule settings."})
+                return
+            try:
+                if self.headers.get("Transfer-Encoding") or len(self.headers.get_all("Content-Length", [])) != 1:
+                    raise ValueError("Supply one Content-Length and no Transfer-Encoding.")
+                length = int(self.headers.get("Content-Length", "0"))
+                if not 0 < length <= DMyCount.MAX_BODY_BYTES:
+                    raise ValueError("Invalid schedule request size.")
+                body = self.rfile.read(length)
+                if len(body) != length:
+                    raise ValueError("Incomplete schedule request.")
+                values = json.loads(body)
+                if not isinstance(values, dict) or values.keys() != {"enabled", "expression"}:
+                    raise ValueError("Provide an enabled flag and a five-field cron expression.")
+                values = CitySchedule.validate(**values)
+            except (ValueError, UnicodeError) as error:
+                respond(400, {"error": str(error)})
+                return
+        try:
+            schedule = CitySchedule()
+            values = schedule.update(**values) if update else schedule.read()
+            dataset = CityLocations().status()
+        except (OSError, ValueError, sqlite3.Error):
+            logging.exception("Unable to access city refresh settings")
+            respond(503, {"error": "City refresh settings unavailable. Reload to check the saved schedule before retrying."})
+            return
+        respond(200, {"schedule": values, "dataset": dataset})
 
     def respond(self, status: int, body: bytes, content_type: str, *, location: str | None = None) -> None:
         self.send_response(status)

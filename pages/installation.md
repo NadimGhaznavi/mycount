@@ -13,10 +13,15 @@ sudo scripts/install.sh
 ```
 
 The machine needs Python 3.11 or later with virtual-environment support,
-MariaDB server and client, and systemd. MariaDB must be running with
+MariaDB server and client, systemd, cron, and `runuser`. MariaDB must be running with
 root administrative access through its local socket. Installation needs
 network access for Python dependencies and HTTP access to BMGeoIP at
 `geoip.osoyalce.com:54300`.
+Scheduled city reference refreshes also need HTTPS access to
+`download.geonames.org`; their settings are on the
+[Visitor Map]({% link pages/control-server.md %}). Installation enables cron and
+creates the city refresh launcher; the first enabled check downloads missing
+city data. Existing datasets and custom or disabled schedules are retained.
 The automatic package installation uses apt on Debian/Ubuntu systems. Run
 deployment from a checkout separate from `/opt/prod/mycount`.
 
@@ -168,7 +173,7 @@ address. The hostname, port, and five-second timeout are defined in
 `mycount/constants/DGeoIp.py`. BMGeoIP must be reachable from the deployed host;
 its API is intended for a trusted network and has no authentication. BMGeoIP owns
 dataset downloads, imports, and refresh scheduling. MyCount does not create local
-range tables, download datasets, or require cron. Full setup removes a legacy
+range tables or download IP-range datasets. Full setup removes a legacy
 `/etc/cron.d/mycount-geoip` schedule; existing reference tables are left untouched.
 
 Both IPv4 and IPv6 are supported. IPv4-mapped IPv6 addresses are normalized to

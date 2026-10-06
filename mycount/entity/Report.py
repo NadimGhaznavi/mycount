@@ -14,6 +14,7 @@ class Report:
     sites: list[dict[str, object]] = field(default_factory=list)
     pages: list[dict[str, object]] = field(default_factory=list)
     locations: list[dict[str, object]] = field(default_factory=list)
+    map_locations: list[dict[str, object]] = field(default_factory=list)
     recent: list[dict[str, object]] = field(default_factory=list)
     referrers: list[dict[str, object]] = field(default_factory=list)
     languages: list[dict[str, object]] = field(default_factory=list)

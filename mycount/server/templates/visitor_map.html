@@ -8,18 +8,26 @@
   #visitor-map { height: 65vh; min-height: 22rem; max-height: 45rem; border: 1px solid #62412b; border-radius: .4rem; margin: 1rem 0; color-scheme: light; }
   #visitor-map .leaflet-popup-content, #visitor-map .leaflet-control { color: #191410; }
   #visitor-map .leaflet-control a { color: #1565c0; }
+  .city-schedule { margin-top: 1.5rem; }
+  .schedule-table { min-width: 32rem; }
+  #schedule-form input, #schedule-form button { font: inherit; padding: .6rem .8rem; border: 1px solid #62412b; border-radius: .3rem; }
+  #schedule-form button { color: #191410; background: #ffac63; font-weight: 600; cursor: pointer; }
+  #schedule-form button:disabled { opacity: .5; cursor: default; }
+  #schedule-status.error { color: #ff7777; }
 </style>
 {% endblock %}
 {% block content %}
 <h1>Visitor Map</h1>
 {% include 'report_filters.html' %}
+{% include 'city_schedule.html' %}
 {% if error %}
 <p role="alert">{{ error }}</p>
 {% else %}
-<p>{{ mapped_views }} mapped visits · {{ total_views - mapped_views }} visits without coordinates · {{ total_views }} total visits.</p>
-<p>Locations are approximate IP geolocation. Larger circles represent more page views; select a circle for details.</p>
+<p>{{ mapped_views }} mapped visits · {{ total_views - mapped_views }} unmapped visits · {{ total_views }} total visits.</p>
+<p>Locations use stored IP coordinates or an approximate city location when coordinates are missing. Larger circles represent more page views; select a circle for details.</p>
+<p>City locations provided by <a href="https://www.geonames.org/">GeoNames</a> under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Unmatched or ambiguous cities remain unmapped.</p>
 {% if not locations %}<p>No visits match the current filters.</p>
-{% elif not mapped_locations %}<p>No coordinates are available for visits matching the current filters.</p>{% endif %}
+{% elif not mapped_locations %}<p>No locations could be mapped for visits matching the current filters.</p>{% endif %}
 <div id="visitor-map" role="region" aria-label="World map of visitor locations" aria-describedby="map-status"></div>
 <p id="map-status" role="status">Loading map…</p>
 <noscript><p>Enable JavaScript to use the interactive map. Location counts are available below.</p></noscript>
@@ -58,7 +66,7 @@
       const name = [location.city_name, location.region_name, location.country_name || location.country_code]
         .filter(Boolean).join(', ') || 'Unknown location';
       const popup = document.createElement('div');
-      popup.textContent = `${name}: ${location.page_views} page views`;
+      popup.textContent = `${name}: ${location.page_views} page views (${location.coordinate_source})`;
       L.circleMarker([location.latitude, location.longitude], {
         radius: Math.min(28, 5 + 3 * Math.log2(location.page_views + 1)),
         color: '#8f1d1d', weight: 2, fillColor: '#ffac63', fillOpacity: 0.7

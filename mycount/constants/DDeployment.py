@@ -26,6 +26,7 @@ class DDeployment:
             "deployment_tools/__main__.py",
             "mycount/activity/DeploymentImpact.py",
             "mycount/activity/ReconcileMarketingScreenshots.py",
+            "mycount/activity/RefreshCities.py",
             "mycount/activity/ReleaseDeployment.py",
             "mycount/constants/DDeployment.py",
             "scripts/clear-upnpc-routes.sh",
@@ -128,10 +129,12 @@ class DDeployment:
         ),
         "mycount/activity/ReadReports.py": (
             "mycount/__init__.py",
+            "mycount/activity/ResolveVisitorLocations.py",
             "mycount/activity/__init__.py",
             "mycount/constants/DReports.py",
             "mycount/entity/Report.py",
             "mycount/entity/ReportOptions.py",
+            "mycount/interface/CityLocations.py",
             "mycount/interface/DbMgr.py",
             "mycount/interface/MarketingDb.py",
             "mycount/interface/VisitDb.py",
@@ -143,10 +146,22 @@ class DDeployment:
             "mycount/interface/MarketingDb.py",
             "mycount/interface/MarketingScreenshots.py",
         ),
+        "mycount/activity/RefreshCities.py": (
+            "mycount/__init__.py",
+            "mycount/activity/__init__.py",
+            "mycount/interface/CityLocations.py",
+            "mycount/interface/CitySchedule.py",
+            "mycount/interface/GeoNamesSource.py",
+        ),
         "mycount/activity/ReleaseDeployment.py": (
             "deployment_tools/ReleaseDeployment.py",
             "mycount/__init__.py",
             "mycount/activity/__init__.py",
+        ),
+        "mycount/activity/ResolveVisitorLocations.py": (
+            "mycount/__init__.py",
+            "mycount/activity/__init__.py",
+            "mycount/interface/CityLocations.py",
         ),
         "mycount/activity/SaveMarketingPost.py": (
             "mycount/__init__.py",
@@ -170,6 +185,10 @@ class DDeployment:
             "mycount/__init__.py",
         ),
         "mycount/constants/DCaddy.py": (
+            "mycount/__init__.py",
+            "mycount/constants/__init__.py",
+        ),
+        "mycount/constants/DCities.py": (
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
         ),
@@ -242,6 +261,16 @@ class DDeployment:
         "mycount/entity/__init__.py": (
             "mycount/__init__.py",
         ),
+        "mycount/interface/CityLocations.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DCities.py",
+            "mycount/interface/__init__.py",
+        ),
+        "mycount/interface/CitySchedule.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DCities.py",
+            "mycount/interface/__init__.py",
+        ),
         "mycount/interface/CollectorHttp.py": (
             "mycount/__init__.py",
             "mycount/activity/CollectVisit.py",
@@ -294,6 +323,12 @@ class DDeployment:
         ),
         "mycount/interface/GeoIpUnavailable.py": (
             "mycount/__init__.py",
+            "mycount/interface/__init__.py",
+        ),
+        "mycount/interface/GeoNamesSource.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DCities.py",
+            "mycount/constants/DMyCount.py",
             "mycount/interface/__init__.py",
         ),
         "mycount/interface/MarketingDb.py": (
@@ -377,6 +412,8 @@ class DDeployment:
             "mycount/constants/DMyCount.py",
             "mycount/entity/Report.py",
             "mycount/entity/ReportOptions.py",
+            "mycount/interface/CityLocations.py",
+            "mycount/interface/CitySchedule.py",
             "mycount/interface/DbCommitUncertain.py",
             "mycount/interface/DbMgr.py",
             "mycount/interface/MarketingDb.py",
@@ -437,6 +474,8 @@ class DDeployment:
         ),
         "mycount/server/templates/chart_theme.html": (
         ),
+        "mycount/server/templates/city_schedule.html": (
+        ),
         "mycount/server/templates/control.html": (
             "mycount/server/templates/all_traffic.html",
             "mycount/server/templates/base.html",
@@ -470,6 +509,7 @@ class DDeployment:
         ),
         "mycount/server/templates/visitor_map.html": (
             "mycount/server/templates/base.html",
+            "mycount/server/templates/city_schedule.html",
             "mycount/server/templates/report_filters.html",
         ),
         "requirements.txt": (
@@ -488,11 +528,13 @@ class DDeployment:
         "scripts/install-services.sh": (
             "mycount/activity/ReleaseDeployment.py",
             "mycount/activity/VisitorSchema.py",
+            "mycount/constants/DCities.py",
             "mycount/constants/DControl.py",
             "mycount/constants/DDeployment.py",
             "mycount/constants/DGeoIp.py",
             "mycount/constants/DMyCount.py",
             "mycount/constants/DRouterMappings.py",
+            "mycount/interface/CitySchedule.py",
             "mycount/interface/DatabaseEnvironment.py",
             "mycount/interface/DbMgr.py",
             "mycount/interface/DeploymentFiles.py",
@@ -513,6 +555,7 @@ class DDeployment:
         ),
         "scripts/uninstall.sh": (
             "mycount/constants/DCaddy.py",
+            "mycount/constants/DCities.py",
             "mycount/constants/DControl.py",
             "mycount/constants/DGeoIp.py",
             "mycount/constants/DMarketing.py",

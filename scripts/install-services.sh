@@ -129,10 +129,21 @@ PY
 render_definitions() {
     if [[ $full_setup == true || " ${units[*]} " == *" ${settings[4]} "* ]]; then
         install -d -m 755 -o "${settings[2]}" -g "${settings[2]}" -- "$install_dir/pages/marketing"
+        install -d -m 755 -o "${settings[2]}" -g "${settings[2]}" -- "$install_dir/data/cities"
+        runuser -u "${settings[2]}" -- "$install_dir/.venv/bin/python" -B - "$install_dir" <<'PYCITIES'
+from pathlib import Path
+import sys
+from mycount.constants.DCities import DCities
+from mycount.interface.CitySchedule import CitySchedule
+CitySchedule(Path(sys.argv[1]) / DCities.DIRECTORY).install()
+PYCITIES
     fi
 python3 -B - "$checkout" "$full_setup" "${units[@]}" <<'PY'
 from pathlib import Path
+import shlex
 import sys
+from tempfile import NamedTemporaryFile
+from mycount.constants.DCities import DCities
 from mycount.constants.DGeoIp import DGeoIp
 from mycount.constants.DMyCount import DMyCount
 from mycount.constants.DControl import DControl
@@ -143,11 +154,33 @@ for name in sys.argv[3:]:
     target = Path('/etc/systemd/system', name)
     if not target.exists() or target.read_text() != unit:
         target.write_text(unit)
+if sys.argv[2] == 'true' or DControl.SERVICE_UNIT in sys.argv[3:]:
+    # The root-owned entry invokes only fixed application code as the service user.
+    # The unprivileged launcher applies the UI's saved five-field schedule.
+    application = shlex.quote(DMyCount.BASE_DIR)
+    python = shlex.quote(str(Path(DMyCount.BASE_DIR, '.venv/bin/python')))
+    command = f'cd {application} && {python} -B -m mycount.activity.RefreshCities --scheduled'
+    command = command.replace('%', r'\%')
+    cron = Path(DCities.CRON_FILE)
+    text = ('SHELL=/bin/sh\nPATH=/usr/sbin:/usr/bin:/bin\n'
+            f'* * * * * {DMyCount.SERVICE_USER} {command} 2>&1 | /usr/bin/logger -t mycount-cities\n')
+    with NamedTemporaryFile(mode='w', dir=cron.parent, prefix='.mycount-cities-', delete=False) as stream:
+        candidate = Path(stream.name)
+        try:
+            stream.write(text)
+            stream.flush()
+            candidate.chmod(0o644)
+            candidate.replace(cron)
+        finally:
+            candidate.unlink(missing_ok=True)
 if sys.argv[2] == 'true':
     # Remove the schedule left by installations that owned GeoIP datasets.
     Path(DGeoIp.CRON_FILE).unlink(missing_ok=True)
     Path(DMyCount.BASE_DIR, 'scripts/update-geoip.sh').unlink(missing_ok=True)
 PY
+    if [[ $full_setup == true || " ${units[*]} " == *" ${settings[4]} "* ]]; then
+        systemctl enable --now cron
+    fi
 }
 
 start_services() {
