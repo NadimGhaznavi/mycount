@@ -60,7 +60,7 @@ class ControlServerTests(unittest.TestCase):
         ]
         body = ControlPages().render(Report(ReportOptions(date(2026, 9, 27), date(2026, 9, 27), "UTC"), [], None, locations=locations)).decode()
         chart = body.split('<section class="country-chart"', 1)[1].split('</section>', 1)[0]
-        self.assertIn('>Visits by Location</h2>', chart)
+        self.assertIn('>Visits by Location Chart</h2>', chart)
         self.assertIn('>Canada</span><span class="country-value">6 (60.0%)', chart)
         self.assertIn('>&lt;Country&gt;</span><span class="country-value">3 (30.0%)', chart)
         self.assertIn('>Unknown</span><span class="country-value">1 (10.0%)', chart)
@@ -111,7 +111,7 @@ class ControlServerTests(unittest.TestCase):
         pages = [{**site, "url": f'https://{site["site"]}/'} for site in sites]
         body = ControlPages().render(Report(ReportOptions(date(2026, 9, 27), date(2026, 9, 27), "UTC"), [], None, sites=sites, pages=pages)).decode()
         chart = body.split('<section class="site-chart"', 1)[1].split('</section>', 1)[0]
-        self.assertIn('>Visits by Site</h2>', chart)
+        self.assertIn('>Visits by Site Chart</h2>', chart)
         self.assertIn('&lt;one&gt; - 3 (75%)</span>', chart)
         self.assertIn('two.example - 1 (25%)</span>', chart)
         self.assertIn("drawPie('site-pie'", body)
@@ -158,8 +158,8 @@ class ControlServerTests(unittest.TestCase):
                     self.assertIn(b'https://example.com/&lt;recent&gt;', body)
                     self.assertIn(b'data-local-time="date-only"', body)
                     self.assertIn(b'data-local-time="time-12"', body)
-                    self.assertIn(b'<summary>Visits by Site</summary>', body)
-                    self.assertIn(b'<summary>Visits by Location</summary>', body)
+                    self.assertIn(b'<summary>Visits by Site Table</summary>', body)
+                    self.assertIn(b'<summary>Visits by Location Table</summary>', body)
                     referrers = body.split(b'<table aria-label="Referrers">', 1)[1].split(b'</table>', 1)[0]
                     self.assertIn(b'<summary>Referrers</summary>', body)
                     self.assertIn(b'<td>&lt;referrer&gt;</td><td class="visits">8</td>', referrers)

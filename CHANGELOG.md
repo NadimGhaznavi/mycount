@@ -9,6 +9,11 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Distinguish the collapsed Visits by Location and Visits by Site boxes with
+  Chart and Table titles.
+
+- Show the City DB last-refresh timestamp on its own line below the city count.
+
 ## [1.6.4] - 2026-10-06 @ 04:13
 
 - Make Visitor Map the landing page at `/`, move Metrics to `/metrics`, and
