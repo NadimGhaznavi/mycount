@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MyCount Control</title>
   {% include 'styles.html' %}
+  {% block head %}{% endblock %}
 </head>
 <body>
   <header class="masthead">
@@ -16,6 +17,7 @@
     </div>
     <nav aria-label="Reports">
       {% if active_page != 'metrics' %}<a href="/">Metrics</a>{% endif %}
+      {% if active_page != 'visitor_map' %}<a href="/map">Visitor Map</a>{% endif %}
       {% if active_page != 'reference' %}<a href="/reference">Reference</a>{% endif %}
       {% if active_page != 'marketing' %}<a href="/marketing">Marketing</a>{% endif %}
     </nav>

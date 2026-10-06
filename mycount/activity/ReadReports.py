@@ -35,6 +35,19 @@ class ReadReports:
         finally:
             db.close()
 
+    def visitor_map(self, options: ReportOptions) -> Report:
+        days = options.day_ranges()
+        db = DbMgr()
+        try:
+            with db.transaction(read_only=True):
+                visits = VisitDb(db)
+                locations = visits.totals_by_coordinates(
+                    exclude_bots=options.exclude_bots, start=days[0][1], end=days[-1][2])
+                first = visits.first_visit_at()
+            return Report(options, [], first, locations=locations)
+        finally:
+            db.close()
+
     def marketing(self, options: ReportOptions) -> Report:
         days = options.day_ranges()
         db = DbMgr()

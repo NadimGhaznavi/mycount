@@ -6,6 +6,7 @@
     ],
     "mycount/server/ControlPages.py": [
       "mycount/server/templates/control.html",
+      "mycount/server/templates/visitor_map.html",
       "mycount/server/templates/reference.html",
       "mycount/server/templates/marketing.html"
     ],
