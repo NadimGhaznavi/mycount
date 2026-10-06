@@ -9,6 +9,11 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.6.6] - 2026-10-06 @ 05:33
+
+- Use Map, Metrics, Marketing, Reference navigation order with brackets and
+  separators, omitting the current page.
+
 ## [1.6.5] - 2026-10-06 @ 05:29
 
 - Distinguish the collapsed Visits by Location and Visits by Site boxes with
