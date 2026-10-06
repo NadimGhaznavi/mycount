@@ -31,7 +31,7 @@ class ControlHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         request = urlsplit(self.path)
         path = request.path
-        if path in ("/", "/marketing"):
+        if path in ("/", "/marketing", "/map"):
             query = parse_qs(request.query, keep_blank_values=True)
             try:
                 options = ReportQuery.resolve(query)
@@ -40,6 +40,9 @@ class ControlHandler(BaseHTTPRequestHandler):
                 return
             if path == "/marketing":
                 self.marketing(options, saved=query.get("saved") == ["1"])
+                return
+            if path == "/map":
+                self.visitor_map(options)
                 return
             try:
                 report = ReadReports().metrics(options)
@@ -71,6 +74,16 @@ class ControlHandler(BaseHTTPRequestHandler):
             self.respond(200, b'{"status":"ok","service":"mycount-control"}', "application/json")
         else:
             self.send_error(404, "Page not found")
+
+    def visitor_map(self, options: ReportOptions) -> None:
+        try:
+            report = ReadReports().visitor_map(options)
+        except pymysql.MySQLError:
+            logging.exception("Unable to read visitor locations")
+            self.respond(503, ControlPages().visitor_map(Report(options, [], None),
+                         error="Visitor locations unavailable."), "text/html; charset=utf-8")
+            return
+        self.respond(200, ControlPages().visitor_map(report), "text/html; charset=utf-8")
 
     def marketing(self, options: ReportOptions, *, saved: bool = False) -> None:
         try:

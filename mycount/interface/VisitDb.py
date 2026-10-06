@@ -96,6 +96,23 @@ class VisitDb:
             ORDER BY page_views DESC, country_name, country_code, region_name, city_name
         """, params)
 
+    def totals_by_coordinates(self, *, exclude_bots: bool = False,
+                             start: datetime | None = None, end: datetime | None = None) -> list[dict[str, object]]:
+        """Count location snapshots, retaining views with missing coordinates."""
+        where, params = self._filter(exclude_bots, start, end)
+        return self._db.query(f"""
+            SELECT latitude, longitude, NULLIF(country_code, '') AS country_code,
+                   MAX(NULLIF(country_name, '')) AS country_name,
+                   NULLIF(region_name, '') AS region_name,
+                   NULLIF(city_name, '') AS city_name, COUNT(*) AS page_views
+            FROM page_views v
+            {where}
+            GROUP BY latitude, longitude, NULLIF(country_code, ''),
+                     NULLIF(region_name, ''), NULLIF(city_name, '')
+            ORDER BY page_views DESC, country_name, country_code, region_name,
+                     city_name, latitude, longitude
+        """, params)
+
     def totals_by_language(self, *, exclude_bots: bool = False,
                            start: datetime | None = None, end: datetime | None = None) -> list[dict[str, object]]:
         """Count each visit once using its first browser language preference."""

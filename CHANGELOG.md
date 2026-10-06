@@ -9,6 +9,9 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Add a Leaflet world map at `/map` with visitor location markers, page-view
+  counts, date and bot filters, and totals for visits without coordinates.
+
 ## [1.5.4] - 2026-10-05 @ 18:38
 
 - Restore deployment metadata preparation and dependency checks in the release

@@ -10,6 +10,19 @@ Installation and upgrade enable and start `mycount-control.service` alongside
 the visitor collector. Open `http://<server>:61777/` to see the MyCount Control
 banner, using R3el's masthead layout with a dark orange palette.
 
+Select **Visitor Map** in the header or open `/map` to see a Leaflet world map
+of the stored visitor coordinates. The same date range, browser-local timezone,
+and bot filters apply. Circles grow with page-view counts; selecting one shows
+its city, state/province, country, and count. These are approximate IP locations,
+not precise visitor positions. Visits without either coordinate remain in the
+location table and are counted separately above the map; they are not plotted.
+Zero latitude or longitude is a valid coordinate. Historical visits without
+coordinates are not backfilled. The map starts at a world view and supports
+panning and zooming on desktop and mobile. The location table remains available
+if the map cannot load or JavaScript is disabled. Leaflet 1.9.4 assets load from
+unpkg and map tiles load from OpenStreetMap, with attribution on the map; the
+interactive map requires access to those services.
+
 All nine Metrics boxes start collapsed, showing only their title bars. Click
 a title or focus it and press Enter or Space to expand or collapse that box.
 Reloading the page collapses the boxes again.

@@ -280,6 +280,7 @@ class ControlServerTests(unittest.TestCase):
                  "from mycount.server.ControlPages import ControlPages; "
                  "from mycount.entity.Report import Report; from mycount.interface.ReportQuery import ReportQuery; "
                  "assert b'MyCount <span>Control</span>' in ControlPages().render(Report(ReportQuery.resolve({}), [], None)); "
-                 "assert b'Optional browser details' in ControlPages().reference()"],
+                 "assert b'Optional browser details' in ControlPages().reference(); "
+                 "assert b'L.map(' in ControlPages().visitor_map(Report(ReportQuery.resolve({}), [], None))"],
                 cwd=directory, check=True,
             )
