@@ -12,6 +12,8 @@ cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 command -v mariadb >/dev/null
 command -v systemctl >/dev/null
 command -v systemd-analyze >/dev/null
+command -v cron >/dev/null
+command -v runuser >/dev/null
 python3 -B - <<'PY'
 import sys
 import venv

@@ -9,6 +9,15 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Apply a dark theme to the visitor map tiles, popups, and controls, with bright
+  orange markers matching MyCount's palette.
+- Plot visitors without stored coordinates using city, region, and country
+  matches from a local GeoNames reference file; retain ambiguous locations as
+  unmapped and identify approximate city markers.
+- Add BMDynIP-style Enabled, cron expression, and Update controls to the map
+  page, with quarterly city-data refreshes through an unprivileged cron
+  launcher. Preserve settings during upgrades and working data on refresh failures.
+
 ## [1.6.1] - 2026-10-06 @ 03:20
 
 ## [1.6.0] - 2026-10-06 @ 03:19

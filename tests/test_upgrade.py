@@ -64,7 +64,7 @@ else
 fi
 ''')
         shutil.copy2(python, self.app / '.venv/bin/python')
-        for name in ('getent', 'systemctl', 'systemd-analyze', 'install'):
+        for name in ('getent', 'systemctl', 'systemd-analyze', 'install', 'runuser'):
             self.executable(binaries / name, '#!/bin/bash\necho "' + name + ' $*" >> "$TEST_LOG"\n')
         self.executable(self.app / 'scripts/update-geoip.sh', '#!/bin/bash\necho geoip >> "$TEST_LOG"\n')
         self.executable(scripts / 'install-caddy.sh', '#!/bin/bash\necho caddy >> "$TEST_LOG"\nexit "${TEST_CADDY_FAILURE:-0}"\n')
@@ -144,12 +144,13 @@ fi
         self.assertNotIn('systemctl', self.log.read_text())
         self.assertNotIn('version-committed', self.log.read_text())
 
-    def test_install_uses_external_geoip_without_refresh_or_cron(self):
+    def test_install_uses_external_geoip_and_enables_city_refresh_cron(self):
         result = self.run_script('install-services.sh')
         self.assertEqual(result.returncode, 0, result.stderr)
         commands = self.log.read_text().splitlines()
         self.assertNotIn('geoip', commands)
-        self.assertNotIn('systemctl enable --now cron.service', commands)
+        self.assertIn('systemctl enable --now cron', commands)
+        self.assertTrue(any('mycount/data/cities' in line or '/data/cities' in line for line in commands))
 
     def test_missing_installation_fails_before_deployment(self):
         self.credentials.unlink()

@@ -51,6 +51,8 @@ Existing visits, database credentials, database and Linux accounts are preserved
 No MariaDB administrator access is needed. Geolocation uses the external BMGeoIP
 service; full setup removes the former MyCount GeoIP cron schedule without
 dropping old range tables or changing historical visits.
+Report-server setup also installs the city refresh cron launcher and retains
+the current GeoNames reference file and saved refresh schedule.
 
 Upgrading needs root access; full setup also needs network access for dependencies
 and router setup. Collection continues during report-only upgrades. A failure can leave a service

@@ -49,8 +49,9 @@ class VisitorMapTests(unittest.TestCase):
         self.assertEqual(factory.return_value.query.call_count, 2)
 
     def test_map_preserves_zero_coordinates_and_counts_missing_locations(self):
-        body = ControlPages().visitor_map(Report(self.options, [], None, locations=self.locations)).decode()
-        self.assertIn('6 mapped visits · 4 visits without coordinates · 10 total visits', body)
+        mapped = [{**row, 'coordinate_source': 'GeoIP'} for row in self.locations[:2]]
+        body = ControlPages().visitor_map(Report(self.options, [], None, locations=self.locations, map_locations=mapped)).decode()
+        self.assertIn('6 mapped visits · 4 unmapped visits · 10 total visits', body)
         self.assertIn('&lt;script&gt;alert(1)&lt;/script&gt;', body)
         self.assertNotIn('<script>alert(1)</script>', body)
         markers = body.split('const locations = ', 1)[1].split(';', 1)[0]
@@ -65,9 +66,28 @@ class VisitorMapTests(unittest.TestCase):
         self.assertNotIn('<a href="/map">', body)
         empty = ControlPages().visitor_map(Report(self.options, [], None)).decode()
         self.assertIn('No visits match the current filters.', empty)
-        self.assertIn('0 mapped visits · 0 visits without coordinates · 0 total visits', empty)
+        self.assertIn('0 mapped visits · 0 unmapped visits · 0 total visits', empty)
         missing = ControlPages().visitor_map(Report(self.options, [], None, locations=self.locations[2:])).decode()
-        self.assertIn('No coordinates are available', missing)
+        self.assertIn('No locations could be mapped', missing)
+
+    @patch('mycount.activity.ReadReports.CityLocations')
+    @patch('mycount.activity.ReadReports.DbMgr')
+    def test_report_resolves_missing_city_after_database_snapshot_closes(self, factory, cities):
+        missing = {**self.locations[1], 'latitude': None, 'longitude': None}
+        factory.return_value.query.side_effect = [[missing], [dict(first_visit_at=None)]]
+        def locate(rows):
+            factory.return_value.close.assert_called_once()
+            self.assertEqual(rows, [missing])
+            return [(43.7, -79.4)]
+        cities.return_value.locate.side_effect = locate
+        report = ReadReports().visitor_map(self.options)
+        self.assertIsNone(report.locations[0]['latitude'])
+        self.assertEqual(report.map_locations[0]['latitude'], 43.7)
+        self.assertEqual(report.map_locations[0]['coordinate_source'], 'Approximate city location')
+        body = ControlPages().visitor_map(report).decode()
+        self.assertIn('2 mapped visits · 0 unmapped visits · 2 total visits', body)
+        self.assertIn('Approximate city location', body)
+
 
     @patch('mycount.activity.ReadReports.DbMgr')
     def test_http_filters_validation_and_database_failure(self, factory):

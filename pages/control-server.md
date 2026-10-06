@@ -14,14 +14,51 @@ Select **Visitor Map** in the header or open `/map` to see a Leaflet world map
 of the stored visitor coordinates. The same date range, browser-local timezone,
 and bot filters apply. Circles grow with page-view counts; selecting one shows
 its city, state/province, country, and count. These are approximate IP locations,
-not precise visitor positions. Visits without either coordinate remain in the
-location table and are counted separately above the map; they are not plotted.
+not precise visitor positions. When either coordinate is missing, the map looks
+up the stored city in a local GeoNames reference file, using its country and
+state/province to distinguish matches. City aliases are supported; absent or
+ambiguous matches remain unmapped. Popups identify these derived markers as
+**Approximate city location**. Mapped totals include these visits; unresolved
+visits remain in the location table and the unmapped count.
 Zero latitude or longitude is a valid coordinate. Historical visits without
 coordinates are not backfilled. The map starts at a world view and supports
 panning and zooming on desktop and mobile. The location table remains available
 if the map cannot load or JavaScript is disabled. Leaflet 1.9.4 assets load from
-unpkg and map tiles load from OpenStreetMap, with attribution on the map; the
+unpkg and map tiles load from OpenStreetMap, with attribution on the map. Tiles
+are darkened for MyCount's dark orange theme, with bright orange markers and
+matching dark popups and zoom controls; the
 interactive map requires access to those services.
+
+The **City Data Refresh Schedule** uses the BMDynIP schedule controls: an
+Enabled checkbox, a five-field cron expression, and an **Update** button. The
+default `0 3 1 */3 *` refreshes at 03:00 on January 1, April 1, July 1, and
+October 1, in the server's local timezone. Disabling stops future refreshes;
+it retains the current city dataset. Custom and disabled schedules survive
+installation, upgrades, and restarts. The panel shows the available city count
+and last successful refresh in browser-local time.
+
+Installation creates `/etc/cron.d/mycount-cities`, a root-owned, minute-by-minute
+launcher that runs as `mycount`. It checks the enabled flag and expression in
+`/opt/prod/mycount/data/cities/schedule.json`. The web server writes only this
+schedule file; it cannot edit system cron or run privileged commands. An enabled
+launcher downloads missing city data on its next check, then follows the saved
+schedule. Refreshes download `cities500.zip` and `admin1CodesASCII.txt` directly
+from [GeoNames](https://download.geonames.org/export/dump/), build a separate
+indexed `cities.sqlite` reference file, and replace it atomically. Failed
+refreshes keep the previous file; overlapping runs are skipped. New reports use
+the refreshed file without a server restart. No MariaDB schema or historical
+visit data changes. The source includes cities over 500 inhabitants and smaller
+administrative seats; it does not cover every settlement.
+
+For an immediate refresh, run:
+
+```sh
+cd /opt/prod/mycount
+sudo -u mycount .venv/bin/python -B -m mycount.activity.RefreshCities
+```
+
+Cron refresh output, including download errors, goes to syslog under the
+`mycount-cities` tag. GeoNames data is attributed under CC BY 4.0 on the map page.
 
 All nine Metrics boxes start collapsed, showing only their title bars. Click
 a title or focus it and press Enter or Space to expand or collapse that box.

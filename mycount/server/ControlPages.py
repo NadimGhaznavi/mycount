@@ -92,8 +92,7 @@ class ControlPages:
         return language.name + (f" ({', '.join(qualifiers)})" if qualifiers else "")
 
     def visitor_map(self, report: Report, *, error: str | None = None) -> bytes:
-        mapped = [row for row in report.locations
-                  if row["latitude"] is not None and row["longitude"] is not None]
+        mapped = report.map_locations
         return self._templates.get_template("visitor_map.html").render(
             locations=report.locations, mapped_locations=mapped,
             mapped_views=sum(row["page_views"] for row in mapped),
