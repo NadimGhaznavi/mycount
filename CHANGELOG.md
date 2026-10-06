@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.6.2] - 2026-10-06 @ 03:50
+
 - Apply a dark theme to the visitor map tiles, popups, and controls, with bright
   orange markers matching MyCount's palette.
 - Plot visitors without stored coordinates using city, region, and country
