@@ -91,6 +91,16 @@ class ControlPages:
             qualifiers.append(qualifier.name)
         return language.name + (f" ({', '.join(qualifiers)})" if qualifiers else "")
 
+    def visitor_map(self, report: Report, *, error: str | None = None) -> bytes:
+        mapped = [row for row in report.locations
+                  if row["latitude"] is not None and row["longitude"] is not None]
+        return self._templates.get_template("visitor_map.html").render(
+            locations=report.locations, mapped_locations=mapped,
+            mapped_views=sum(row["page_views"] for row in mapped),
+            total_views=sum(row["page_views"] for row in report.locations),
+            error=error, active_page="visitor_map", **self._report_context(report, "/map"),
+        ).encode("utf-8")
+
     def reference(self, first_visit_at: datetime | None = None) -> bytes:
         return self._templates.get_template("reference.html").render(
             refreshed_at=datetime.now(timezone.utc), active_page="reference", first_visit_at=first_visit_at,

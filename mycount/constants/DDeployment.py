@@ -396,6 +396,7 @@ class DDeployment:
             "mycount/server/templates/control.html",
             "mycount/server/templates/marketing.html",
             "mycount/server/templates/reference.html",
+            "mycount/server/templates/visitor_map.html",
         ),
         "mycount/server/ControlServer.py": (
             "mycount/__init__.py",
@@ -466,6 +467,10 @@ class DDeployment:
         "mycount/server/templates/styles.html": (
         ),
         "mycount/server/templates/table_sort.html": (
+        ),
+        "mycount/server/templates/visitor_map.html": (
+            "mycount/server/templates/base.html",
+            "mycount/server/templates/report_filters.html",
         ),
         "requirements.txt": (
         ),

@@ -13,7 +13,7 @@
       ]
     },
     "deployment/rules.json": {
-      "digest": "225259781ceccf5aa3f7b8ace100453331e7de4af07014986dced2467b9f4f10",
+      "digest": "8bd87536439bb263b1d451d56b505b17241023a3c5c481c8aa698f257e2278fd",
       "targets": [
         "filesystem"
       ]
@@ -111,7 +111,7 @@
       ]
     },
     "mycount/activity/ReadReports.py": {
-      "digest": "653d5ecc3bf8e7ac4064a9f95b3120b6b157f543713c5834d29290234ad2017a",
+      "digest": "8f8ddcbd5f16de4e9601b3eaa9b6b152d2e66b5233cdb535f06b68c7e6176286",
       "targets": [
         "report-server"
       ]
@@ -177,7 +177,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "c8e03993b7f73debcd65310562d03b43e852a2ea482b05cae3ccfaa9ced58622",
+      "digest": "785f1851385b5f29a1c1c3071644a8296da3a69f5a78f85b4ea7fb9a15b1eaf6",
       "targets": [
         "filesystem"
       ]
@@ -197,7 +197,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "6febb7076de1bb2383b9cf60dd44d2688939e4a7f0d01b8a06a167573fe25e75",
+      "digest": "f24f8ed623c2d092843fbd125e2b8b8215c53a7826b48e96dec26d45e2990fe5",
       "targets": [
         "filesystem",
         "listener",
@@ -384,7 +384,7 @@
       ]
     },
     "mycount/interface/VisitDb.py": {
-      "digest": "6cb4d345d02940f3a4bdfff95bc716d7ccf0373f8fa47272a8c9bf298d164307",
+      "digest": "35120c13d60d113a8195ab2bffcfe7a3d1e9e97c0769a99eeb888ad360b819f5",
       "targets": [
         "listener",
         "report-server"
@@ -417,13 +417,13 @@
       ]
     },
     "mycount/server/ControlHandler.py": {
-      "digest": "10e491d50c51d3fcfab545878cc7bc0d4e66e6786ff95a6e266e9cdaa9f3ba4d",
+      "digest": "dd4a3ec4096d78955b29da938c06b59b69260cce8a58aa81e6c401c397dbdf7f",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/ControlPages.py": {
-      "digest": "23313d21a6d452190ef39d6753d361324a00bd96847ed5fda89545e9ff3ea903",
+      "digest": "606948d22df945ab69b704e459f17900737a2fb470ab1733881e300f424ac21d",
       "targets": [
         "report-server"
       ]
@@ -466,7 +466,7 @@
       ]
     },
     "mycount/server/templates/base.html": {
-      "digest": "acd0795248ea884a0a5c1fd0e6780fb577c458e4c0643e58f4fd1f2e939c7c55",
+      "digest": "5b99abdd8eed9e1997e2d1100dcb962654a93bd0dce8c2f0fd69477ebb23b628",
       "targets": [
         "report-server"
       ]
@@ -533,6 +533,12 @@
     },
     "mycount/server/templates/table_sort.html": {
       "digest": "e8f537b020ca3eb88844d7afd3a9df02009af5393772e2f277f5627fcbb57fff",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/server/templates/visitor_map.html": {
+      "digest": "b53795a9cfd454933d3652692b61aed0deb70bc18901f8126aafc5be095006ee",
       "targets": [
         "report-server"
       ]
@@ -845,6 +851,14 @@
         "report-server"
       ],
       "version": "1.5.4"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "1.6.0"
     }
   ]
 }

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block head %}
+{% if not error %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+{% endif %}
+<style>
+  #visitor-map { height: 65vh; min-height: 22rem; max-height: 45rem; border: 1px solid #62412b; border-radius: .4rem; margin: 1rem 0; color-scheme: light; }
+  #visitor-map .leaflet-popup-content, #visitor-map .leaflet-control { color: #191410; }
+  #visitor-map .leaflet-control a { color: #1565c0; }
+</style>
+{% endblock %}
+{% block content %}
+<h1>Visitor Map</h1>
+{% include 'report_filters.html' %}
+{% if error %}
+<p role="alert">{{ error }}</p>
+{% else %}
+<p>{{ mapped_views }} mapped visits · {{ total_views - mapped_views }} visits without coordinates · {{ total_views }} total visits.</p>
+<p>Locations are approximate IP geolocation. Larger circles represent more page views; select a circle for details.</p>
+{% if not locations %}<p>No visits match the current filters.</p>
+{% elif not mapped_locations %}<p>No coordinates are available for visits matching the current filters.</p>{% endif %}
+<div id="visitor-map" role="region" aria-label="World map of visitor locations" aria-describedby="map-status"></div>
+<p id="map-status" role="status">Loading map…</p>
+<noscript><p>Enable JavaScript to use the interactive map. Location counts are available below.</p></noscript>
+<div class="table-wrap">
+  <table aria-label="Visitor map locations">
+    <caption>Visitor locations</caption>
+    <thead><tr><th scope="col">Country</th><th scope="col">State/Province</th><th scope="col">City</th><th scope="col">Latitude</th><th scope="col">Longitude</th><th scope="col" class="visits">Visits</th></tr></thead>
+    <tbody>
+      {% for location in locations %}
+      <tr><td>{{ location.country_name or location.country_code or '---' }}</td><td>{{ location.region_name or '---' }}</td><td>{{ location.city_name or '---' }}</td><td>{{ location.latitude if location.latitude is not none else '---' }}</td><td>{{ location.longitude if location.longitude is not none else '---' }}</td><td class="visits">{{ location.page_views }}</td></tr>
+      {% else %}<tr><td colspan="6">No visits match the current filters.</td></tr>{% endfor %}
+    </tbody>
+    <tfoot><tr><th scope="row" colspan="5">Total:</th><td class="visits">{{ total_views }}</td></tr></tfoot>
+  </table>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  (() => {
+    const status = document.getElementById('map-status');
+    if (!window.L) {
+      status.textContent = 'Map could not load. Location counts are available below.';
+      return;
+    }
+    const map = L.map('visitor-map', {worldCopyJump: true, minZoom: 1, preferCanvas: true}).setView([20, 0], 2);
+    const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    tiles.on('tileerror', () => {
+      status.textContent = 'Some map tiles could not load. Visitor markers and location counts remain available.';
+    });
+    tiles.addTo(map);
+    const locations = {{ mapped_locations | tojson }};
+    for (const location of locations) {
+      const name = [location.city_name, location.region_name, location.country_name || location.country_code]
+        .filter(Boolean).join(', ') || 'Unknown location';
+      const popup = document.createElement('div');
+      popup.textContent = `${name}: ${location.page_views} page views`;
+      L.circleMarker([location.latitude, location.longitude], {
+        radius: Math.min(28, 5 + 3 * Math.log2(location.page_views + 1)),
+        color: '#8f1d1d', weight: 2, fillColor: '#ffac63', fillOpacity: 0.7
+      }).bindPopup(popup).addTo(map);
+    }
+    status.textContent = 'Pan and zoom to explore visitor locations. Counts are also listed below.';
+  })();
+</script>
+{% endif %}
+{% endblock %}
