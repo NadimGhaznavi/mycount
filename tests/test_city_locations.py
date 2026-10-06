@@ -71,7 +71,7 @@ class CityLocationsTests(unittest.TestCase):
         self.assertEqual(len(mapped), 3)
         self.assertEqual(mapped[0]['coordinate_source'], 'GeoIP')
         self.assertEqual((mapped[0]['latitude'], mapped[0]['longitude']), (0, 0))
-        self.assertEqual(mapped[1]['coordinate_source'], 'Approximate city location')
+        self.assertEqual(mapped[1]['coordinate_source'], 'CityDB')
         self.assertEqual((mapped[1]['latitude'], mapped[1]['longitude']), (43.65, -79.38))
         self.assertEqual((mapped[2]['latitude'], mapped[2]['longitude']), (0, 0))
         self.assertEqual(sum(row['page_views'] for row in mapped), 9)
