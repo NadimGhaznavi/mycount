@@ -139,7 +139,7 @@ class ControlServerTests(unittest.TestCase):
             try:
                 connection = HTTPConnection("127.0.0.1", server.server_port, timeout=5)
                 try:
-                    connection.request("GET", "/")
+                    connection.request("GET", "/metrics")
                     response = connection.getresponse()
                     self.assertEqual(response.status, 200)
                     self.assertEqual(response.getheader("Content-Type"), "text/html; charset=utf-8")
@@ -183,7 +183,7 @@ class ControlServerTests(unittest.TestCase):
                     for query, excluded in [('exclude_bots=0', False), ('exclude_bots=0&exclude_bots=1', True)]:
                         factory.reset_mock()
                         factory.return_value.query.side_effect = [[], [], [], [], [], [], [], [{"first_visit_at": datetime(2026, 9, 23, 12)}]]
-                        connection.request("GET", "/?" + query)
+                        connection.request("GET", "/metrics?" + query)
                         response = connection.getresponse()
                         self.assertEqual(response.status, 200)
                         filtered = response.read()
@@ -207,7 +207,7 @@ class ControlServerTests(unittest.TestCase):
                         self.assertIn(b'<th scope="col">' + heading + b'</th>', reference)
                     self.assertIn(b'BMGeoIP</td><td>accuracy</td><td>---</td><td>---</td>', reference)
                     self.assertNotIn(b'href="/reference"', reference)
-                    self.assertIn(b'<a href="/">Metrics</a>', reference)
+                    self.assertIn(b'<a href="/metrics">Metrics</a>', reference)
                     self.assertIn(b'<a href="/marketing">Marketing</a>', reference)
                     self.assertNotIn(b"document.querySelectorAll('table')", reference)
                     self.assertIn(b'data-local-time="long-date">September 23, 2026</time>', reference)
@@ -219,7 +219,7 @@ class ControlServerTests(unittest.TestCase):
                     self.assertEqual(response.status, 200)
                     marketing = response.read()
                     self.assertIn(b'id="marketing-form"', marketing)
-                    self.assertIn(b'<a href="/">Metrics</a>', marketing)
+                    self.assertIn(b'<a href="/metrics">Metrics</a>', marketing)
                     self.assertIn(b'<a href="/reference">Reference</a>', marketing)
                     self.assertNotIn(b'href="/marketing"', marketing)
                     factory.return_value.close.assert_called_once()
@@ -247,7 +247,7 @@ class ControlServerTests(unittest.TestCase):
                     factory.return_value.close.assert_called_once()
                     factory.reset_mock()
                     with self.assertLogs(level="ERROR"):
-                        connection.request("GET", "/")
+                        connection.request("GET", "/metrics")
                         response = connection.getresponse()
                         self.assertEqual(response.status, 503)
                         body = response.read()

@@ -18,7 +18,7 @@ class ResolveVisitorLocations:
         for row, coordinates in zip(missing, self._cities.locate(missing)):
             if coordinates is not None:
                 mapped.append({**row, "latitude": coordinates[0], "longitude": coordinates[1],
-                               "coordinate_source": "Approximate city location"})
+                               "coordinate_source": "CityDB"})
         markers = {}
         for row in mapped:
             key = tuple(row[field] for field in ("latitude", "longitude", "country_code",

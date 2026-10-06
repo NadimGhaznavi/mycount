@@ -8,18 +8,23 @@ layout: single
 
 Installation and upgrade enable and start `mycount-control.service` alongside
 the visitor collector. Open `http://<server>:61777/` to see the MyCount Control
-banner, using R3el's masthead layout with a dark orange palette.
+banner and Visitor Map landing page, using R3el's masthead layout with a dark
+orange palette. Metrics are available at `/metrics`.
 
-Select **Visitor Map** in the header or open `/map` to see a Leaflet world map
-of the stored visitor coordinates. The same date range, browser-local timezone,
+Select **Visitor Map** in the header or open `/` to see a Leaflet world map
+of the stored visitor coordinates. `/map` also opens this report. The same date
+range, browser-local timezone,
 and bot filters apply. Circles grow with page-view counts; selecting one shows
 its city, state/province, country, and count. These are approximate IP locations,
 not precise visitor positions. When either coordinate is missing, the map looks
 up the stored city in a local GeoNames reference file, using its country and
 state/province to distinguish matches. City aliases are supported; absent or
 ambiguous matches remain unmapped. Popups identify these derived markers as
-**Approximate city location**. Mapped totals include these visits; unresolved
+**CityDB**. Mapped totals include these visits; unresolved
 visits remain in the location table and the unmapped count.
+The **Visitor Map** box stays open and contains the visit totals and map.
+Below it, **Visitor Log** contains the location table and **City DB** contains
+the refresh schedule and dataset status. These two boxes start collapsed.
 Zero latitude or longitude is a valid coordinate. Historical visits without
 coordinates are not backfilled. The map starts at a world view and supports
 panning and zooming on desktop and mobile. The location table remains available
@@ -29,7 +34,7 @@ are darkened for MyCount's dark orange theme, with bright orange markers and
 matching dark popups and zoom controls; the
 interactive map requires access to those services.
 
-The **City Data Refresh Schedule** uses the BMDynIP schedule controls: an
+The **City DB** box uses the BMDynIP schedule controls: an
 Enabled checkbox, a five-field cron expression, and an **Update** button. The
 default `0 3 1 */3 *` refreshes at 03:00 on January 1, April 1, July 1, and
 October 1, in the server's local timezone. Disabling stops future refreshes;
@@ -135,8 +140,9 @@ then URL for ties. Multiple sites can remain expanded together. Site, page, and 
 metrics are read in one read-only database transaction when the page loads;
 expanding a row does not reload the report. Reloading collapses the rows.
 
-The title bar has **Metrics** (`/`), **Reference** (`/reference`), and
-**Marketing** (`/marketing`) links without brackets. Each page hides its own
+The title bar has **Visitor Map** (`/`), **Metrics** (`/metrics`),
+**Reference** (`/reference`), and **Marketing** (`/marketing`) links without
+brackets. Each page hides its own
 navigation link.
 Marketing records promotional posts using a simple form: Posted At defaults to
 the current browser-local time as `yyyy-mm-dd hh:mm` and remains editable;

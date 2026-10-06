@@ -9,6 +9,15 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.6.4] - 2026-10-06 @ 04:13
+
+- Make Visitor Map the landing page at `/`, move Metrics to `/metrics`, and
+  update navigation and Metrics pagination links. `/map` still opens the map.
+
+- Organize the map page into a permanently visible Visitor Map box and
+  collapsed Visitor Log and City DB boxes; keep visit totals above the map,
+  simplify explanatory text, and label city database markers as CityDB.
+
 ## [1.6.2] - 2026-10-06 @ 03:50
 
 - Apply a dark theme to the visitor map tiles, popups, and controls, with bright

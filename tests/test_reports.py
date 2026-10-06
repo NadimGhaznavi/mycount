@@ -64,12 +64,14 @@ class ReportTests(unittest.TestCase):
         for call in calls[:6]:
             self.assertIn(datetime(2026, 3, 8, 5), call.args[1])
             self.assertIn(datetime(2026, 3, 9, 4), call.args[1])
-        query = parse_qs(urlsplit(ReportQuery.link('/', options, report.older)).query)
+        query = parse_qs(urlsplit(ReportQuery.link('/metrics', options, report.older)).query)
         self.assertEqual(ReportQuery.resolve(query).before, report.older)
         self.assertEqual(query['timezone'], ['America/Toronto'])
         html = ControlPages().render(report).decode()
         recent_summary = html.split('<span>Recent Visits</span>', 1)[1].split('</summary>', 1)[0]
         self.assertIn('Older visits', recent_summary)
+        self.assertIn('href="/metrics?', recent_summary)
+        self.assertIn('<a href="/">Visitor Map</a>', html)
         self.assertIn('"page_views": 5000', html)
         self.assertNotIn('const timestamps', html)
 

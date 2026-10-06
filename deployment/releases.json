@@ -135,7 +135,7 @@
       ]
     },
     "mycount/activity/ResolveVisitorLocations.py": {
-      "digest": "19eb57e24629f310beedb24c202839245062379b371844f55b825ad8f57b08c8",
+      "digest": "738e61ece2c1a75ff7526c19b1010b2896cec50b5a27992dfb328e312a766d83",
       "targets": [
         "report-server"
       ]
@@ -216,7 +216,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "87d47e8040422af1167d42fd9ea92bc050f7d6938ed63d53fd59f75ad42e4058",
+      "digest": "c7380495b815e62dcc59a9785ede1d99ee13242f7e202624cba1be1f3ba722e1",
       "targets": [
         "filesystem",
         "listener",
@@ -456,13 +456,13 @@
       ]
     },
     "mycount/server/ControlHandler.py": {
-      "digest": "1969472d874c2f284d13f08c2686c7e383e8b851ed9e382502f6231122e2364c",
+      "digest": "55d541786f0955f00b6a697215460e819d83c2e670f9a33b43ed6bf553ebe507",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/ControlPages.py": {
-      "digest": "8cea879aff2d68656210cda327d376ca56c4fe8b237e2fc7632cb5a93760bc53",
+      "digest": "acf0664e1140514d9a8d6d2f386a5b877381f5ff44346964b36291616b757e35",
       "targets": [
         "report-server"
       ]
@@ -505,7 +505,7 @@
       ]
     },
     "mycount/server/templates/base.html": {
-      "digest": "5b99abdd8eed9e1997e2d1100dcb962654a93bd0dce8c2f0fd69477ebb23b628",
+      "digest": "bb321ba6f900a77661c6a1768ddcc6ae1d89d6e2b09ffdc8d0c179860af92059",
       "targets": [
         "report-server"
       ]
@@ -517,7 +517,7 @@
       ]
     },
     "mycount/server/templates/city_schedule.html": {
-      "digest": "5e388cad54741e87cba1915576bff9617246e47e2abfc230891ce7772db7920f",
+      "digest": "35e0c08251a941b04d5fdc2d588738b828bd6807f09cd759fb7f1f5a713ddd84",
       "targets": [
         "report-server"
       ]
@@ -583,7 +583,7 @@
       ]
     },
     "mycount/server/templates/visitor_map.html": {
-      "digest": "a99e8330e8c53647ec144a00f1ad0f0016b0a27770affb97acf1053a8c5937eb",
+      "digest": "849b8023e35c79292d6e09455057aae7926acd4d91daa75aae5b87dacca6b9bd",
       "targets": [
         "report-server"
       ]
@@ -920,6 +920,14 @@
         "report-server"
       ],
       "version": "1.6.2"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "1.6.4"
     }
   ]
 }
