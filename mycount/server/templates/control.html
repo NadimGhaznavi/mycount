@@ -20,7 +20,7 @@
 {% include 'report_filters.html' %}
 </details>
 <details class="metric-panel">
-  <summary>Visits by Site</summary>
+  <summary>Visits by Site Table</summary>
 <div class="table-wrap">
   <table aria-label="Site visits">
     <thead><tr><th scope="col">Site</th><th scope="col" class="visits">Visits</th><th scope="col">Last Visited</th></tr></thead>
@@ -83,7 +83,7 @@
 <div class="metrics-preference-charts">
 <section class="country-chart" aria-labelledby="country-chart-title">
 <details class="metric-panel">
-  <summary><h2 id="country-chart-title">Visits by Location</h2></summary>
+  <summary><h2 id="country-chart-title">Visits by Location Chart</h2></summary>
   {% if country_slices %}
   <div class="country-chart-content">
     <div id="country-pie" class="country-pie" role="img" aria-label="Visits by country. Counts and percentages are listed in the legend."></div>
@@ -118,7 +118,7 @@
 </section>
 </div>
 <details class="metric-panel">
-  <summary>Visits by Location</summary>
+  <summary>Visits by Location Table</summary>
 <div class="table-wrap table-scroll" tabindex="0" role="region" aria-label="Visits by Location scroll area">
   <table aria-label="Visits by Location">
     <thead><tr><th scope="col">Country</th><th scope="col">State/Province</th><th scope="col">City</th><th scope="col" class="visits">Visits</th></tr></thead>
@@ -159,7 +159,7 @@
 <div class="metrics-charts">
 <section class="site-chart" aria-labelledby="site-chart-title">
 <details class="metric-panel">
-  <summary><h2 id="site-chart-title">Visits by Site</h2></summary>
+  <summary><h2 id="site-chart-title">Visits by Site Chart</h2></summary>
   {% if sites %}
   <div class="site-chart-content">
     <div id="site-pie" role="img" aria-label="Visits by site. Counts and percentages are listed in the legend."></div>
