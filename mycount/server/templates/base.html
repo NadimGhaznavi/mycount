@@ -16,10 +16,11 @@
       {% endif %}
     </div>
     <nav aria-label="Reports">
-      {% if active_page != 'metrics' %}<a href="/metrics">Metrics</a>{% endif %}
-      {% if active_page != 'visitor_map' %}<a href="/">Visitor Map</a>{% endif %}
-      {% if active_page != 'reference' %}<a href="/reference">Reference</a>{% endif %}
-      {% if active_page != 'marketing' %}<a href="/marketing">Marketing</a>{% endif %}
+      <span aria-hidden="true">[</span>
+      {% for page, url, label in [('visitor_map', '/', 'Map'), ('metrics', '/metrics', 'Metrics'), ('marketing', '/marketing', 'Marketing'), ('reference', '/reference', 'Reference')] if page != active_page %}
+      <a href="{{ url }}">{{ label }}</a>{% if not loop.last %}<span aria-hidden="true">|</span>{% endif %}
+      {% endfor %}
+      <span aria-hidden="true">]</span>
     </nav>
   </header>
   <div class="refresh-row"><span class="last-refresh">Last refresh: <time datetime="{{ refreshed_at | utc_iso }}" data-local-time="time">—</time></span></div>
