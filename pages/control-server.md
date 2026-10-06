@@ -24,7 +24,9 @@ Zero latitude or longitude is a valid coordinate. Historical visits without
 coordinates are not backfilled. The map starts at a world view and supports
 panning and zooming on desktop and mobile. The location table remains available
 if the map cannot load or JavaScript is disabled. Leaflet 1.9.4 assets load from
-unpkg and map tiles load from OpenStreetMap, with attribution on the map; the
+unpkg and map tiles load from OpenStreetMap, with attribution on the map. Tiles
+are darkened for MyCount's dark orange theme, with bright orange markers and
+matching dark popups and zoom controls; the
 interactive map requires access to those services.
 
 The **City Data Refresh Schedule** uses the BMDynIP schedule controls: an
