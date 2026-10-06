@@ -33,7 +33,7 @@ class ControlPages:
             country_slices=self._country_slices(report.locations),
             language_slices=[{"name": self._language_label(row["language_tag"]), "visits": row["page_views"]}
                              for row in report.languages],
-            error=error, active_page="metrics", **self._report_context(report, "/"),
+            error=error, active_page="metrics", **self._report_context(report, "/metrics"),
         ).encode("utf-8")
 
     @staticmethod
@@ -97,7 +97,7 @@ class ControlPages:
             locations=report.locations, mapped_locations=mapped,
             mapped_views=sum(row["page_views"] for row in mapped),
             total_views=sum(row["page_views"] for row in report.locations),
-            error=error, active_page="visitor_map", **self._report_context(report, "/map"),
+            error=error, active_page="visitor_map", **self._report_context(report, "/"),
         ).encode("utf-8")
 
     def reference(self, first_visit_at: datetime | None = None) -> bytes:

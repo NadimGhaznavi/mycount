@@ -37,7 +37,7 @@ class ControlHandler(BaseHTTPRequestHandler):
         path = request.path
         if path == "/api/city-schedule":
             self.city_schedule()
-        elif path in ("/", "/marketing", "/map"):
+        elif path in ("/", "/map", "/metrics", "/marketing"):
             query = parse_qs(request.query, keep_blank_values=True)
             try:
                 options = ReportQuery.resolve(query)
@@ -47,7 +47,7 @@ class ControlHandler(BaseHTTPRequestHandler):
             if path == "/marketing":
                 self.marketing(options, saved=query.get("saved") == ["1"])
                 return
-            if path == "/map":
+            if path in ("/", "/map"):
                 self.visitor_map(options)
                 return
             try:
