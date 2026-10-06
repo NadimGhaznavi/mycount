@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.6.4] - 2026-10-06 @ 04:13
+
 - Make Visitor Map the landing page at `/`, move Metrics to `/metrics`, and
   update navigation and Metrics pagination links. `/map` still opens the map.
 
