@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Added *Blog* marketing category.
+
 ## [1.6.6] - 2026-10-06 @ 05:33
 
 - Use Map, Metrics, Marketing, Reference navigation order with brackets and
