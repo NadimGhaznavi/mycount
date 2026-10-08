@@ -9,6 +9,11 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.6.9] - 2026-10-08 @ 06:10
+
+- Sort the allowed site origins alphabetically.
+- Add diskha.osoyalce.com to the whitelist.
+
 ## [1.6.7] - 2026-10-07 @ 04:02
 
 - Added *Blog* marketing category.

@@ -209,14 +209,14 @@
       ]
     },
     "mycount/constants/DMarketing.py": {
-      "digest": "cd9dc0324e246631fb9537490dcfaee6eed023b98f5a4d8ce64e5bb383115d5e",
+      "digest": "e5bd4bb8f276da14bd4acaf712973e3fb0d46e8a49362c3bfb9921dc32ff2fee",
       "targets": [
         "filesystem",
         "report-server"
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "0559d5db015a65e484df99e3d069a696c00027e3fe47985a2cdbad36eb842296",
+      "digest": "08ea5bce00218d3f78cb924b9cec851d735615417b896b13338b5dcbec195eee",
       "targets": [
         "filesystem",
         "listener",
@@ -952,6 +952,14 @@
         "report-server"
       ],
       "version": "1.6.7"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "1.6.9"
     }
   ]
 }

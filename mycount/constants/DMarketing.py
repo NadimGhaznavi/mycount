@@ -13,6 +13,7 @@ class DMarketing:
         "Reddit",
         "X",
         "MyCount",
+        "Environment",
     )
     MAX_URL_LENGTH: Final[int] = 2048
     MAX_NOTES_LENGTH: Final[int] = 4000

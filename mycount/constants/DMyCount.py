@@ -4,10 +4,10 @@ from typing import Final
 
 
 class DMyCount:
-    VERSION: Final[str] = "1.6.7"
+    VERSION: Final[str] = "1.6.9"
     CMDB_SUBTYPE: Final[str] = "Web Analytics"
     CMDB_SUPPLIER: Final[str] = "Nadim-Daniel"
-    CMDB_CODENAME: Final[str] = "sloth"
+    CMDB_CODENAME: Final[str] = "xerus"
     BASE_DIR: Final[str] = "/opt/prod/mycount"
     DATABASE_ENV: Final[str] = "/etc/mycount/database.env"
     DATABASE_NAME: Final[str] = "mycount"
@@ -17,28 +17,29 @@ class DMyCount:
     HOST: Final[str] = "127.0.0.1"
     PORT: Final[int] = 36666
     ORIGINS: Final[tuple[str, ...]] = (
-        "https://mycount.osoyalce.com",
         "https://ax3l.osoyalce.com",
-        "https://r3el.osoyalce.com",
         "https://blog.osoyalce.com",
-        "https://snakelab.osoyalce.com",
-        "https://snakelabserver.osoyalce.com",
         "https://bmca.osoyalce.com",
-        "https://bmgeoip.osoyalce.com",
         "https://bmdynip.osoyalce.com",
+        "https://bmgeoip.osoyalce.com",
         "https://cmdb.osoyalce.com",
         "https://db4e.osoyalce.com",
+        "https://diskha.osoyalce.com",
         "https://kb.osoyalce.com",
         "https://llamaserver.osoyalce.com",
+        "https://mycount.osoyalce.com",
         "https://mydynip.osoyalce.com",
-        "https://nadim.ghaznavi.org",
         "https://nadim-daniel.ghaznavi.org",
+        "https://nadim.ghaznavi.org",
         "https://now.osoyalce.com",
+        "https://p2pool.osoyalce.com",
+        "https://r3el.osoyalce.com",
+        "https://snakelab.osoyalce.com",
+        "https://snakelabserver.osoyalce.com",
         "https://snakeweb.osoyalce.com",
         "https://systemctl.osoyalce.com",
         "https://www.osoyalce.com",
         "https://xmr.osoyalce.com",
-        "https://p2pool.osoyalce.com",
     )
     MAX_SITE_LENGTH: Final[int] = 100
     WORKERS: Final[int] = 2
@@ -49,8 +50,12 @@ class DMyCount:
     MAX_USER_AGENT_LENGTH: Final[int] = 2048
     CITY_NAME_LENGTH: Final[int] = 255
     SCHEMA_VERSION: Final[int] = 1
-    OPTIONAL_PAYLOAD_FIELDS: Final[frozenset[str]] = frozenset({"referrer", "client_details", "visitor_id", "search"})
-    VISITOR_ID_PATTERN: Final[str] = r"[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+    OPTIONAL_PAYLOAD_FIELDS: Final[frozenset[str]] = frozenset(
+        {"referrer", "client_details", "visitor_id", "search"}
+    )
+    VISITOR_ID_PATTERN: Final[str] = (
+        r"[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+    )
     EVENT: Final[str] = "page_view"
     COUNT_PATH: Final[str] = "/get_count"
     COLLECTION_PATH: Final[str] = "/count"
