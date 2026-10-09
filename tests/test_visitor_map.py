@@ -43,7 +43,8 @@ class VisitorMapTests(unittest.TestCase):
         sql, parameters = factory.return_value.query.call_args_list[0].args
         self.assertIn('GROUP BY latitude, longitude', sql)
         self.assertIn('COUNT(*) AS page_views', sql)
-        self.assertIn('COALESCE(v.is_bot, 0) = 0', sql)
+        self.assertIn('Bytespider', parameters)
+        self.assertIn('mycount_smoke_', parameters)
         self.assertEqual(parameters[-2:], (datetime(2026, 3, 8, 5), datetime(2026, 3, 9, 4)))
         self.assertNotIn('latitude IS NOT NULL', sql)
         self.assertEqual(factory.return_value.query.call_count, 2)

@@ -427,7 +427,8 @@ class DatabaseTests(unittest.TestCase):
         visits.record(replace(visit, is_bot=False, browser_family='Chrome'))
         visits.record(visit)  # Unknown does not mean bot.
         for flag, family in [(True, 'Other'), (False, 'GoogleOther'),
-                             (None, 'GoogleOther'), (None, 'Googlebot')]:
+                             (None, 'GoogleOther'), (None, 'Googlebot'),
+                             (False, 'Bytespider'), (None, 'Bytespider')]:
             visits.record(replace(visit, is_bot=flag, browser_family=family,
                                  received_at=datetime(2026, 9, 27, 18, tzinfo=timezone.utc)))
         visits.record(replace(visit, site='bot-only', url='https://example.com/bot',
@@ -435,9 +436,10 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(visits.count_by_site('example'), 2)
         self.assertEqual(visits.count_by_site('bot-only'), 0)
         self.assertEqual(visits.count_by_site('missing'), 0)
-        self.assertEqual(self.db.query('SELECT COUNT(*) AS total FROM page_views')[0]['total'], 7)
-        for query in (visits.totals_by_site, visits.totals_by_page, visits.totals_by_location):
-            self.assertEqual(sum(row['page_views'] for row in query(exclude_bots=False)), 7)
+        self.assertEqual(self.db.query('SELECT COUNT(*) AS total FROM page_views')[0]['total'], 9)
+        for query in (visits.totals_by_site, visits.totals_by_page, visits.totals_by_location,
+                      visits.totals_by_coordinates, visits.totals_by_language, visits.totals_by_referrer):
+            self.assertEqual(sum(row['page_views'] for row in query(exclude_bots=False)), 9)
             filtered = query(exclude_bots=True)
             self.assertEqual(len(filtered), 1)
             self.assertEqual(filtered[0]['page_views'], 2)
@@ -445,6 +447,71 @@ class DatabaseTests(unittest.TestCase):
                          visit.received_at.replace(tzinfo=None))
         self.assertEqual(visits.totals_by_page(exclude_bots=True)[0]['last_visited'],
                          visit.received_at.replace(tzinfo=None))
+        self.assertEqual(len(visits.recent_visits(exclude_bots=True)), 2)
+        days = ReportOptions(date(2026, 9, 27), date(2026, 9, 28), 'UTC').day_ranges()
+        self.assertEqual(visits.daily_totals(days, exclude_bots=True), [
+            dict(day='2026-09-27', page_views=2), dict(day='2026-09-28', page_views=0),
+        ])
+        all_sites = {row['site']: row for row in visits.totals_by_site()}
+        self.assertEqual(all_sites['example']['known_bot_views'], 6)
+        self.assertEqual(visits.totals_by_site(exclude_bots=True)[0]['known_bot_views'], 0)
+
+    def test_explicit_tests_are_excluded_from_every_report_with_either_bot_setting(self):
+        visits = VisitDb(self.db)
+        visit = Visit(site='example', url='https://example.com/',
+                      received_at=datetime(2026, 9, 27, 12, tzinfo=timezone.utc),
+                      is_bot=False, browser_family='Chrome', visitor_id=uuid4().bytes,
+                      country_code='CA', country_name='Canada', city_name='Hamilton',
+                      latitude=43.2, longitude=-79.8, referrer_host='example.org', languages=('en-CA',))
+        human_id = visits.record(visit)
+        bot_id = visits.record(replace(visit, browser_family='Bytespider', visitor_id=uuid4().bytes))
+        for site, url, timestamp in [
+            ('mycount_smoke_1234', 'https://example.com/', datetime(2026, 9, 26, 12, tzinfo=timezone.utc)),
+            ('example', 'https://example.com/__mycount_test__/1234', datetime(2026, 9, 28, 12, tzinfo=timezone.utc)),
+            ('example', 'http://example.com:8080/__mycount_test__', datetime(2026, 9, 28, 13, tzinfo=timezone.utc)),
+        ]:
+            visits.record(replace(visit, site=site, url=url, received_at=timestamp,
+                                 visitor_id=uuid4().bytes, country_code='US', country_name='United States',
+                                 city_name='Test City', latitude=40.0, longitude=-100.0,
+                                 referrer_host='test.example', languages=('fr',)))
+        days = ReportOptions(date(2026, 9, 26), date(2026, 9, 29), 'UTC').day_ranges()
+        for exclude_bots, expected in [(False, 2), (True, 1)]:
+            with self.subTest(exclude_bots=exclude_bots):
+                filters = dict(exclude_bots=exclude_bots, start=days[0][1], end=days[-1][2])
+                for query in (visits.totals_by_site, visits.totals_by_page, visits.totals_by_location,
+                              visits.totals_by_coordinates, visits.totals_by_language, visits.totals_by_referrer):
+                    rows = query(**filters)
+                    self.assertEqual(len(rows), 1)
+                    self.assertEqual(rows[0]['page_views'], expected)
+                site = visits.totals_by_site(**filters)[0]
+                self.assertEqual(site['unique_browsers'], expected)
+                self.assertEqual(site['last_visited'], visit.received_at.replace(tzinfo=None))
+                recent = visits.recent_visits(**filters)
+                self.assertEqual([row['page_view_id'] for row in recent],
+                                 [human_id] if exclude_bots else [bot_id, human_id])
+                self.assertEqual(visits.recent_visits(
+                    **filters, before=(visit.received_at.replace(tzinfo=None), human_id)), [])
+                self.assertEqual(visits.daily_totals(days, exclude_bots=exclude_bots), [
+                    dict(day='2026-09-26', page_views=0), dict(day='2026-09-27', page_views=expected),
+                    dict(day='2026-09-28', page_views=0), dict(day='2026-09-29', page_views=0),
+                ])
+        self.assertEqual(visits.count_by_site('example'), 1)
+        self.assertEqual(visits.count_by_site('mycount_smoke_1234'), 0)
+        self.assertEqual(visits.first_visit_at(), visit.received_at.replace(tzinfo=None))
+        self.assertEqual(self.db.query('SELECT COUNT(*) AS n FROM page_views')[0]['n'], 5)
+
+    def test_test_traffic_matching_keeps_similarly_named_real_sites_and_paths(self):
+        visits = VisitDb(self.db)
+        timestamp = datetime(2026, 9, 27, 12, tzinfo=timezone.utc)
+        for site, url in [
+            ('mycountXsmokeX1234', 'https://example.com/'),
+            ('mycount_smoke', 'https://example.com/'),
+            ('example', 'https://example.com/__mycount_test__article/'),
+            ('example', 'https://example.com/docs/__mycount_test__/'),
+            ('example', 'https://__mycount_test__.example.com/'),
+        ]:
+            visits.record(Visit(site=site, url=url, received_at=timestamp))
+        self.assertEqual(sum(row['page_views'] for row in visits.totals_by_site()), 5)
 
     def test_first_visit_uses_earliest_timestamp_across_sites_including_bots(self):
         visits = VisitDb(self.db)
