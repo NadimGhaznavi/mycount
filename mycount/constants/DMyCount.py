@@ -4,10 +4,10 @@ from typing import Final
 
 
 class DMyCount:
-    VERSION: Final[str] = "1.6.9"
+    VERSION: Final[str] = "1.6.10"
     CMDB_SUBTYPE: Final[str] = "Web Analytics"
     CMDB_SUPPLIER: Final[str] = "Nadim-Daniel"
-    CMDB_CODENAME: Final[str] = "xerus"
+    CMDB_CODENAME: Final[str] = "zebra"
     BASE_DIR: Final[str] = "/opt/prod/mycount"
     DATABASE_ENV: Final[str] = "/etc/mycount/database.env"
     DATABASE_NAME: Final[str] = "mycount"
@@ -17,6 +17,7 @@ class DMyCount:
     HOST: Final[str] = "127.0.0.1"
     PORT: Final[int] = 36666
     ORIGINS: Final[tuple[str, ...]] = (
+        "https://aihydra.osoyalce.com",
         "https://ax3l.osoyalce.com",
         "https://blog.osoyalce.com",
         "https://bmca.osoyalce.com",
