@@ -9,6 +9,12 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Classify Bytespider as a bot and apply the same classification to historical
+  report filtering and known-bot totals without changing stored visits.
+- Exclude `mycount_smoke_` sites and root `/__mycount_test__` page paths from
+  reports, maps, daily charts, counting-since dates, and public counters,
+  even when the bot filter is disabled. Keep test records for verification.
+
 ## [1.6.10] - 2026-10-09 @ 04:55
 
 - Added aihydra.osoyalce.com to the whitelist.

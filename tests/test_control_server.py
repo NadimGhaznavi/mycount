@@ -178,8 +178,11 @@ class ControlServerTests(unittest.TestCase):
                     factory.return_value.close.assert_called_once()
                     self.assertIn(b'value="1" checked', body)
                     for call in factory.return_value.query.call_args_list[:-1]:
-                        self.assertIn('COALESCE(v.is_bot, 0) = 0', call.args[0])
-                    self.assertNotIn('WHERE', factory.return_value.query.call_args_list[-1].args[0])
+                        self.assertIn('AND NOT (COALESCE(v.is_bot, 0) = 1', call.args[0])
+                        self.assertIn('mycount_smoke_', call.args[1])
+                    first_visit_call = factory.return_value.query.call_args_list[-1]
+                    self.assertIn('mycount_smoke_', first_visit_call.args[1])
+                    self.assertNotIn('Bytespider', first_visit_call.args[1])
                     for query, excluded in [('exclude_bots=0', False), ('exclude_bots=0&exclude_bots=1', True)]:
                         factory.reset_mock()
                         factory.return_value.query.side_effect = [[], [], [], [], [], [], [], [{"first_visit_at": datetime(2026, 9, 23, 12)}]]
@@ -192,7 +195,8 @@ class ControlServerTests(unittest.TestCase):
                         self.assertIn(b'<summary>Referrers</summary>', filtered)
                         self.assertIn(b'data-local-time="long-date">September 23, 2026</time>', filtered)
                         for call in factory.return_value.query.call_args_list[:-1]:
-                            self.assertEqual('COALESCE(v.is_bot, 0) = 0' in call.args[0], excluded)
+                            self.assertEqual('AND NOT (COALESCE(v.is_bot, 0) = 1' in call.args[0], excluded)
+                            self.assertIn('mycount_smoke_', call.args[1])
                     factory.reset_mock()
                     factory.return_value.query.side_effect = [[{"first_visit_at": datetime(2026, 9, 23, 12)}]]
                     connection.request("GET", "/reference")

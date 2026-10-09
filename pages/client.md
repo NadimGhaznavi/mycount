@@ -59,7 +59,14 @@ The script uses its existing `data-site` label and collector hostname. It waits
 for the tracking request to finish, then reads `GET /get_count?site=<label>`.
 The JSON response is `{"site":"mycount","visits":123}`. Counts cover all pages
 for that site and exclude bots using the dashboard's default filter, including
-historical GoogleOther records. Unknown sites return zero.
+historical GoogleOther and Bytespider records. Unknown sites return zero.
+
+Reports and counters always exclude explicit test traffic: site labels starting
+with `mycount_smoke_` and page URLs whose root path is `/__mycount_test__` or
+starts with `/__mycount_test__/`. This also applies when Exclude bots is unchecked.
+The records remain stored for collection verification. Bot filtering and known-bot
+totals recognize the stored browser family even when an older collector saved a
+false or missing bot flag; no historical data rewrite is required.
 
 This GET never records a visit. Multiple counter elements share one request;
 pages without counters make no count request. Neither request is retried.
@@ -149,8 +156,12 @@ For all-time totals, `VisitDb.totals_by_site()` provides the same report as:
 SELECT p.site, COUNT(*) AS page_views,
        COUNT(DISTINCT v.visitor_id) AS unique_browsers,
        COUNT(CASE WHEN v.visitor_id IS NULL THEN 1 END) AS unidentified_views,
-       COUNT(CASE WHEN v.is_bot = 1 THEN 1 END) AS known_bot_views
+       COUNT(CASE WHEN v.is_bot = 1 OR
+           v.browser_family IN ('Googlebot', 'GoogleOther', 'Bytespider')
+           THEN 1 END) AS known_bot_views
 FROM page_views v JOIN pages p ON p.page_id = v.page_id
+WHERE LEFT(p.site, 14) <> 'mycount_smoke_'
+  AND p.url NOT REGEXP '^https?://[^/]+/__mycount_test__(/|$)'
 GROUP BY p.site
 ORDER BY page_views DESC, p.site;
 ```

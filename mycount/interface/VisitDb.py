@@ -69,16 +69,17 @@ class VisitDb:
         known bot views are reported separately, not treated as people.
         """
         where, params = self._filter(exclude_bots, start, end)
+        bot_condition, bot_params = self._bot_condition()
         return self._db.query(f"""
             SELECT p.site, COUNT(*) AS page_views, MAX(v.received_at) AS last_visited,
                    COUNT(DISTINCT v.visitor_id) AS unique_browsers,
                    COUNT(CASE WHEN v.visitor_id IS NULL THEN 1 END) AS unidentified_views,
-                   COUNT(CASE WHEN v.is_bot = 1 THEN 1 END) AS known_bot_views
+                   COUNT(CASE WHEN {bot_condition} THEN 1 END) AS known_bot_views
             FROM page_views v JOIN pages p ON p.page_id = v.page_id
             {where}
             GROUP BY p.site
             ORDER BY page_views DESC, p.site
-        """, params)
+        """, (*bot_params, *params))
 
     def totals_by_location(self, *, exclude_bots: bool = False,
                        start: datetime | None = None, end: datetime | None = None) -> list[dict[str, object]]:
@@ -140,8 +141,11 @@ class VisitDb:
         """, params)
 
     def first_visit_at(self) -> datetime | None:
-        """Return the earliest recorded visit across all sites, including bots."""
-        return self._db.query("SELECT MIN(received_at) AS first_visit_at FROM page_views")[0]['first_visit_at']
+        """Return the earliest non-test visit across all sites, including bots."""
+        where, params = self._traffic_filter(False)
+        return self._db.query(
+            f"SELECT MIN(v.received_at) AS first_visit_at FROM page_views v {where}", params,
+        )[0]['first_visit_at']
 
     def recent_visits(self, *, exclude_bots: bool = False,
                       start: datetime | None = None, end: datetime | None = None,
@@ -169,7 +173,7 @@ class VisitDb:
         """
         intervals = " UNION ALL ".join("SELECT %s AS day, %s AS start_at, %s AS end_at" for _ in days)
         parameters = tuple(value for day in days for value in day)
-        where, bots = self._bot_filter(exclude_bots)
+        where, filters = self._traffic_filter(exclude_bots)
         condition = " AND " + where.removeprefix("WHERE ") if where else ""
         return self._db.query(f"""
             SELECT d.day, COUNT(v.page_view_id) AS page_views
@@ -177,11 +181,11 @@ class VisitDb:
             LEFT JOIN page_views v ON v.received_at >= d.start_at
                 AND v.received_at < d.end_at {condition}
             GROUP BY d.day ORDER BY d.day
-        """, (*parameters, *bots))
+        """, (*parameters, *filters))
 
     def count_by_site(self, site: str) -> int:
         """Read the bot-filtered page-view count without recording a visit."""
-        where, params = self._bot_filter(True)
+        where, params = self._traffic_filter(True)
         return self._db.query(f"""
             SELECT COUNT(*) AS visits
             FROM page_views v JOIN pages p ON p.page_id = v.page_id
@@ -191,7 +195,7 @@ class VisitDb:
     @classmethod
     def _filter(cls, exclude_bots: bool, start: datetime | None,
                 end: datetime | None) -> tuple[str, tuple[object, ...]]:
-        where, parameters = cls._bot_filter(exclude_bots)
+        where, parameters = cls._traffic_filter(exclude_bots)
         clauses = [where.removeprefix("WHERE ")] if where else []
         if start is not None:
             clauses.append("v.received_at >= %s")
@@ -201,11 +205,31 @@ class VisitDb:
             parameters += (end,)
         return ("WHERE " + " AND ".join(clauses) if clauses else "", parameters)
 
+    @classmethod
+    def _traffic_filter(cls, exclude_bots: bool) -> tuple[str, tuple[object, ...]]:
+        """Exclude explicit tests on every report, and bots when requested.
+
+        Looking up the page here also supports reports that do not join pages,
+        including the daily totals' outer join that preserves empty days.
+        """
+        where = """WHERE NOT EXISTS (
+            SELECT 1 FROM pages test_page WHERE test_page.page_id = v.page_id
+                AND (LEFT(test_page.site, %s) = %s OR test_page.url REGEXP %s)
+        )"""
+        params: tuple[object, ...] = (
+            len(DReports.TEST_SITE_PREFIX), DReports.TEST_SITE_PREFIX,
+            DReports.TEST_PAGE_URL_PATTERN,
+        )
+        if exclude_bots:
+            condition, bot_params = cls._bot_condition()
+            where += f" AND NOT ({condition})"
+            params += bot_params
+        return where, params
+
     @staticmethod
-    def _bot_filter(exclude_bots: bool) -> tuple[str, tuple[str, ...]]:
-        if not exclude_bots:
-            return "", ()
+    def _bot_condition() -> tuple[str, tuple[str, ...]]:
+        """Recognize historical bot families even when their stored flag is false."""
         families = DVisitorDetails.BOT_BROWSER_FAMILIES
         placeholders = ", ".join("%s" for _ in families)
-        return (f"WHERE COALESCE(v.is_bot, 0) = 0 "
-                f"AND COALESCE(v.browser_family, '') NOT IN ({placeholders})", families)
+        return (f"COALESCE(v.is_bot, 0) = 1 "
+                f"OR COALESCE(v.browser_family, '') IN ({placeholders})", families)
