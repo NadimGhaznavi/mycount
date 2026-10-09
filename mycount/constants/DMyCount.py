@@ -17,6 +17,7 @@ class DMyCount:
     HOST: Final[str] = "127.0.0.1"
     PORT: Final[int] = 36666
     ORIGINS: Final[tuple[str, ...]] = (
+        "https://aihydra.osoyalce.com",
         "https://ax3l.osoyalce.com",
         "https://blog.osoyalce.com",
         "https://bmca.osoyalce.com",
