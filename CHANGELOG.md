@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+This release is named after [Maria Gaetana Agnesi](https://en.wikipedia.org/wiki/Maria_Gaetana_Agnesi).
+
 - Classify Bytespider as a bot and apply the same classification to historical
   report filtering and known-bot totals without changing stored visits.
 - Exclude `mycount_smoke_` sites and root `/__mycount_test__` page paths from
