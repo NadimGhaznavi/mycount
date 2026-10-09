@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-10-09 @ 17:50
+
 This release is named after [Maria Gaetana Agnesi](https://en.wikipedia.org/wiki/Maria_Gaetana_Agnesi).
 
 - Classify Bytespider as a bot and apply the same classification to historical
