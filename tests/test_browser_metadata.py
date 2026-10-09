@@ -37,3 +37,13 @@ class BrowserMetadataTests(unittest.TestCase):
                  'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.52 '
                  'Mobile Safari/537.36 (compatible; GoogleOther)')
         self.assertTrue(BrowserMetadata().enrich(visit, agent).is_bot)
+
+    def test_bytespider_is_a_bot_even_when_parser_does_not_flag_it(self):
+        visit = Visit(site='example', url='https://example.com/',
+                      received_at=datetime.now(timezone.utc))
+        agent = ('Mozilla/5.0 (Linux; Android 5.0) AppleWebKit/537.36 '
+                 '(KHTML, like Gecko) Mobile Safari/537.36 '
+                 '(compatible; Bytespider; https://zhanzhang.toutiao.com/)')
+        enriched = BrowserMetadata().enrich(visit, agent)
+        self.assertEqual(enriched.browser_family, 'Bytespider')
+        self.assertTrue(enriched.is_bot)
