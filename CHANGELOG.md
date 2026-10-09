@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.6.10] - 2026-10-09 @ 04:55
+
 - Added aihydra.osoyalce.com to the whitelist.
 
 ## [1.6.9] - 2026-10-08 @ 06:10
