@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.8.1] - 2026-10-09 @ 20:18
+
 The **Cecilia** release is dedicated to [Cecilia Krieger](https://en.wikipedia.org/wiki/Cecilia_Krieger).
 
 - Keep each visitor record on one line, with horizontal scrolling for all columns.
