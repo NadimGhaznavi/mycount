@@ -111,7 +111,7 @@
       ]
     },
     "mycount/activity/ReadReports.py": {
-      "digest": "fac2e898223d85e4d5afaf8a5231b8962d28859246744ab927e1a13433de2b43",
+      "digest": "5bcf252e26d735153f6b20650f7e4ded96011f0624cff0a824d42b297bfade75",
       "targets": [
         "report-server"
       ]
@@ -196,7 +196,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "bdc20b947fff1a96b61013c3ad901d65f6bf1e6c3943592da3cd935d476d4f06",
+      "digest": "f74f005dbbac637fb4f3beeb8dceeb0164ae1a82be1a682d8de728e06e0905d0",
       "targets": [
         "filesystem"
       ]
@@ -216,7 +216,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "3064f1127697d29ed4e83ce65416389b8402e7bcc2964009b7d6551e80606f08",
+      "digest": "7bdf1028771ff89b75f843b59f65fca8527afeb78e4a77d39b36f533c48f0f2c",
       "targets": [
         "filesystem",
         "listener",
@@ -246,7 +246,7 @@
       ]
     },
     "mycount/constants/DVisitors.py": {
-      "digest": "b906f118cd356bb8e92c51cbaa71c84117f6042e6baffe534fc06d48992f9edf",
+      "digest": "e0372ee16cda2b689af5dc53d3f726ce2ebd386c151c9dda6fe7d79233ba7264",
       "targets": [
         "listener",
         "report-server"
@@ -430,7 +430,7 @@
       ]
     },
     "mycount/interface/VisitDb.py": {
-      "digest": "6b0af0e484714b12c2520d3b9ac1ad8000a9ce777666b4a6e43af5c9419e9eac",
+      "digest": "7b4cf2771b7f280343eac7aa32aa96e747107b753f09df35e4b2de892e1251aa",
       "targets": [
         "listener",
         "report-server"
@@ -1011,6 +1011,14 @@
         "report-server"
       ],
       "version": "1.8.1"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "1.8.2"
     }
   ]
 }
