@@ -213,7 +213,8 @@ multiple filters must all match. Filtering searches the database before
 pagination. **Clear filters** removes them. Records appear newest first, in
 pages of 50; **Older visits** and **Newest visits** retain the column filters.
 This record browser includes bots and stored test visits and has no default
-date limit. Scroll horizontally to see all columns.
+date limit. Each visitor stays on one line; scroll horizontally to see all
+columns and long values.
 
 Reference displays one [data inventory table]({% link pages/collected-data.md %})
 with Source, Source Details, Table, Column, and Details. It includes optional browser details,

@@ -216,7 +216,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "0adf9d8886299a543ba6dc815572c53e7602bbdf2416278275e783a4010c00b3",
+      "digest": "3064f1127697d29ed4e83ce65416389b8402e7bcc2964009b7d6551e80606f08",
       "targets": [
         "filesystem",
         "listener",
@@ -602,7 +602,7 @@
       ]
     },
     "mycount/server/templates/visitors.html": {
-      "digest": "8bb416b97da62bae6c0500958bc6064a8c672de905cc9be9e99d5e9ccda0687d",
+      "digest": "81eef8cbd3bffcdf8674781e3e62fdc08b19f968ddf72dc6cff04ba66dbf1733",
       "targets": [
         "report-server"
       ]
@@ -1003,6 +1003,14 @@
         "report-server"
       ],
       "version": "1.8.0"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "1.8.1"
     }
   ]
 }
