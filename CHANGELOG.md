@@ -9,6 +9,12 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-10-10 @ 06:31
+
+The "Grace" release is dedicated to [Grace Chisholm Young](https://en.wikipedia.org/wiki/Grace_Chisholm_Young).
+
+- Added CMDB information to support modelling *Deployed Components*. Used for app data backups.
+
 ## [1.8.3] - 2026-10-09 @ 20:30
 
 The "Emma" release is dedicated to [Emmy Noether](https://en.wikipedia.org/wiki/Emmy_Noether).
