@@ -20,6 +20,9 @@
         }
         const value = row => {
           const cell = row.cells[column];
+          if (cell.dataset.sortNumber !== undefined) {
+            return cell.dataset.sortNumber === "" ? -Infinity : Number(cell.dataset.sortNumber);
+          }
           if (cell.dataset.sortValue !== undefined) return cell.dataset.sortValue;
           const time = cell.querySelector('time');
           if (time) return Date.parse(time.dateTime);

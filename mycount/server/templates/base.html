@@ -26,6 +26,6 @@
   <div class="refresh-row"><span class="last-refresh">Last refresh: <time datetime="{{ refreshed_at | utc_iso }}" data-local-time="time">—</time></span></div>
   <main>{% block content %}{% endblock %}</main>
   {% include 'local_time.html' %}
-  {% if active_page == 'metrics' %}{% include 'table_sort.html' %}{% endif %}
+  {% if active_page in ('metrics', 'visitors') %}{% include 'table_sort.html' %}{% endif %}
 </body>
 </html>

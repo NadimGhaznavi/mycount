@@ -9,6 +9,13 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+The "Emma" release is dedicated to [Emmy Noether](https://en.wikipedia.org/wiki/Emmy_Noether).
+
+- Make Visitors column headings sort the displayed rows in ascending or
+  descending order, with numeric sorting for coordinates and bot flags.
+- Add an Exclude bots checkbox to Visitors, checked by default, and preserve
+  its setting with column filters and pagination.
+
 ## [1.8.2] - 2026-10-09 @ 20:24
 
 The **Dorothy** release is dedicated to [Dorothy Vaughan](https://en.wikipedia.org/wiki/Dorothy_Vaughan).

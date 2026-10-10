@@ -212,9 +212,15 @@ filters** or press Enter to search for literal text within those columns;
 multiple filters must all match. Filtering searches the database before
 pagination. **Clear filters** removes them. Records appear newest first, in
 pages of 30; **Older visits** and **Newest visits** retain the column filters.
-This record browser includes bots and stored test visits and has no default
-date limit. Each visitor stays on one line; scroll horizontally to see all
-columns and long values.
+The **Exclude bots** checkbox is checked by default. It excludes stored bot
+flags and recognized historical bot browser families, using the same rules as
+the reports. Uncheck it and select **Apply filters** to include bots. Filters
+and pagination preserve the setting; **Clear filters** restores the default.
+This record browser includes stored test visits and has no default date limit. Each visitor stays on one line; scroll horizontally to see all
+columns and long values. Click a column heading to sort the displayed page
+ascending; click it again for descending order. The arrow shows the active
+direction. Sorting leaves the filter row in place and resets when loading
+another page.
 
 Reference displays one [data inventory table]({% link pages/collected-data.md %})
 with Source, Source Details, Table, Column, and Details. It includes optional browser details,

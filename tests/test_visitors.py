@@ -36,13 +36,18 @@ class VisitorsTests(unittest.TestCase):
         self.assertIn('&lt;script&gt;bad&lt;/script&gt;', body)
         self.assertNotIn('<script>bad</script>', body)
         self.assertIn('2026-10-09 12:00:00', body)
-        self.assertIn('<td>0</td>', body)
+        self.assertIn('<td data-sort-number="0">0</td>', body)
         self.assertIn('<td>—</td>', body)
         navigation = ControlPages().reference().decode()
         self.assertIn('href="/visitors"', navigation)
         navigation = ControlPages().marketing(Report(report.options, [], None)).decode()
         self.assertLess(navigation.index('href="/visitors"'), navigation.index('href="/reference"'))
         query = parse_qs(urlsplit(VisitorsQuery.link(filters, report.older)).query)
+        self.assertEqual(VisitorsQuery.filters(query), filters)
+        self.assertEqual(ReportQuery.resolve(query).before, report.older)
+        self.assertTrue(ReportQuery.resolve(query).exclude_bots)
+        query = parse_qs(urlsplit(VisitorsQuery.link(filters, report.older, exclude_bots=False)).query)
+        self.assertFalse(ReportQuery.resolve(query).exclude_bots)
         self.assertEqual(VisitorsQuery.filters(query), filters)
         self.assertEqual(ReportQuery.resolve(query).before, report.older)
         with self.assertRaises(ValueError):
@@ -75,13 +80,26 @@ class VisitorsTests(unittest.TestCase):
         connection = HTTPConnection(*server.server_address, timeout=5)
         try:
             factory.return_value.query.side_effect = [[], [dict(first_visit_at=None)]]
-            connection.request('GET', '/visitors?site=50%25_%3D&is_bot=0')
+            connection.request('GET', '/visitors?exclude_bots=0&site=50%25_%3D&is_bot=0')
             response = connection.getresponse()
             self.assertEqual(response.status, 200)
             self.assertIn(b'No visits match the current filters.', response.read())
             parameters = factory.return_value.query.call_args_list[0].args[1]
             self.assertEqual(parameters, ('%50=%=_==%', '%0%', 31))
-            for path in ('/visitors?before=bad', '/visitors?site=one&site=two'):
+            for excluded, query in [(True, ''), (False, '?exclude_bots=0'),
+                                    (True, '?exclude_bots=0&exclude_bots=1')]:
+                factory.reset_mock()
+                factory.return_value.query.side_effect = [[], [dict(first_visit_at=None)]]
+                connection.request('GET', '/visitors' + query)
+                response = connection.getresponse()
+                self.assertEqual(response.status, 200)
+                body = response.read()
+                self.assertEqual(b'value="1" checked' in body, excluded)
+                self.assertIn(b'exclude_bots=' + (b'1' if excluded else b'0'), body)
+                sql = factory.return_value.query.call_args_list[0].args[0]
+                self.assertEqual('NOT (COALESCE(v.is_bot, 0) = 1' in sql, excluded)
+            for path in ('/visitors?before=bad', '/visitors?site=one&site=two',
+                         '/visitors?exclude_bots=bad'):
                 connection.request('GET', path)
                 response = connection.getresponse()
                 self.assertEqual(response.status, 400)
