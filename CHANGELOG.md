@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+The "Ingrid" release is dedicated to the [Baroness Ingrid Daubechies](https://en.wikipedia.org/wiki/Ingrid_Daubechies).
+
+- Added `CMDB_DATABASES = (("MyCount", "mycount"),)` to the `DMyCount` constans for CMDB DB support.
+
 ## [1.9.0] - 2026-10-10 @ 06:31
 
 The "Grace" release is dedicated to [Grace Chisholm Young](https://en.wikipedia.org/wiki/Grace_Chisholm_Young).
