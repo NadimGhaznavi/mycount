@@ -7,6 +7,7 @@ from mycount.entity.Visit import Visit
 from mycount.constants.DVisitorDetails import DVisitorDetails
 from mycount.interface.DbMgr import DbMgr
 from mycount.constants.DReports import DReports
+from mycount.constants.DVisitors import DVisitors
 
 
 class VisitDb:
@@ -159,6 +160,32 @@ class VisitDb:
             params += (before[0], before[0], before[1])
         return self._db.query(f"""
             SELECT v.page_view_id, v.received_at, v.country_code, v.city_name, p.url
+            FROM page_views v JOIN pages p ON p.page_id = v.page_id
+            {where}
+            ORDER BY v.received_at DESC, v.page_view_id DESC LIMIT %s
+        """, (*params, limit))
+
+    def visitor_records(self, filters: dict[str, str], *,
+                        before: tuple[datetime, int] | None = None,
+                        limit: int = DReports.PAGE_SIZE) -> list[dict[str, object]]:
+        """Read every stored column with literal substring filters and a stable cursor."""
+        expressions = {name: (f"p.{name}" if name in ("site", "url") else
+                              "HEX(v.visitor_id)" if name == "visitor_id" else f"v.{name}")
+                       for name, _ in DVisitors.COLUMNS}
+        clauses = []
+        params: tuple[object, ...] = ()
+        for name, value in filters.items():
+            expression = expressions[name]
+            clauses.append(f"CAST({expression} AS CHAR) LIKE %s ESCAPE '='")
+            escaped = value.replace("=", "==").replace("%", "=%").replace("_", "=_")
+            params += (f"%{escaped}%",)
+        if before is not None:
+            clauses.append("(v.received_at < %s OR (v.received_at = %s AND v.page_view_id < %s))")
+            params += (before[0], before[0], before[1])
+        where = "WHERE " + " AND ".join(clauses) if clauses else ""
+        columns = ", ".join(f"{expression} AS {name}" for name, expression in expressions.items())
+        return self._db.query(f"""
+            SELECT {columns}
             FROM page_views v JOIN pages p ON p.page_id = v.page_id
             {where}
             ORDER BY v.received_at DESC, v.page_view_id DESC LIMIT %s

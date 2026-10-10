@@ -17,7 +17,7 @@
     </div>
     <nav aria-label="Reports">
       <span aria-hidden="true">[</span>
-      {% for page, url, label in [('visitor_map', '/', 'Map'), ('metrics', '/metrics', 'Metrics'), ('marketing', '/marketing', 'Marketing'), ('reference', '/reference', 'Reference')] if page != active_page %}
+      {% for page, url, label in [('visitor_map', '/', 'Map'), ('metrics', '/metrics', 'Metrics'), ('marketing', '/marketing', 'Marketing'), ('visitors', '/visitors', 'Visitors'), ('reference', '/reference', 'Reference')] if page != active_page %}
       <a href="{{ url }}">{{ label }}</a>{% if not loop.last %}<span aria-hidden="true">|</span>{% endif %}
       {% endfor %}
       <span aria-hidden="true">]</span>

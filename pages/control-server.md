@@ -200,6 +200,21 @@ diamond marker to see the platform and timestamp; click it to scroll to the
 post's URL and notes in the table below. Markers also appear when no visits have
 been recorded. These totals describe traffic changes; they do not attribute
 visits to a specific post or project.
+Select **Visitors**, immediately before Reference in the header, or open
+`/visitors` to browse individual page views. Its single table starts with
+Received at (UTC), Site, URL, Country, Region, and City, followed by every
+remaining `page_views` column. Site and URL come from the associated page.
+Visitor IDs appear as hexadecimal text, client details as stored JSON, bot
+flags as 1 or 0, and missing values as an em dash.
+
+The second table row contains a text filter for each column. Select **Apply
+filters** or press Enter to search for literal text within those columns;
+multiple filters must all match. Filtering searches the database before
+pagination. **Clear filters** removes them. Records appear newest first, in
+pages of 50; **Older visits** and **Newest visits** retain the column filters.
+This record browser includes bots and stored test visits and has no default
+date limit. Scroll horizontally to see all columns.
+
 Reference displays one [data inventory table]({% link pages/collected-data.md %})
 with Source, Source Details, Table, Column, and Details. It includes optional browser details,
 all GeoIP source fields, and storage mappings; unretained values show `---` in
@@ -207,7 +222,7 @@ both storage columns. The reference content is static; its title bar queries the
 earliest recorded visit. If that query fails, Reference remains available with
 the Counting since line hidden, and the error is logged.
 
-All three pages display Counting since followed by the earliest recorded visit's
+The control pages display Counting since followed by the earliest recorded visit's
 date (for example, September 23, 2026), in the browser's local timezone.
 This date includes all sites and bots regardless of the current filter. The
 line is hidden when no visits have been recorded or the date is unavailable.
