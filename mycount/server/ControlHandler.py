@@ -62,7 +62,8 @@ class ControlHandler(BaseHTTPRequestHandler):
         elif path == "/visitors":
             query = parse_qs(request.query, keep_blank_values=True)
             try:
-                options = ReportQuery.resolve({"before": query.get("before", [""])})
+                options = ReportQuery.resolve({"before": query.get("before", [""]),
+                                               "exclude_bots": query.get("exclude_bots", ["1"])})
                 filters = VisitorsQuery.filters(query)
             except ValueError as error:
                 self.send_error(400, str(error))
