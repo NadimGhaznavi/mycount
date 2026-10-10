@@ -4,7 +4,7 @@
   .visitor-records th { white-space: nowrap; }
   .visitor-records td { min-width: 10rem; white-space: nowrap; overflow-wrap: normal; vertical-align: top; }
   .visitor-records input { width: 100%; min-width: 10rem; font: inherit; padding: .4rem; }
-  .visitor-actions { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+  .visitor-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-bottom: 1rem; }
   .visitor-actions button { font: inherit; padding: .4rem .8rem; cursor: pointer; }
 </style>
 {% endblock %}
@@ -13,6 +13,8 @@
 {% if error %}<p role="alert">{{ error }}</p>{% endif %}
 <form action="/visitors" method="get">
   <div class="visitor-actions">
+    <input type="hidden" name="exclude_bots" value="0">
+    <label><input type="checkbox" name="exclude_bots" value="1"{% if exclude_bots %} checked{% endif %}> Exclude bots</label>
     <button type="submit">Apply filters</button>
     <a href="/visitors">Clear filters</a>
     <a href="{{ newest_url }}">Newest visits</a>
@@ -27,7 +29,7 @@
       </thead>
       <tbody>
         {% for row in rows %}
-        <tr>{% for name, label in columns %}<td>{% if row[name] is none %}—{% else %}{{ row[name] }}{% endif %}</td>{% endfor %}</tr>
+        <tr>{% for name, label in columns %}<td{% if name in ('is_bot', 'latitude', 'longitude') %} data-sort-number="{{ row[name] if row[name] is not none else '' }}"{% endif %}>{% if row[name] is none %}—{% else %}{{ row[name] }}{% endif %}</td>{% endfor %}</tr>
         {% else %}<tr><td colspan="{{ columns | length }}">{% if error %}Visitor records unavailable.{% else %}No visits match the current filters.{% endif %}</td></tr>{% endfor %}
       </tbody>
     </table>

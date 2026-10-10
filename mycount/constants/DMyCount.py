@@ -4,10 +4,10 @@ from typing import Final
 
 
 class DMyCount:
-    VERSION: Final[str] = "1.8.2"
+    VERSION: Final[str] = "1.8.3"
     CMDB_SUBTYPE: Final[str] = "Web Analytics"
     CMDB_SUPPLIER: Final[str] = "Nadim-Daniel"
-    CMDB_CODENAME: Final[str] = "Dorothy"
+    CMDB_CODENAME: Final[str] = "Emma"
     BASE_DIR: Final[str] = "/opt/prod/mycount"
     DATABASE_ENV: Final[str] = "/etc/mycount/database.env"
     DATABASE_NAME: Final[str] = "mycount"

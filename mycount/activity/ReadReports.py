@@ -43,7 +43,8 @@ class ReadReports:
         try:
             with db.transaction(read_only=True):
                 visits = VisitDb(db)
-                rows = visits.visitor_records(filters, before=options.before, limit=DVisitors.PAGE_SIZE + 1)
+                rows = visits.visitor_records(filters, exclude_bots=options.exclude_bots,
+                                              before=options.before, limit=DVisitors.PAGE_SIZE + 1)
                 first = visits.first_visit_at()
             older = None
             if len(rows) > DVisitors.PAGE_SIZE:

@@ -173,6 +173,20 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(self.db.query('SELECT id, submission_id FROM marketing_posts'),
                          [dict(id=identifier, submission_id=None)])
 
+    def test_visitor_records_exclude_flagged_and_historical_bots(self):
+        visits = VisitDb(self.db)
+        base = Visit(site='example', url='https://example.com/',
+                     received_at=datetime(2026, 10, 9, 12, tzinfo=timezone.utc))
+        human = visits.record(replace(base, browser_family='Chrome', is_bot=False))
+        unknown = visits.record(base)
+        visits.record(replace(base, is_bot=True))
+        visits.record(replace(base, browser_family='Bytespider', is_bot=False))
+        visits.record(replace(base, browser_family='Googlebot', is_bot=None))
+        rows = visits.visitor_records({}, exclude_bots=True)
+        self.assertEqual({row['page_view_id'] for row in rows}, {human, unknown})
+        self.assertEqual(len(visits.visitor_records({}, exclude_bots=False)), 5)
+        self.assertEqual(visits.visitor_records({'is_bot': '1'}, exclude_bots=True), [])
+
     def test_visitor_records_cover_schema_and_filter_before_pagination(self):
         visits = VisitDb(self.db)
         timestamp = datetime(2026, 10, 9, 12, tzinfo=timezone.utc)

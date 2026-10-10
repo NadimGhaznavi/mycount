@@ -165,7 +165,7 @@ class VisitDb:
             ORDER BY v.received_at DESC, v.page_view_id DESC LIMIT %s
         """, (*params, limit))
 
-    def visitor_records(self, filters: dict[str, str], *,
+    def visitor_records(self, filters: dict[str, str], *, exclude_bots: bool = False,
                         before: tuple[datetime, int] | None = None,
                         limit: int = DVisitors.PAGE_SIZE) -> list[dict[str, object]]:
         """Read every stored column with literal substring filters and a stable cursor."""
@@ -174,6 +174,10 @@ class VisitDb:
                        for name, _ in DVisitors.COLUMNS}
         clauses = []
         params: tuple[object, ...] = ()
+        if exclude_bots:
+            condition, bot_params = self._bot_condition()
+            clauses.append(f"NOT ({condition})")
+            params += bot_params
         for name, value in filters.items():
             expression = expressions[name]
             clauses.append(f"CAST({expression} AS CHAR) LIKE %s ESCAPE '='")

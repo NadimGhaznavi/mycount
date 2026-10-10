@@ -106,8 +106,10 @@ class ControlPages:
         return self._templates.get_template("visitors.html").render(
             active_page="visitors", columns=DVisitors.COLUMNS, rows=report.recent,
             filters=filters, error=error, first_visit_at=report.first_visit_at,
-            refreshed_at=datetime.now(timezone.utc), newest_url=VisitorsQuery.link(filters),
-            older_url=VisitorsQuery.link(filters, report.older) if report.older else None,
+            exclude_bots=report.options.exclude_bots, refreshed_at=datetime.now(timezone.utc),
+            newest_url=VisitorsQuery.link(filters, exclude_bots=report.options.exclude_bots),
+            older_url=VisitorsQuery.link(filters, report.older, exclude_bots=report.options.exclude_bots)
+            if report.older else None,
         ).encode("utf-8")
 
     def reference(self, first_visit_at: datetime | None = None) -> bytes:

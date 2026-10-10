@@ -19,8 +19,9 @@ class VisitorsQuery:
         return filters
 
     @staticmethod
-    def link(filters: dict[str, str], before: tuple[datetime, int] | None = None) -> str:
-        query = dict(filters)
+    def link(filters: dict[str, str], before: tuple[datetime, int] | None = None, *,
+             exclude_bots: bool = True) -> str:
+        query = {**filters, "exclude_bots": "1" if exclude_bots else "0"}
         if before is not None:
             query["before"] = f"{before[0].isoformat()},{before[1]}"
         return "/visitors" + ("?" + urlencode(query) if query else "")
