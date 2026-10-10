@@ -111,7 +111,7 @@
       ]
     },
     "mycount/activity/ReadReports.py": {
-      "digest": "5bcf252e26d735153f6b20650f7e4ded96011f0624cff0a824d42b297bfade75",
+      "digest": "75cf1d4a2f5a3fbd2b982c365da6301a2a2c5a73362d1cf94bc3d70cf7fa5a82",
       "targets": [
         "report-server"
       ]
@@ -216,7 +216,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "7bdf1028771ff89b75f843b59f65fca8527afeb78e4a77d39b36f533c48f0f2c",
+      "digest": "15fd84ae42454b3957cffd354462775fdd41777e42cec63aa085ff9eb5e3041a",
       "targets": [
         "filesystem",
         "listener",
@@ -430,7 +430,7 @@
       ]
     },
     "mycount/interface/VisitDb.py": {
-      "digest": "7b4cf2771b7f280343eac7aa32aa96e747107b753f09df35e4b2de892e1251aa",
+      "digest": "f16da46365e09516e34c4983b0e05c6c522122293d45d3a1d112cc209036735b",
       "targets": [
         "listener",
         "report-server"
@@ -455,7 +455,7 @@
       ]
     },
     "mycount/interface/VisitorsQuery.py": {
-      "digest": "73bcadf1f82bdc6c9444f64e07340a1b435d73ed53931c1d022fbb59b6afdf31",
+      "digest": "74d164a5b86bcb70f1809b42b80593755b8eb52f4820f278d36cc64a916a2c05",
       "targets": [
         "report-server"
       ]
@@ -469,13 +469,13 @@
       ]
     },
     "mycount/server/ControlHandler.py": {
-      "digest": "9bcc95a39161438822820c4c68850504005dc411fdfd4f742df53200e9681436",
+      "digest": "f5cc2bad2851540be622f20ee1f4ae82818b3d912e036d9e18cfa375edd35a48",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/ControlPages.py": {
-      "digest": "909bf9acf2106090fc3f3c61dd311e067e1ffd12d28518749eb69c59f02308e5",
+      "digest": "6d0e15ae68b10f6ac3a95fd007a45a140e72505d34bec92343c869d2506239bb",
       "targets": [
         "report-server"
       ]
@@ -518,7 +518,7 @@
       ]
     },
     "mycount/server/templates/base.html": {
-      "digest": "9f74c81d9c5e213e5f1802cc0683387785851799a2a45d52ca6d83f083b94ea8",
+      "digest": "67398ba08149e1f499903919db0c8cee234729d36f9959ce703daf63fbe89d81",
       "targets": [
         "report-server"
       ]
@@ -590,7 +590,7 @@
       ]
     },
     "mycount/server/templates/table_sort.html": {
-      "digest": "e8f537b020ca3eb88844d7afd3a9df02009af5393772e2f277f5627fcbb57fff",
+      "digest": "478eebfdf148814d976f4c8fa89bb8725d3ddd788320be7c6a43ab252c584c87",
       "targets": [
         "report-server"
       ]
@@ -602,7 +602,7 @@
       ]
     },
     "mycount/server/templates/visitors.html": {
-      "digest": "81eef8cbd3bffcdf8674781e3e62fdc08b19f968ddf72dc6cff04ba66dbf1733",
+      "digest": "b0e2c177f9995b52628fca705d4856068fb6aa715588024c1bc1faf82ed6fefa",
       "targets": [
         "report-server"
       ]
@@ -1019,6 +1019,14 @@
         "report-server"
       ],
       "version": "1.8.2"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "1.8.3"
     }
   ]
 }

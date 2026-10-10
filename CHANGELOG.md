@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.8.3] - 2026-10-09 @ 20:30
+
 The "Emma" release is dedicated to [Emmy Noether](https://en.wikipedia.org/wiki/Emmy_Noether).
 
 - Make Visitors column headings sort the displayed rows in ascending or
