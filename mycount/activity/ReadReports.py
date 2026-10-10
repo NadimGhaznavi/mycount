@@ -37,6 +37,21 @@ class ReadReports:
         finally:
             db.close()
 
+    def visitors(self, options: ReportOptions, filters: dict[str, str]) -> Report:
+        db = DbMgr()
+        try:
+            with db.transaction(read_only=True):
+                visits = VisitDb(db)
+                rows = visits.visitor_records(filters, before=options.before, limit=DReports.PAGE_SIZE + 1)
+                first = visits.first_visit_at()
+            older = None
+            if len(rows) > DReports.PAGE_SIZE:
+                rows = rows[:DReports.PAGE_SIZE]
+                older = (rows[-1]["received_at"], rows[-1]["page_view_id"])
+            return Report(options, [], first, recent=rows, older=older)
+        finally:
+            db.close()
+
     def visitor_map(self, options: ReportOptions) -> Report:
         days = options.day_ranges()
         db = DbMgr()

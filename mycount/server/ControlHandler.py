@@ -21,6 +21,7 @@ from mycount.activity.ReadReports import ReadReports
 from mycount.entity.Report import Report
 from mycount.entity.ReportOptions import ReportOptions
 from mycount.interface.ReportQuery import ReportQuery
+from mycount.interface.VisitorsQuery import VisitorsQuery
 from mycount.interface.DbCommitUncertain import DbCommitUncertain
 from mycount.server.ControlPages import ControlPages
 from mycount.interface.CityLocations import CityLocations
@@ -58,6 +59,22 @@ class ControlHandler(BaseHTTPRequestHandler):
                              "text/html; charset=utf-8")
                 return
             self.respond(200, ControlPages().render(report), "text/html; charset=utf-8")
+        elif path == "/visitors":
+            query = parse_qs(request.query, keep_blank_values=True)
+            try:
+                options = ReportQuery.resolve({"before": query.get("before", [""])})
+                filters = VisitorsQuery.filters(query)
+            except ValueError as error:
+                self.send_error(400, str(error))
+                return
+            try:
+                report = ReadReports().visitors(options, filters)
+            except pymysql.MySQLError:
+                logging.exception("Unable to read visitor records")
+                self.respond(503, ControlPages().visitors(Report(options, [], None), filters,
+                             error="Visitor records unavailable."), "text/html; charset=utf-8")
+                return
+            self.respond(200, ControlPages().visitors(report, filters), "text/html; charset=utf-8")
         elif path == "/reference":
             first_visit_at = None
             try:

@@ -11,6 +11,8 @@ from mycount.interface.ReportQuery import ReportQuery
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 from mycount.constants.DMarketing import DMarketing
+from mycount.constants.DVisitors import DVisitors
+from mycount.interface.VisitorsQuery import VisitorsQuery
 
 
 class ControlPages:
@@ -98,6 +100,14 @@ class ControlPages:
             mapped_views=sum(row["page_views"] for row in mapped),
             total_views=sum(row["page_views"] for row in report.locations),
             error=error, active_page="visitor_map", **self._report_context(report, "/"),
+        ).encode("utf-8")
+
+    def visitors(self, report: Report, filters: dict[str, str], *, error: str | None = None) -> bytes:
+        return self._templates.get_template("visitors.html").render(
+            active_page="visitors", columns=DVisitors.COLUMNS, rows=report.recent,
+            filters=filters, error=error, first_visit_at=report.first_visit_at,
+            refreshed_at=datetime.now(timezone.utc), newest_url=VisitorsQuery.link(filters),
+            older_url=VisitorsQuery.link(filters, report.older) if report.older else None,
         ).encode("utf-8")
 
     def reference(self, first_visit_at: datetime | None = None) -> bytes:
