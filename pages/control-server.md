@@ -211,7 +211,7 @@ The second table row contains a text filter for each column. Select **Apply
 filters** or press Enter to search for literal text within those columns;
 multiple filters must all match. Filtering searches the database before
 pagination. **Clear filters** removes them. Records appear newest first, in
-pages of 50; **Older visits** and **Newest visits** retain the column filters.
+pages of 30; **Older visits** and **Newest visits** retain the column filters.
 This record browser includes bots and stored test visits and has no default
 date limit. Each visitor stays on one line; scroll horizontally to see all
 columns and long values.

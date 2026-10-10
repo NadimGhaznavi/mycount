@@ -167,7 +167,7 @@ class VisitDb:
 
     def visitor_records(self, filters: dict[str, str], *,
                         before: tuple[datetime, int] | None = None,
-                        limit: int = DReports.PAGE_SIZE) -> list[dict[str, object]]:
+                        limit: int = DVisitors.PAGE_SIZE) -> list[dict[str, object]]:
         """Read every stored column with literal substring filters and a stable cursor."""
         expressions = {name: (f"p.{name}" if name in ("site", "url") else
                               "HEX(v.visitor_id)" if name == "visitor_id" else f"v.{name}")
