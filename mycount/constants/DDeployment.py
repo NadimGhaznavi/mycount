@@ -132,6 +132,7 @@ class DDeployment:
             "mycount/activity/ResolveVisitorLocations.py",
             "mycount/activity/__init__.py",
             "mycount/constants/DReports.py",
+            "mycount/constants/DVisitors.py",
             "mycount/entity/Report.py",
             "mycount/entity/ReportOptions.py",
             "mycount/interface/CityLocations.py",
