@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-10-09 @ 20:11
+
 The **Bertha** release is dedicated to [Bertha Swirles](https://en.wikipedia.org/wiki/Bertha_Swirles).
 
 - Add Visitors before Reference in the control navigation, with every page-view
