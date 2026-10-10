@@ -173,6 +173,29 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(self.db.query('SELECT id, submission_id FROM marketing_posts'),
                          [dict(id=identifier, submission_id=None)])
 
+    def test_visitor_records_cover_schema_and_filter_before_pagination(self):
+        visits = VisitDb(self.db)
+        timestamp = datetime(2026, 10, 9, 12, tzinfo=timezone.utc)
+        base = Visit(site='mycount_smoke_visitors', url='https://example.com/50%_=',
+                     received_at=timestamp, country_name='Canada', city_name='Toronto',
+                     visitor_id=bytes.fromhex('AB' * 16), is_bot=True,
+                     client_details=(('timezone', 'America/Toronto'),))
+        first = visits.record(base)
+        second = visits.record(base)
+        visits.record(replace(base, url='https://example.com/other'))
+        rows = visits.visitor_records({'url': '50%_=', 'city_name': 'Toronto'}, limit=1)
+        self.assertEqual(rows[0]['page_view_id'], second)
+        self.assertEqual(rows[0]['visitor_id'], 'AB' * 16)
+        self.assertEqual(rows[0]['is_bot'], 1)
+        columns = {column['Field'] for column in self.db.query('SHOW COLUMNS FROM page_views')}
+        self.assertEqual(set(rows[0]), columns | {'site', 'url'})
+        older = visits.visitor_records({'url': '50%_='},
+                                      before=(rows[0]['received_at'], second), limit=1)
+        self.assertEqual(older[0]['page_view_id'], first)
+        self.assertEqual(visits.visitor_records({'site': "' OR 1=1 --"}), [])
+        self.assertEqual(len(visits.visitor_records({'visitor_id': 'AB' * 16})), 3)
+        self.assertEqual(len(visits.visitor_records({'client_details': 'America/Toronto'})), 3)
+
     def test_daily_totals_use_local_dst_boundaries_and_include_empty_days(self):
         visits = VisitDb(self.db)
         options = ReportOptions(date(2026, 3, 7), date(2026, 3, 10), 'America/Toronto')

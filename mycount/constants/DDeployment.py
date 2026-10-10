@@ -234,6 +234,10 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
         ),
+        "mycount/constants/DVisitors.py": (
+            "mycount/__init__.py",
+            "mycount/constants/__init__.py",
+        ),
         "mycount/constants/__init__.py": (
             "mycount/__init__.py",
         ),
@@ -378,6 +382,7 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/constants/DReports.py",
             "mycount/constants/DVisitorDetails.py",
+            "mycount/constants/DVisitors.py",
             "mycount/entity/Visit.py",
             "mycount/interface/DbMgr.py",
             "mycount/interface/__init__.py",
@@ -401,6 +406,11 @@ class DDeployment:
             "mycount/constants/DVisitorDetails.py",
             "mycount/interface/__init__.py",
         ),
+        "mycount/interface/VisitorsQuery.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DVisitors.py",
+            "mycount/interface/__init__.py",
+        ),
         "mycount/interface/__init__.py": (
             "mycount/__init__.py",
         ),
@@ -421,19 +431,23 @@ class DDeployment:
             "mycount/interface/MarketingScreenshots.py",
             "mycount/interface/MarketingUpload.py",
             "mycount/interface/ReportQuery.py",
+            "mycount/interface/VisitorsQuery.py",
             "mycount/server/ControlPages.py",
             "mycount/server/__init__.py",
         ),
         "mycount/server/ControlPages.py": (
             "mycount/__init__.py",
             "mycount/constants/DMarketing.py",
+            "mycount/constants/DVisitors.py",
             "mycount/entity/Report.py",
             "mycount/interface/ReportQuery.py",
+            "mycount/interface/VisitorsQuery.py",
             "mycount/server/__init__.py",
             "mycount/server/templates/control.html",
             "mycount/server/templates/marketing.html",
             "mycount/server/templates/reference.html",
             "mycount/server/templates/visitor_map.html",
+            "mycount/server/templates/visitors.html",
         ),
         "mycount/server/ControlServer.py": (
             "mycount/__init__.py",
@@ -511,6 +525,9 @@ class DDeployment:
             "mycount/server/templates/base.html",
             "mycount/server/templates/city_schedule.html",
             "mycount/server/templates/report_filters.html",
+        ),
+        "mycount/server/templates/visitors.html": (
+            "mycount/server/templates/base.html",
         ),
         "requirements.txt": (
         ),

@@ -9,6 +9,11 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+The **Bertha** release is dedicated to [Bertha Swirles](https://en.wikipedia.org/wiki/Bertha_Swirles).
+
+- Add Visitors before Reference in the control navigation, with every page-view
+  column, site and URL, readable headings, per-column filters, and pagination.
+
 ## [1.7.0] - 2026-10-09 @ 17:50
 
 This release is named after [Maria Gaetana Agnesi](https://en.wikipedia.org/wiki/Maria_Gaetana_Agnesi).
