@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+The **Dorothy** release is dedicated to [Dorothy Vaughan](https://en.wikipedia.org/wiki/Dorothy_Vaughan).
+
+- Limit the Visitors table to 30 records per page.
+
 ## [1.8.1] - 2026-10-09 @ 20:18
 
 The **Cecilia** release is dedicated to [Cecilia Krieger](https://en.wikipedia.org/wiki/Cecilia_Krieger).

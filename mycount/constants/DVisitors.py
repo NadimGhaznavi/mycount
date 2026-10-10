@@ -4,6 +4,7 @@ from typing import Final
 
 
 class DVisitors:
+    PAGE_SIZE: Final[int] = 30
     COLUMNS: Final[tuple[tuple[str, str], ...]] = (
         ("received_at", "Received at (UTC)"),
         ("site", "Site"),

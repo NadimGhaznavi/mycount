@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from mycount.constants.DReports import DReports
+from mycount.constants.DVisitors import DVisitors
 from mycount.entity.Report import Report
 from mycount.entity.ReportOptions import ReportOptions
 from mycount.interface.DbMgr import DbMgr
@@ -42,11 +43,11 @@ class ReadReports:
         try:
             with db.transaction(read_only=True):
                 visits = VisitDb(db)
-                rows = visits.visitor_records(filters, before=options.before, limit=DReports.PAGE_SIZE + 1)
+                rows = visits.visitor_records(filters, before=options.before, limit=DVisitors.PAGE_SIZE + 1)
                 first = visits.first_visit_at()
             older = None
-            if len(rows) > DReports.PAGE_SIZE:
-                rows = rows[:DReports.PAGE_SIZE]
+            if len(rows) > DVisitors.PAGE_SIZE:
+                rows = rows[:DVisitors.PAGE_SIZE]
                 older = (rows[-1]["received_at"], rows[-1]["page_view_id"])
             return Report(options, [], first, recent=rows, older=older)
         finally:
