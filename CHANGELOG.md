@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-10-10 @ 07:56
+
 The "Ingrid" release is dedicated to the [Baroness Ingrid Daubechies](https://en.wikipedia.org/wiki/Ingrid_Daubechies).
 
 - Added `CMDB_DATABASES = (("MyCount", "mycount"),)` to the `DMyCount` constans for CMDB DB support.
