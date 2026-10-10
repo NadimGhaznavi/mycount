@@ -4,11 +4,12 @@ from typing import Final
 
 
 class DMyCount:
-    VERSION: Final[str] = "1.9.0"
+    VERSION: Final[str] = "1.10.0"
     CMDB_SUBTYPE: Final[str] = "Web Analytics"
     CMDB_SUPPLIER: Final[str] = "Nadim-Daniel"
-    CMDB_CODENAME: Final[str] = "Grace"
+    CMDB_CODENAME: Final[str] = "Ingrid"
     CMDB_COMPONENTS = (("Marketing Screenshots", "pages/marketing"),)
+    CMDB_DATABASES = (("MyCount", "mycount"),)
     BASE_DIR: Final[str] = "/opt/prod/mycount"
     DATABASE_ENV: Final[str] = "/etc/mycount/database.env"
     DATABASE_NAME: Final[str] = "mycount"
