@@ -7,11 +7,17 @@ permalink: /CHANGELOG/
 
 # Changelog
 
-This release remembers the last **Quagga** that died in 1883.
-
 ## [Unreleased]
 
+## [1.11.1] - 2026-10-11 @ 06:31
+
+This release remembers the **Rugops** who were here 95 million years ago.
+
+- Make Visitor Map hit dots darker and more saturated, with less grey.
+
 ## [1.11.0] - 2026-10-11 @ 06:25
+
+This release remembers the last **Quagga** that died in 1883.
 
 - Change Visitor Map hit dots to moderately bright green with a lighter green outline.
 
