@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.11.1] - 2026-10-11 @ 06:31
+
 This release remembers the **Rugops** who were here 95 million years ago.
 
 - Make Visitor Map hit dots darker and more saturated, with less grey.
