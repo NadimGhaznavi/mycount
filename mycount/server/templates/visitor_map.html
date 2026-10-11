@@ -85,7 +85,7 @@
       popup.textContent = `${name}: ${location.page_views} page views (${location.coordinate_source})`;
       L.circleMarker([location.latitude, location.longitude], {
         radius: Math.min(28, 5 + 3 * Math.log2(location.page_views + 1)),
-        color: '#ffb978', weight: 2, fillColor: '#ff8e3c', fillOpacity: 0.8
+        color: '#8bd49c', weight: 2, fillColor: '#55b870', fillOpacity: 0.9
       }).bindPopup(popup).addTo(map);
     }
     status.textContent = 'Pan and zoom to explore visitor locations. Counts are also listed below.';

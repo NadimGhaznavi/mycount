@@ -7,7 +7,13 @@ permalink: /CHANGELOG/
 
 # Changelog
 
+This release remembers the last **Quagga** that died in 1883.
+
 ## [Unreleased]
+
+## [1.11.0] - 2026-10-11 @ 06:25
+
+- Change Visitor Map hit dots to moderately bright green with a lighter green outline.
 
 ## [1.10.0] - 2026-10-10 @ 07:56
 
