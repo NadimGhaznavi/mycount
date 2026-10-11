@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+This release is named for the **Smilodon** who roamed this planet about 10,000 years ago.
+
+- Darken Visitor Map dot centers by 50% while keeping the current green outline.
+
 ## [1.11.1] - 2026-10-11 @ 06:31
 
 This release remembers the **Rugops** who were here 95 million years ago.
