@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.3.2] - 2026-10-17 @ 16:57
+
 The **Juno** release is named after the Jupiter orbiter.
 
 ### Fixed
