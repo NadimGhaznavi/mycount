@@ -1,10 +1,8 @@
 ---
-title: Deployment dependencies
+title: Deployment Dependency Subsystem
 author_profile: true
 layout: single
 ---
-
-[Documentation index]({% link index.md %})
 
 ## Design
 
