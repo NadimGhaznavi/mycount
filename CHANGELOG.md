@@ -9,6 +9,12 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+The **Ingenuity** release is named after the Mars helicopter.
+
+### Removed
+
+- Old example MD file.
+
 ## [2.3.0] - 2026-10-17 @ 16:47
 
 The **Hubble** release is named for the **Hubble Telescope**.
