@@ -216,7 +216,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "2a79a1e7894462a5391c2b5e3389eba6db76800db14bd95c258f046216035ac8",
+      "digest": "10ebc41994754dd600fe8e355b1681999f321c6ba8322ffb68c6693d9d0defc7",
       "targets": [
         "filesystem",
         "listener",
@@ -548,7 +548,7 @@
       ]
     },
     "mycount/server/templates/marketing.html": {
-      "digest": "d5dd09bf4fb9b901e018f5920bc65243e76f1a88a1ec88fed93df6e5a454fed6",
+      "digest": "3c654e71fc8eb15e4c1db740151853dfdeb9d27d560816283a1ea976f426122e",
       "targets": [
         "report-server"
       ]
@@ -572,7 +572,7 @@
       ]
     },
     "mycount/server/templates/reference.html": {
-      "digest": "b6dc6002cbf9ad437f8fb86e7e8987775673098d4be659eb639baeb63b655bd7",
+      "digest": "7ac78bcc3ed7b612cf70e1040b434d36c6e3c263e34bd1a79907fa89702f7840",
       "targets": [
         "report-server"
       ]
@@ -596,13 +596,13 @@
       ]
     },
     "mycount/server/templates/visitor_map.html": {
-      "digest": "8e79a051512a1824c146e031cc182e0a0e8835c22c7c35ad822e012752bb595e",
+      "digest": "1673c30c31338a4b962d670281186a29e50f50a1e52204a35153751333455c55",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/templates/visitors.html": {
-      "digest": "b0e2c177f9995b52628fca705d4856068fb6aa715588024c1bc1faf82ed6fefa",
+      "digest": "f2e603818642892a100b02e39ed67bb64a208776c8a78ae738a4986fe65b5cc9",
       "targets": [
         "report-server"
       ]
@@ -1097,6 +1097,14 @@
         "report-server"
       ],
       "version": "2.0.1"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "2.0.3"
     }
   ]
 }

@@ -71,7 +71,7 @@ class ReportTests(unittest.TestCase):
         recent_summary = html.split('<span>Recent Visits</span>', 1)[1].split('</summary>', 1)[0]
         self.assertIn('Older visits', recent_summary)
         self.assertIn('href="/metrics?', recent_summary)
-        self.assertIn('<a href="/">Visitor Map</a>', html)
+        self.assertIn('<a href="/">Map</a>', html)
         self.assertIn('"page_views": 5000', html)
         self.assertNotIn('const timestamps', html)
 

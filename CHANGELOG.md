@@ -9,6 +9,14 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.0.3] - 2026-10-17 @ 08:36
+
+The **Discovery** release is named for the *NASA Space Shuttle* of the same name.
+
+### Changed
+
+- Remove redundant page headings from Map, Marketing, and Visitors, and rename the Reference heading to Data Sources.
+
 ## [2.0.1] - 2026-10-17 @ 08:26
 
 The **Cassini** release is named for the *Saturn exploration spacecraft*.
