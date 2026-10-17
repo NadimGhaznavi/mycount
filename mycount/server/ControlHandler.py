@@ -36,7 +36,9 @@ class ControlHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         request = urlsplit(self.path)
         path = request.path
-        if path == "/api/city-schedule":
+        if path == "/favicon.png":
+            self.respond(200, ControlPages.favicon(), "image/png")
+        elif path == "/api/city-schedule":
             self.city_schedule()
         elif path in ("/", "/map", "/metrics", "/marketing"):
             query = parse_qs(request.query, keep_blank_values=True)

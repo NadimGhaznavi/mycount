@@ -144,7 +144,7 @@ class ControlServerTests(unittest.TestCase):
                     self.assertEqual(response.status, 200)
                     self.assertEqual(response.getheader("Content-Type"), "text/html; charset=utf-8")
                     body = response.read()
-                    self.assertIn(b"MyCount <span>Control</span>", body)
+                    self.assertIn(b"MyCount <span>Metrics</span>", body)
                     self.assertIn(b"&lt;example&gt;", body)
                     self.assertIn(b">12</td>", body)
                     self.assertIn(b'2026-09-27T15:05:00+00:00', body)
@@ -233,6 +233,12 @@ class ControlServerTests(unittest.TestCase):
                     self.assertEqual(response.status, 200)
                     self.assertEqual(json.loads(response.read()), {"status": "ok", "service": "mycount-control"})
                     factory.assert_not_called()
+                    connection.request("GET", "/favicon.png")
+                    response = connection.getresponse()
+                    self.assertEqual(response.status, 200)
+                    self.assertEqual(response.getheader("Content-Type"), "image/png")
+                    self.assertEqual(response.read(), (Path(__file__).resolve().parents[1] / "pages/images/mycount.png").read_bytes())
+                    factory.assert_not_called()
                     for path in ('/?start=bad', '/marketing?start=2020-01-01&end=2026-01-01', '/?timezone=Missing/Zone'):
                         connection.request("GET", path)
                         response = connection.getresponse()
@@ -274,6 +280,9 @@ class ControlServerTests(unittest.TestCase):
             # Use the same package copy rule as installation, outside the checkout.
             shutil.copytree(root / "mycount", Path(directory) / "mycount",
                             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+            image_directory = Path(directory) / "pages/images"
+            image_directory.mkdir(parents=True)
+            shutil.copy2(root / "pages/images/mycount.png", image_directory)
             result = subprocess.run(
                 [sys.executable, "-B", "-m", "mycount.server.ControlServer", "--help"],
                 cwd=directory, capture_output=True, text=True, check=True,
@@ -288,7 +297,8 @@ class ControlServerTests(unittest.TestCase):
                 [sys.executable, "-B", "-c",
                  "from mycount.server.ControlPages import ControlPages; "
                  "from mycount.entity.Report import Report; from mycount.interface.ReportQuery import ReportQuery; "
-                 "assert b'MyCount <span>Control</span>' in ControlPages().render(Report(ReportQuery.resolve({}), [], None)); "
+                 "assert b'MyCount <span>Metrics</span>' in ControlPages().render(Report(ReportQuery.resolve({}), [], None)); "
+                 "assert ControlPages.favicon().startswith(bytes([137, 80, 78, 71, 13, 10, 26, 10])); "
                  "assert b'Optional browser details' in ControlPages().reference(); "
                  "assert b'L.map(' in ControlPages().visitor_map(Report(ReportQuery.resolve({}), [], None))"],
                 cwd=directory, check=True,
