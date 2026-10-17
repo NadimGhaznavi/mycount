@@ -47,3 +47,33 @@ class BrowserMetadataTests(unittest.TestCase):
         enriched = BrowserMetadata().enrich(visit, agent)
         self.assertEqual(enriched.browser_family, 'Bytespider')
         self.assertTrue(enriched.is_bot)
+
+    def test_known_automation_user_agents_are_bots(self):
+        visit = Visit(site='example', url='https://example.com/',
+                      received_at=datetime.now(timezone.utc))
+        agents = (
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
+            '(KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (compatible; Dataprovider.com)',
+            'Mozilla/5.0 AppleWebKit/537.36 Chrome/120.0.0.0 '
+            'Safari/537.36 web-image-collection-research',
+            'Mozilla/5.0 (compatible; DATAPROVIDER.COM)',
+        )
+        for agent in agents:
+            with self.subTest(agent=agent):
+                self.assertTrue(BrowserMetadata().enrich(visit, agent).is_bot)
+
+    def test_webdriver_is_a_bot_even_without_a_user_agent(self):
+        visit = Visit(site='example', url='https://example.com/',
+                      received_at=datetime.now(timezone.utc),
+                      client_details=(('webdriver', True),))
+        for agent in ('Mozilla/5.0 Chrome/155.0.0.0', ''):
+            with self.subTest(agent=agent):
+                self.assertTrue(BrowserMetadata().enrich(visit, agent).is_bot)
+
+    def test_webdriver_false_and_missing_metadata_do_not_imply_a_bot(self):
+        visit = Visit(site='example', url='https://example.com/',
+                      received_at=datetime.now(timezone.utc),
+                      client_details=(('webdriver', False),))
+        self.assertFalse(BrowserMetadata().enrich(visit, 'Chrome/155.0.0.0').is_bot)
+        self.assertIsNone(BrowserMetadata().enrich(visit, '').is_bot)

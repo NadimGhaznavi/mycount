@@ -75,7 +75,7 @@
       ]
     },
     "mycount/activity/BrowserMetadata.py": {
-      "digest": "6973c47bd7a950b7329e93ca94e05cef7e4c2bdb846eaeb1d318011a9e7baffa",
+      "digest": "184c78210b2f2cef0f4883ee743c65bfced0268d06772db7edd233ceefdaa874",
       "targets": [
         "listener"
       ]
@@ -216,7 +216,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "10ebc41994754dd600fe8e355b1681999f321c6ba8322ffb68c6693d9d0defc7",
+      "digest": "173f9b7f079627b8ef9d857cb962446650f032da0a4f71fb605aa7eb1ac14bb8",
       "targets": [
         "filesystem",
         "listener",
@@ -238,7 +238,7 @@
       ]
     },
     "mycount/constants/DVisitorDetails.py": {
-      "digest": "82ae9b3bce28e59bc4267f13fd29bd9e6733fc6fa0e7368d81413ed719a946a3",
+      "digest": "6ff01b18e0255b52ee7440e0f8b5d900b45eb2b0e9ff5654ec97f2ecf7fe18a4",
       "targets": [
         "filesystem",
         "listener",
@@ -430,7 +430,7 @@
       ]
     },
     "mycount/interface/VisitDb.py": {
-      "digest": "f16da46365e09516e34c4983b0e05c6c522122293d45d3a1d112cc209036735b",
+      "digest": "a68983b8517d55fed25be3913bb80f9909a692609caf0d16550049fce8450c68",
       "targets": [
         "listener",
         "report-server"
@@ -1105,6 +1105,14 @@
         "report-server"
       ],
       "version": "2.0.3"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "2.1.0"
     }
   ]
 }

@@ -4,7 +4,12 @@ from typing import Final
 
 
 class DVisitorDetails:
-    BOT_BROWSER_FAMILIES: Final[tuple[str, ...]] = ("Googlebot", "GoogleOther", "Bytespider")
+    BOT_BROWSER_FAMILIES: Final[tuple[str, ...]] = (
+        "Googlebot", "GoogleOther", "Bytespider", "HeadlessChrome",
+    )
+    BOT_USER_AGENT_TOKENS: Final[tuple[str, ...]] = (
+        "headlesschrome/", "dataprovider.com", "web-image-collection-research",
+    )
     MAX_REFERRER_LENGTH: Final[int] = 4096
     MAX_HOST_LENGTH: Final[int] = 253
     TEXT_LENGTH: Final[int] = 128

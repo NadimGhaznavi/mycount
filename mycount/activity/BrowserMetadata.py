@@ -19,6 +19,10 @@ class BrowserMetadata:
             device = "desktop"
         else:
             device = "other"
+        is_bot = (browser.is_bot or browser.browser.family in DVisitorDetails.BOT_BROWSER_FAMILIES
+                  or any(token in user_agent.lower()
+                         for token in DVisitorDetails.BOT_USER_AGENT_TOKENS)
+                  or dict(visit.client_details).get("webdriver") is True)
         return replace(
             visit,
             browser_family=browser.browser.family if browser.browser.family != "Other" else None,
@@ -28,6 +32,5 @@ class BrowserMetadata:
             os_version=browser.os.version_string[:DVisitorDetails.VERSION_LENGTH] or None,
             device_brand=(browser.device.brand or "")[:DVisitorDetails.TEXT_LENGTH] or None,
             device_model=(browser.device.model or "")[:DVisitorDetails.TEXT_LENGTH] or None,
-            is_bot=(browser.is_bot or browser.browser.family in DVisitorDetails.BOT_BROWSER_FAMILIES)
-            if user_agent else None,
+            is_bot=is_bot if user_agent or is_bot else None,
         )
