@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-17 @ 07:57
+
 The **BepiColombo** release is named for the *ESA/JAXA Mercury exploration mission*.
 
 ### Fixed
