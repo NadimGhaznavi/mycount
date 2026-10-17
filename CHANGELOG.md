@@ -9,6 +9,16 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+The **Galileo** release is named for the *Jupiter exploration mission*.
+
+### Added 
+
+- A stack of gallery screensots.
+
+### Changed
+
+- Updated map-banner image.
+
 ## [2.1.1] - 2026-10-17 @ 10:27
 
 The **Friendship7** release is named after John Glenn's orbital spacecraft.
