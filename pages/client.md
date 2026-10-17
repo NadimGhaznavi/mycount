@@ -65,8 +65,10 @@ Reports and counters always exclude explicit test traffic: site labels starting
 with `mycount_smoke_` and page URLs whose root path is `/__mycount_test__` or
 starts with `/__mycount_test__/`. This also applies when Exclude bots is unchecked.
 The records remain stored for collection verification. Bot filtering and known-bot
-totals recognize the stored browser family even when an older collector saved a
-false or missing bot flag; no historical data rewrite is required.
+totals recognize known browser families, HeadlessChrome, Dataprovider.com and
+web-image-collection-research user agents, and `webdriver: true`, even when an
+older collector saved a false or missing bot flag; no historical data rewrite
+is required.
 
 This GET never records a visit. Multiple counter elements share one request;
 pages without counters make no count request. Neither request is retried.
@@ -157,7 +159,11 @@ SELECT p.site, COUNT(*) AS page_views,
        COUNT(DISTINCT v.visitor_id) AS unique_browsers,
        COUNT(CASE WHEN v.visitor_id IS NULL THEN 1 END) AS unidentified_views,
        COUNT(CASE WHEN v.is_bot = 1 OR
-           v.browser_family IN ('Googlebot', 'GoogleOther', 'Bytespider')
+           v.browser_family IN ('Googlebot', 'GoogleOther', 'Bytespider', 'HeadlessChrome') OR
+           LOCATE('headlesschrome/', LOWER(v.user_agent)) > 0 OR
+           LOCATE('dataprovider.com', LOWER(v.user_agent)) > 0 OR
+           LOCATE('web-image-collection-research', LOWER(v.user_agent)) > 0 OR
+           JSON_UNQUOTE(JSON_EXTRACT(v.client_details, '$.webdriver')) = 'true'
            THEN 1 END) AS known_bot_views
 FROM page_views v JOIN pages p ON p.page_id = v.page_id
 WHERE LEFT(p.site, 14) <> 'mycount_smoke_'

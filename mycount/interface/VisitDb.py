@@ -259,8 +259,15 @@ class VisitDb:
 
     @staticmethod
     def _bot_condition() -> tuple[str, tuple[str, ...]]:
-        """Recognize historical bot families even when their stored flag is false."""
+        """Recognize known automation even when its stored bot flag is false."""
         families = DVisitorDetails.BOT_BROWSER_FAMILIES
         placeholders = ", ".join("%s" for _ in families)
+        tokens = DVisitorDetails.BOT_USER_AGENT_TOKENS
+        agent_conditions = " OR ".join(
+            "LOCATE(%s, LOWER(COALESCE(v.user_agent, ''))) > 0" for _ in tokens
+        )
         return (f"COALESCE(v.is_bot, 0) = 1 "
-                f"OR COALESCE(v.browser_family, '') IN ({placeholders})", families)
+                f"OR COALESCE(v.browser_family, '') IN ({placeholders}) "
+                f"OR {agent_conditions} "
+                "OR COALESCE(JSON_UNQUOTE(JSON_EXTRACT(v.client_details, '$.webdriver')), "
+                "'false') = 'true'", families + tokens)

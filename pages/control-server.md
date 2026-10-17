@@ -98,8 +98,10 @@ show counts and percentages and stack on narrow screens.
 The Visits by Location Chart legend shows up to 10 countries at a time;
 scroll within the legend to see the rest. The pie includes all countries.
 Uncheck Exclude bots to include bots.
-The filter excludes visits flagged as bots and historical Googlebot/GoogleOther
-records identified by browser family, including older missing or incorrect bot
+The filter excludes visits flagged as bots, Googlebot, GoogleOther, Bytespider,
+HeadlessChrome, user agents identifying Dataprovider.com or
+web-image-collection-research, and visits reporting `webdriver: true`.
+These rules also apply to historical records with missing or incorrect bot
 flags. Other unknown bot statuses remain included. The choice is retained in
 the page URL; opening `/` starts with bots excluded.
 
