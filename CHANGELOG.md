@@ -5,13 +5,17 @@ layout: single
 permalink: /CHANGELOG/
 ---
 
-# Changelog
+# MyCount Changelog
+
+The **Luna** release is named after the *Soviet lunar exploration program*.
 
 ## [Unreleased]
 
+- Added *GitHub* marketing category to track GitHub software releases.
+
 ## [2.3.3] - 2026-10-17 @ 17:07
 
-The **Kepler** release is named for the *Exoplanet-hunting space telescope* which in turn was named after *Johannes Kepler*, 1571 – 1630 AD.
+The **Kepler** release is named for the *Exoplanet-hunting space telescope* which in turn was named after *Johannes Kepler* (1571 – 1630 AD).
 
 ### Fixed
 
