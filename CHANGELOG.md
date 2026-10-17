@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+This release celebrates the Cree language. This is the **nīsitanaw** (20) release.
+
+- Limit the Visits by Location Chart legend to 10 visible countries, with scrolling to see the rest.
+
 ## [1.11.2] - 2026-10-11 @ 06:34
 
 This release is named for the **Smilodon** who roamed this planet about 10,000 years ago.

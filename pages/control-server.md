@@ -95,6 +95,8 @@ as `en-CA` are kept separate and displayed with readable names such as
 English (Canada). Unrecognized tags retain their codes; missing preferences
 appear as Unknown. Both pies
 show counts and percentages and stack on narrow screens.
+The Visits by Location Chart legend shows up to 10 countries at a time;
+scroll within the legend to see the rest. The pie includes all countries.
 Uncheck Exclude bots to include bots.
 The filter excludes visits flagged as bots and historical Googlebot/GoogleOther
 records identified by browser family, including older missing or incorrect bot

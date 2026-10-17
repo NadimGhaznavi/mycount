@@ -87,7 +87,7 @@
   {% if country_slices %}
   <div class="country-chart-content">
     <div id="country-pie" class="country-pie" role="img" aria-label="Visits by country. Counts and percentages are listed in the legend."></div>
-    <ul class="country-legend" aria-label="Visits by country">
+    <ul class="country-legend location-legend" tabindex="0" aria-label="Visits by country">
       {% for country in country_slices %}
       <li><span class="country-swatch" aria-hidden="true" style="background: {{ chart_colors[loop.index0 % chart_colors | length] }};"></span><span>{{ country.name }}</span><span class="country-value">{{ country.visits }} ({{ '%.1f' | format(country.percent) }}%)</span></li>
       {% endfor %}
@@ -200,6 +200,19 @@
         }
       }
     });
+  }
+  for (const legend of document.querySelectorAll('.location-legend')) {
+    const sizeViewport = () => {
+      if (!legend.getClientRects().length) return;
+      if (legend.children.length <= 10) {
+        legend.style.maxHeight = '';
+        return;
+      }
+      const height = legend.children[9].getBoundingClientRect().bottom - legend.children[0].getBoundingClientRect().top;
+      legend.style.maxHeight = `${Math.ceil(height)}px`;
+    };
+    new ResizeObserver(sizeViewport).observe(legend);
+    sizeViewport();
   }
   for (const wrapper of document.querySelectorAll('.table-scroll')) {
     const table = wrapper.querySelector('table');
