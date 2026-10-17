@@ -54,9 +54,13 @@ author_profile: true
 
 ![Marketing Form](/pages/images/marketing-form.png)
 
-### Marketing Metrics
+### Marketing Traffic
 
-![Marketing Metrics](/pages/images/marketing-metrics.png)
+![Marketing](/pages/images/marketing-metrics-traffic.png)
+
+### Marketing Log
+
+![Marketing Log](/pages/images/marketing-metrics-log.png)
 
 ---
 
