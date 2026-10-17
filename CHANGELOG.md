@@ -9,6 +9,12 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+The **Juno** release is named after the Jupiter orbiter.
+
+### Fixed
+
+- Removed broken link.
+
 ## [2.3.1] - 2026-10-17 @ 16:52
 
 The **Ingenuity** release is named after the Mars helicopter.
