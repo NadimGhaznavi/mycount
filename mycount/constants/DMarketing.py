@@ -9,6 +9,7 @@ class DMarketing:
         "Discord",
         "Email",
         "Facebook",
+        "GitHub",
         "LinkedIn",
         "Reddit",
         "X",
