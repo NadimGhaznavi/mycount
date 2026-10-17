@@ -64,6 +64,3 @@ Table and Column name the storage destinations. --- means no value is stored. Op
 | Request | connection / trusted Caddy visitor header | `page_views` | `ip_address` | Full IPv4 or IPv6 address used for GeoIP lookup. Historical visits remain NULL; no hash is generated. |
 | Request | Origin header | --- | --- | Checked against configured sites and the page URL; not stored as a separate field. |
 
-See [Browser client]({% link pages/client.md %}) for setup and reporting, and
-[Installation and BMGeoIP]({% link pages/installation.md %}) for the
-reference-data import.
