@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.0.3] - 2026-10-17 @ 08:36
+
 The **Discovery** release is named for the *NASA Space Shuttle* of the same name.
 
 ### Changed
