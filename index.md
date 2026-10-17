@@ -4,13 +4,11 @@ layout: single
 author_profile: true
 ---
 
-MyCount is in early development. It will test the mydynip system and provide
-useful audience and traffic metrics.
+[![MyCount Map](/pages/images/map-banner.png)]({% link pages/gallery.md %})
 
-Read the [project mission]({% link pages/project-mission.md %}) for the intended
-components, metrics, and privacy boundaries.
+**MyCount** is a self-hosted analytics application that profiles website traffic across multiple sites within a domain. It leverages the [BMDynIP Dynamic DNS](https://bmdynip.osoyalce.com) and [BMGeoIP GeoIP Database](https://bmgeoip.osoyalce.com) projects to provide a rich interface for tracking user engagement with the various websites.
 
-## Development
+## Legacy Documentation
 
 - [Installation and GeoIP updates]({% link pages/installation.md %})
 - [Control server]({% link pages/control-server.md %})

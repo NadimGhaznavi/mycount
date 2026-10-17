@@ -9,6 +9,16 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+The **Europa** release is named after Jupiter's moon.
+
+### Changed
+
+- Updated public website content.
+
+### Fixed
+
+- Exclude HeadlessChrome, Dataprovider.com, web-image-collection-research, and WebDriver automation from bot-filtered reports and counters, including historical records with false or missing bot flags.
+
 ## [2.0.3] - 2026-10-17 @ 08:36
 
 The **Discovery** release is named for the *NASA Space Shuttle* of the same name.

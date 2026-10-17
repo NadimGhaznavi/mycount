@@ -461,22 +461,35 @@ class DatabaseTests(unittest.TestCase):
         visit = Visit(site='example', url='https://example.com/',
                       received_at=datetime(2026, 9, 27, 12, tzinfo=timezone.utc),
                       country_code='CA', country_name='Canada', city_name='Hamilton')
-        visits.record(replace(visit, is_bot=False, browser_family='Chrome'))
+        visits.record(replace(visit, is_bot=False, browser_family='Chrome',
+                             client_details=(('webdriver', False),)))
         visits.record(visit)  # Unknown does not mean bot.
         for flag, family in [(True, 'Other'), (False, 'GoogleOther'),
                              (None, 'GoogleOther'), (None, 'Googlebot'),
                              (False, 'Bytespider'), (None, 'Bytespider')]:
             visits.record(replace(visit, is_bot=flag, browser_family=family,
                                  received_at=datetime(2026, 9, 27, 18, tzinfo=timezone.utc)))
+        historical_automation = (
+            dict(browser_family='HeadlessChrome', is_bot=False),
+            dict(browser_family='HeadlessChrome', is_bot=None),
+            dict(user_agent='HeadlessChrome/155.0.0.0', is_bot=False),
+            dict(user_agent='Mozilla/5.0 (compatible; DATAPROVIDER.COM)', is_bot=None),
+            dict(user_agent='Chrome/120.0.0.0 web-image-collection-research', is_bot=False),
+            dict(browser_family='Chrome', is_bot=False, client_details=(('webdriver', True),)),
+            dict(is_bot=None, client_details=(('webdriver', True),)),
+        )
+        for fields in historical_automation:
+            visits.record(replace(visit, **fields,
+                                 received_at=datetime(2026, 9, 27, 18, tzinfo=timezone.utc)))
         visits.record(replace(visit, site='bot-only', url='https://example.com/bot',
                              city_name='Mountain View', is_bot=True))
         self.assertEqual(visits.count_by_site('example'), 2)
         self.assertEqual(visits.count_by_site('bot-only'), 0)
         self.assertEqual(visits.count_by_site('missing'), 0)
-        self.assertEqual(self.db.query('SELECT COUNT(*) AS total FROM page_views')[0]['total'], 9)
+        self.assertEqual(self.db.query('SELECT COUNT(*) AS total FROM page_views')[0]['total'], 16)
         for query in (visits.totals_by_site, visits.totals_by_page, visits.totals_by_location,
                       visits.totals_by_coordinates, visits.totals_by_language, visits.totals_by_referrer):
-            self.assertEqual(sum(row['page_views'] for row in query(exclude_bots=False)), 9)
+            self.assertEqual(sum(row['page_views'] for row in query(exclude_bots=False)), 16)
             filtered = query(exclude_bots=True)
             self.assertEqual(len(filtered), 1)
             self.assertEqual(filtered[0]['page_views'], 2)
@@ -490,7 +503,7 @@ class DatabaseTests(unittest.TestCase):
             dict(day='2026-09-27', page_views=2), dict(day='2026-09-28', page_views=0),
         ])
         all_sites = {row['site']: row for row in visits.totals_by_site()}
-        self.assertEqual(all_sites['example']['known_bot_views'], 6)
+        self.assertEqual(all_sites['example']['known_bot_views'], 13)
         self.assertEqual(visits.totals_by_site(exclude_bots=True)[0]['known_bot_views'], 0)
 
     def test_explicit_tests_are_excluded_from_every_report_with_either_bot_setting(self):
