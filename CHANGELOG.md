@@ -11,6 +11,10 @@ permalink: /CHANGELOG/
 
 The **Europa** release is named after Jupiter's moon.
 
+### Changed
+
+- Updated public website content.
+
 ### Fixed
 
 - Exclude HeadlessChrome, Dataprovider.com, web-image-collection-research, and WebDriver automation from bot-filtered reports and counters, including historical records with false or missing bot flags.
