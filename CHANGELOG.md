@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.3.3] - 2026-10-17 @ 17:07
+
 The **Kepler** release is named for the *Exoplanet-hunting space telescope* which in turn was named after *Johannes Kepler*, 1571 – 1630 AD.
 
 ### Fixed
