@@ -5,6 +5,7 @@
       "deployment/DDeployment.py.in"
     ],
     "mycount/server/ControlPages.py": [
+      "pages/images/mycount.png",
       "mycount/server/templates/control.html",
       "mycount/server/templates/visitor_map.html",
       "mycount/server/templates/visitors.html",

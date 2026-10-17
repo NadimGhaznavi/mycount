@@ -16,6 +16,10 @@ from mycount.interface.VisitorsQuery import VisitorsQuery
 
 
 class ControlPages:
+    @staticmethod
+    def favicon() -> bytes:
+        return (Path(__file__).resolve().parents[2] / "pages/images/mycount.png").read_bytes()
+
     def __init__(self) -> None:
         self._templates = Environment(
             loader=FileSystemLoader(Path(__file__).with_name("templates")),
