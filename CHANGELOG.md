@@ -9,6 +9,12 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+The **Friendship7** release is named after John Glenn's orbital spacecraft.
+
+### Fixed
+
+- Added skeleton gallery page.
+
 ## [2.1.0] - 2026-10-17 @ 10:21
 
 The **Europa** release is named after Jupiter's moon.
