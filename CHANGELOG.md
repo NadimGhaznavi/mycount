@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-10-17 @ 16:47
+
 The **Hubble** release is named for the **Hubble Telescope**.
 
 - Significant updates to the public website.
