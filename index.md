@@ -10,13 +10,15 @@ author_profile: true
 
 ![Pie Chart Examples](/pages/images/pie-chart-data.png)
 
-The application also includes a [marketing]({% link pages/gallery.md %}) interface that allows the user to log social media and other posts which aim to generate website traffic. This aims to correlate marketing activity with user engagement.
+A web interface provides rich analytics.
 
-![Architecture](/pages/images/mycount-architecture.png)
+![All Traffic](/pages/images/all-traffic.png)
 
-This application works, because all of my sites use the same GitHub pages Jekyll theme which I control. The *HTTP POST* operation is embedded in a `mycount.js` that is part of the theme. Each site includes a site identifier in it's Jekyll configuration (`_config.yml`) file. This is picked up by the self-MyCount listener running on my network.
+The application also includes a marketing interface that allows the user to log social media and other posts which aim to generate website traffic. This aims to correlate marketing activity with user engagement.
 
-**MyCount** also leverages my [BMDynIP Dynamic DNS](https://bmdynip.osoyalce.com) and my[BMGeoIP GeoIP Database](https://bmgeoip.osoyalce.com) services which I also run on my network.
+![Marketing Traffc](/pages/images/marketing-metrics-traffic.png)
+
+**MyCount** leverages [BMDynIP Dynamic DNS](https://bmdynip.osoyalce.com) and [BMGeoIP GeoIP Database](https://bmgeoip.osoyalce.com) services which run on the same network.
 
 ---
 
@@ -28,26 +30,30 @@ Please contact me via email if you want provide feedback, notice any bugs, have 
 
 ---
 
+## MyCount Docs
+
+- [Architecture]({% link pages/architecture.md %})
+- [Collected Data]({% link pages/collected-data.md %})
+- [Gallery]({% link pages/gallery.md %})
+
+### MyCount DevOps Docs
+
+- [Download, Install, Uninstall]({% link pages/setup.md %})
+- [Adding a New Site]({% link pages/add-new-site.md %})
+- [Deployment Dependency Subsystem]({% link pages/deployment-dependencies.md %})
+- [Coding guidelines]({% link pages/coding-guidelines.md %})
+- [Release management]({% link pages/releases.md %})
+- [MyCount Project Changelog]({% link CHANGELOG.md %})
+
+---
+
 ## Links
 
-- [MyCount Gallery]({% link pages/gallery.md %})
+The **MyCount** application uses the services below:
+
 - [BMDynIP Dynamic DNS](https://bmdynip.osoyalce.com)
 - [BMGeoIP GeoIP Database](https://bmgeoip.osoyalce.com)
 
 **MyCount** is part of the [osoyalce.com](https://www.osoyalce.com/) site.
 
-
-## Legacy Documentation
-
-- [Installation and GeoIP updates]({% link pages/installation.md %})
-- [Control server]({% link pages/control-server.md %})
-- [Upgrading]({% link pages/upgrading.md %})
-- [Deployment dependencies]({% link pages/deployment-dependencies.md %})
-- [Uninstall]({% link pages/uninstall.md %})
-- [Browser client and live example]({% link pages/client.md %})
-- [What MyCount collects]({% link pages/collected-data.md %})
-- [Data access]({% link pages/data-access.md %})
-- [Coding guidelines]({% link pages/coding-guidelines.md %})
-- [Release management]({% link pages/releases.md %})
-- [Changelog]({% link CHANGELOG.md %})
 

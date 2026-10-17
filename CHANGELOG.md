@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+The **Hubble** release is named for the **Hubble Telescope**.
+
+- Significant updates to the public website.
+
 ## [2.2.0] - 2026-10-17 @ 11:36
 
 The **Galileo** release is named for the *Jupiter exploration mission*.
