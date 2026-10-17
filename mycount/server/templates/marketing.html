@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1>Marketing</h1>
 {% if error %}<p role="alert">{{ error }}</p>{% endif %}
 {% if saved %}<p role="status">Posting saved.</p>{% endif %}
 <form id="marketing-form" class="marketing-form" method="post" action="/marketing" enctype="multipart/form-data">

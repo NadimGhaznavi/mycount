@@ -203,7 +203,7 @@ class ControlServerTests(unittest.TestCase):
                     response = connection.getresponse()
                     self.assertEqual(response.status, 200)
                     reference = response.read()
-                    self.assertIn(b'<h1>Visitor Data</h1>', reference)
+                    self.assertIn(b'<h1>Data Sources</h1>', reference)
                     self.assertIn(b'Optional browser details', reference)
                     self.assertIn(b'<code>global_privacy_control</code>', reference)
                     self.assertEqual(reference.count(b'<table '), 1)
