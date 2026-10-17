@@ -9,6 +9,12 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Changed
+
+- Website title.
+- Made logo background transparent.
+- Enabled Minimal Mistakes wide layouts while retaining the author sidebar.
+
 ## [2.0.0] - 2026-10-17 @ 07:57
 
 The **BepiColombo** release is named for the *ESA/JAXA Mercury exploration mission*.
