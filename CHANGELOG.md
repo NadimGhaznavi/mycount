@@ -9,6 +9,15 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+The **Cassini** release is named for the *Saturn exploration spacecraft*.
+
+### Changed
+
+- Show the current page in the internal web interface's title and header, and use the MyCount logo as its favicon.
+- Website title.
+- Made logo background transparent.
+- Enabled Minimal Mistakes wide layouts while retaining the author sidebar.
+
 ## [2.0.0] - 2026-10-17 @ 07:57
 
 The **BepiColombo** release is named for the *ESA/JAXA Mercury exploration mission*.
