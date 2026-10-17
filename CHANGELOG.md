@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [1.11.4] - 2026-10-17 @ 01:31
+
 This release celebrates the Cree language. This is the **nīsitanaw** (20) release.
 
 - Limit the Visits by Location Chart legend to 10 visible countries, with scrolling to see the rest.
