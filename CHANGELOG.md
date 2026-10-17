@@ -9,6 +9,15 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-17 @ 07:57
+
+The **BepiColombo** release is named for the *ESA/JAXA Mercury exploration mission*.
+
+### Fixed
+
+- Rebuilt site `_config.yml`.
+- Added a site logo.
+
 ## [1.11.4] - 2026-10-17 @ 01:31
 
 This release celebrates the Cree language. This is the **nīsitanaw** (20) release.
