@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-10-17 @ 11:36
+
 The **Galileo** release is named for the *Jupiter exploration mission*.
 
 ### Added 
