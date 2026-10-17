@@ -33,7 +33,7 @@ name: "mycount"
 description: "The project provides a GeoIP service over HTTP and ZMQ"
 url: "https://mycount.osoyalce.com" # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl: "" # the subpath of your site, e.g. "/blog"
-repository: NadimGhaznavi/r3el # GitHub username/repo-name e.g. "mmistakes/minimal-mistakes"
+repository: NadimGhaznavi/mycount # GitHub username/repo-name e.g. "mmistakes/minimal-mistakes"
 teaser: # path of fallback teaser image, e.g. "/assets/images/500x300.png"
 logo: "/pages/images/mycount.png"
 masthead_title: # overrides the website title displayed in the masthead, use " " for no title

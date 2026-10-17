@@ -8,7 +8,7 @@ Adding a new site to the **MyCount** application is simple.
 
 ## Install the Custom Minimal Mistakes Theme
 
-Copy and customize the [_config.yml](/_config.yml) for your GitHub pages site. Pay particular attention to the *mycount* section which supplies the site identifier.
+Copy and customize the [_config.yml](https://github.com/NadimGhaznavi/mycount/blob/main/_config.yml) for your GitHub pages site. Pay particular attention to the *mycount* section which supplies the site identifier.
 
 ```yaml
 mycount:

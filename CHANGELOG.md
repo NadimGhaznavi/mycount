@@ -13,6 +13,8 @@ The **Kepler** release is named for the *Exoplanet-hunting space telescope* whic
 
 ### Fixed
 
+- Point the new-site guide's configuration link to the GitHub source and correct
+  the documentation site's repository reference to MyCount.
 - Removed another broken link.
 
 ## [2.3.2] - 2026-10-17 @ 16:57
