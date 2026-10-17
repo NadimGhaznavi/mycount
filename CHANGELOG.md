@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.1.1] - 2026-10-17 @ 10:27
+
 The **Friendship7** release is named after John Glenn's orbital spacecraft.
 
 ### Fixed
