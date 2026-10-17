@@ -43,5 +43,4 @@ files. Missing imports/files, cycles, and unreachable artifacts fail generation.
 Dynamic imports/templates require explicit rules; this is static analysis, not
 execution of project code. Sorted output makes regeneration deterministic.
 
-See [Release management]({% link pages/releases.md %}) and
-[Upgrading]({% link pages/upgrading.md %}) for operational details.
+See [Release management]({% link pages/releases.md %}) for operational details.
