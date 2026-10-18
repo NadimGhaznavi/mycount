@@ -24,6 +24,7 @@ class DMyCount:
         "https://blog.osoyalce.com",
         "https://bmca.osoyalce.com",
         "https://bmdynip.osoyalce.com",
+        "https://bmforge.osoyalce.com",
         "https://bmgeoip.osoyalce.com",
         "https://cmdb.osoyalce.com",
         "https://db4e.osoyalce.com",
