@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.4.1] - 2026-10-17 @ 21:42
+
 The **New-Horizons** release is named for the *Pluto and Kuiper Belt exploration missions*.
 
 - Minor website edits.
