@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+The **OSIRIS-REx** release is named for the *Asteroid sample-return mission*.
+
+- Added **bmforge.osoyalce.com** to the CORS whitelist.
+
 ## [2.4.1] - 2026-10-17 @ 21:42
 
 The **New-Horizons** release is named for the *Pluto and Kuiper Belt exploration missions*.
