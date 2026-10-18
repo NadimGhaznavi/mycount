@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.4.2] - 2026-10-18 @ 08:12
+
 The **OSIRIS-REx** release is named for the *Asteroid sample-return mission*.
 
 - Added **bmforge.osoyalce.com** to the CORS whitelist.

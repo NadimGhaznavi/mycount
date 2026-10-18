@@ -4,10 +4,10 @@ from typing import Final
 
 
 class DMyCount:
-    VERSION: Final[str] = "2.4.1"
+    VERSION: Final[str] = "2.4.2"
     CMDB_SUBTYPE: Final[str] = "Web Analytics"
     CMDB_SUPPLIER: Final[str] = "Nadim-Daniel"
-    CMDB_CODENAME: Final[str] = "New-Horizons"
+    CMDB_CODENAME: Final[str] = "OSIRIS-REx"
     CMDB_COMPONENTS = (("Marketing Screenshots", "pages/marketing"),)
     CMDB_DATABASES = (("MyCount", "mycount"),)
     BASE_DIR: Final[str] = "/opt/prod/mycount"
