@@ -7,11 +7,15 @@ permalink: /CHANGELOG/
 
 # MyCount Changelog
 
-The **Luna** release is named after the *Soviet lunar exploration program*.
-
 ## [Unreleased]
 
+The **New-Horizons** release is named for the *Pluto and Kuiper Belt exploration missions*.
+
+- Minor website edits.
+
 ## [2.4.0] - 2026-10-17 @ 17:21
+
+The **Luna** release is named after the *Soviet lunar exploration program*.
 
 - Added *GitHub* marketing category to track GitHub software releases.
 

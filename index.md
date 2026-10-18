@@ -10,11 +10,11 @@ author_profile: true
 
 ![Pie Chart Examples](/pages/images/pie-chart-data.png)
 
-A web interface provides rich analytics.
+**MyCount** includes a web interface that provides rich analytics.
 
 ![All Traffic](/pages/images/all-traffic.png)
 
-The application also includes a marketing interface that allows the user to log social media and other posts which aim to generate website traffic. This aims to correlate marketing activity with user engagement.
+The application also includes a marketing interface that allows the user to log social media and other posts. The visualization correlates marketing activity logged in the journal with user engagement.
 
 ![Marketing Traffc](/pages/images/marketing-metrics-traffic.png)
 
@@ -26,7 +26,7 @@ The application also includes a marketing interface that allows the user to log 
 
 If you found this project intersting or useful please give the [GitHub repo](https://github.com/NadimGhaznavi/mycount) a star.
 
-Please contact me via email if you want provide feedback, notice any bugs, have feature requests or have any other questions.
+Please contact me via email to provide feedback, report bugs, have feature requests, or have any other questions.
 
 ---
 
