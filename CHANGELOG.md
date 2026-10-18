@@ -9,6 +9,12 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.4.3] - 2026-10-18 @ 08:17
+
+The **Pioneer** release is named to commemorate the early space exploration programs.
+
+- Use multiples of 5 for the All Traffic chart's y-axis ticks on the Metrics page.
+
 ## [2.4.2] - 2026-10-18 @ 08:12
 
 The **OSIRIS-REx** release is named for the *Asteroid sample-return mission*.

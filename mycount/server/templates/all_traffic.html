@@ -13,7 +13,7 @@
       margin: {l: 55, r: 20, t: 15, b: 45},
       xaxis: {type: 'date', tickformat: '%b %d', showgrid: false, fixedrange: true},
       yaxis: {title: {text: 'Hits'}, rangemode: 'tozero', minallowed: 0, tickformat: ',d',
-              dtick: Math.max(1, Math.ceil(Math.max(...hits) / 4)), gridcolor: '#62412b', fixedrange: true},
+              tick0: 0, dtick: Math.max(5, Math.ceil(Math.max(...hits) / 20) * 5), gridcolor: '#62412b', fixedrange: true},
       bargap: 0.25, showlegend: false,
     }, {responsive: true, displayModeBar: false});
   })();
