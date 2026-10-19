@@ -25,8 +25,10 @@ http_interface, http_port = Network.binding('http')
 https_interface, https_port = Network.binding('https')
 for name, value in {
     'DOMAIN': DCaddy.HOSTNAME, 'UPSTREAM': '{}:{}'.format(*Network.destination('backend')),
-    'HTTP_INTERFACE': http_interface, 'HTTP_PORT': http_port,
-    'HTTPS_INTERFACE': https_interface, 'HTTPS_PORT': https_port,
+    # Match Caddy's existing wildcard sockets so shared listeners can be reused.
+    'HTTP_BIND': '' if http_interface == '0.0.0.0' else f'bind {http_interface}',
+    'HTTPS_BIND': '' if https_interface == '0.0.0.0' else f'bind {https_interface}',
+    'HTTP_PORT': http_port, 'HTTPS_PORT': https_port,
     'COUNT_PATH': DMyCount.COUNT_PATH,
     'COLLECTION_PATH': DMyCount.COLLECTION_PATH, 'HEALTH_PATH': DMyCount.HEALTH_PATH,
     'VISITOR_HEADER': DCaddy.VISITOR_HEADER,
@@ -47,9 +49,12 @@ site.write_text(rendered)
 site.chmod(0o644)
 config.write_text(base + '\n' + directive + '\n')
 try:
-    subprocess.run(['systemctl', 'enable', '--now', DCaddy.SERVICE], check=True)
-    subprocess.run(['systemctl', 'reload', DCaddy.SERVICE], check=True)
-except subprocess.CalledProcessError:
+    subprocess.run(['systemctl', 'enable', '--now', DCaddy.SERVICE],
+                   check=True, timeout=DCaddy.COMMAND_TIMEOUT)
+    # The direct reload reports Caddy's error without waiting on systemd's reload notification.
+    subprocess.run(['caddy', 'reload', '--config', str(config), '--adapter', 'caddyfile'],
+                   check=True, timeout=DCaddy.COMMAND_TIMEOUT)
+except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
     config.write_text(original)
     if previous_site is None:
         site.unlink()
