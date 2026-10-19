@@ -24,7 +24,7 @@ rendered = Path('caddy/mycount.caddy').read_text()
 http_interface, http_port = Network.binding('http')
 https_interface, https_port = Network.binding('https')
 for name, value in {
-    'DOMAIN': DCaddy.HOSTNAME, 'UPSTREAM': '{}:{}'.format(*Network.binding('backend')),
+    'DOMAIN': DCaddy.HOSTNAME, 'UPSTREAM': '{}:{}'.format(*Network.destination('backend')),
     'HTTP_INTERFACE': http_interface, 'HTTP_PORT': http_port,
     'HTTPS_INTERFACE': https_interface, 'HTTPS_PORT': https_port,
     'COUNT_PATH': DMyCount.COUNT_PATH,

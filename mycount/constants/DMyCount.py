@@ -17,6 +17,7 @@ class DMyCount:
         ("backend", "127.0.0.1", 36666),
     )
     BASE_DIR: Final[str] = "/opt/prod/mycount"
+    CONFIG_FILE: Final[str] = "conf/mycount.json"
     DATABASE_ENV: Final[str] = "/etc/mycount/database.env"
     DATABASE_NAME: Final[str] = "mycount"
     DATABASE_USER: Final[str] = "mycount"

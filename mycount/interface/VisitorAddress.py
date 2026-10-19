@@ -13,7 +13,7 @@ class VisitorAddress:
     @staticmethod
     def resolve(request: Request) -> str | None:
         address = request.remote_addr
-        if address == Network.binding("backend")[0]:
+        if address == Network.destination("backend")[0]:
             forwarded = request.headers.get(DCaddy.VISITOR_HEADER)
             if forwarded is not None:
                 try:

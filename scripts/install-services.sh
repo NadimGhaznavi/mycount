@@ -31,6 +31,7 @@ python3 -B - <<'PY'
 from pathlib import Path
 from mycount.constants.DMyCount import DMyCount
 from mycount.interface.DatabaseEnvironment import DatabaseEnvironment
+from mycount.interface.Configuration import Configuration
 
 path = Path(DMyCount.DATABASE_ENV)
 if path.is_symlink() or path.stat().st_uid != 0 or path.stat().st_mode & 0o777 != 0o600:
@@ -38,6 +39,7 @@ if path.is_symlink() or path.stat().st_uid != 0 or path.stat().st_mode & 0o777 !
 values = DatabaseEnvironment.read(path)
 if values['DB_NAME'] != DMyCount.DATABASE_NAME or values['DB_USER'] != DMyCount.DATABASE_USER:
     raise SystemExit('Credentials do not belong to MyCount; run install.sh first.')
+Configuration.install()
 PY
 targets=(filesystem listener report-server)
 units=("${settings[@]:3}")
@@ -211,8 +213,7 @@ for use, expected, unit in (
 ):
     if unit not in sys.argv[1:]:
         continue
-    interface, port = Network.binding(use)
-    host = '127.0.0.1' if interface == '0.0.0.0' else interface
+    host, port = Network.destination(use)
     url = f'http://{host}:{port}/health'
     for attempt in range(30):
         try:

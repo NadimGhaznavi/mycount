@@ -13,6 +13,7 @@ class DeploymentConfiguration:
             version_pattern=rb'(    VERSION: Final\[str\] = )"[^"\n]+"',
             scan_roots=("mycount", "deployment_tools", "systemd", "caddy"),
             package_roots=("mycount", "deployment_tools"),
-            setup_files=("requirements.txt", "scripts/uninstall.sh"),
+            setup_files=("requirements.txt", "scripts/uninstall.sh", "scripts/restart.sh",
+                         "scripts/install-caddy.sh", "caddy/mycount.caddy"),
             full_setup_target=DDeployment.FILESYSTEM,
         )

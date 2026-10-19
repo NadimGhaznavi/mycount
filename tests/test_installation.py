@@ -182,6 +182,16 @@ class DeploymentTests(unittest.TestCase):
         self.assertIn('reverse_proxy 127.0.0.2:37000', rendered)
         self.router.assert_called_once_with((8080, 8443))
 
+    def test_caddy_uses_production_file_overrides(self):
+        from mycount.interface.Configuration import Configuration
+        Configuration.install()
+        path = self.app / DMyCount.CONFIG_FILE
+        path.write_text('{"network": {"backend": {"port": 37000}, "https": {"port": 8443}}}')
+        self.execute('install-caddy.sh')
+        self.assertIn('https://count.osoyalce.com:8443 {', self.site.read_text())
+        self.assertIn('reverse_proxy 127.0.0.1:37000', self.site.read_text())
+        self.router.assert_called_once_with((80, 8443))
+
     def test_caddy_reload_failure_restores_previous_files(self):
         original = self.config.read_text()
         self.run.side_effect = [subprocess.CompletedProcess([], 0), subprocess.CompletedProcess([], 0),

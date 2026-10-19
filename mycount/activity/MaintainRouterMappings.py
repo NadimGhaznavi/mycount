@@ -14,10 +14,11 @@ class MaintainRouterMappings:
         self.router = router
 
     def run(self, stopping: Event) -> None:
+        ports = (Network.binding("http")[1], Network.binding("https")[1])
         logger = logging.getLogger(__name__)
         while not stopping.is_set():
             try:
-                changed = self.router.forward((Network.binding("http")[1], Network.binding("https")[1]))
+                changed = self.router.forward(ports)
             except (OSError, subprocess.SubprocessError, RuntimeError, ValueError) as error:
                 logger.warning("Router mapping check failed; retrying in %s seconds: %s",
                                DRouterMappings.CHECK_INTERVAL, error)

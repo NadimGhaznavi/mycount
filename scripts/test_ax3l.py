@@ -19,9 +19,8 @@ def request(method: str, path: str, local: bool, payload: dict | None = None) ->
         '--dump-header', '-', '--output', '/dev/null', '--request', method,
         '--header', 'Origin: https://ax3l.osoyalce.com',
     ]
-    interface, https_port = Network.binding("https")
+    host, https_port = Network.destination("https")
     if local:
-        host = '127.0.0.1' if interface == '0.0.0.0' else interface
         command += ['--resolve', f'{DCaddy.HOSTNAME}:{https_port}:{host}', '--noproxy', '*']
     if method == 'OPTIONS':
         command += ['--header', 'Access-Control-Request-Method: POST',

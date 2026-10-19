@@ -32,6 +32,7 @@ class DDeployment:
             "scripts/clear-upnpc-routes.sh",
             "scripts/install.sh",
             "scripts/new-release.sh",
+            "scripts/restart.sh",
             "scripts/uninstall.sh",
             "scripts/update-deployment-dependencies.py",
             "scripts/upgrade.sh",
@@ -285,6 +286,11 @@ class DDeployment:
             "mycount/interface/VisitorAddress.py",
             "mycount/interface/__init__.py",
         ),
+        "mycount/interface/Configuration.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DMyCount.py",
+            "mycount/interface/__init__.py",
+        ),
         "mycount/interface/CountryNameMigration.py": (
             "mycount/__init__.py",
             "mycount/constants/DCountryNameMigration.py",
@@ -360,6 +366,7 @@ class DDeployment:
         "mycount/interface/Network.py": (
             "mycount/__init__.py",
             "mycount/constants/DMyCount.py",
+            "mycount/interface/Configuration.py",
             "mycount/interface/__init__.py",
         ),
         "mycount/interface/ReleaseFiles.py": (
@@ -561,6 +568,7 @@ class DDeployment:
             "mycount/constants/DMyCount.py",
             "mycount/constants/DRouterMappings.py",
             "mycount/interface/CitySchedule.py",
+            "mycount/interface/Configuration.py",
             "mycount/interface/DatabaseEnvironment.py",
             "mycount/interface/DbMgr.py",
             "mycount/interface/DeploymentFiles.py",
@@ -579,6 +587,12 @@ class DDeployment:
             "mycount/activity/ReleaseDeployment.py",
             "mycount/interface/ReleaseFiles.py",
             "scripts/update-deployment-dependencies.py",
+        ),
+        "scripts/restart.sh": (
+            "mycount/constants/DControl.py",
+            "mycount/constants/DMyCount.py",
+            "mycount/constants/DRouterMappings.py",
+            "mycount/interface/Configuration.py",
         ),
         "scripts/uninstall.sh": (
             "mycount/constants/DCaddy.py",

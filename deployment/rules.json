@@ -72,7 +72,8 @@
       "scripts/update-deployment-dependencies.py",
       "deployment_tools/__main__.py",
       "mycount/activity/ReconcileMarketingScreenshots.py",
-      "mycount/activity/RefreshCities.py"
+      "mycount/activity/RefreshCities.py",
+      "scripts/restart.sh"
     ],
     "listener": [
       "systemd/mycount-server.service",
