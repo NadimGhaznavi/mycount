@@ -1,10 +1,10 @@
 http://@DOMAIN@:@HTTP_PORT@ {
-    bind @HTTP_INTERFACE@
+    @HTTP_BIND@
     redir https://@DOMAIN@:@HTTPS_PORT@{uri} permanent
 }
 
 https://@DOMAIN@:@HTTPS_PORT@ {
-    bind @HTTPS_INTERFACE@
+    @HTTPS_BIND@
     @collector path @COLLECTION_PATH@ @HEALTH_PATH@ @COUNT_PATH@
     handle @collector {
         reverse_proxy @UPSTREAM@ {
