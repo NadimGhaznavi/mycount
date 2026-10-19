@@ -11,6 +11,8 @@ The **Sputnik** release is named for the Soviet satellite, the first one to be p
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-10-19 @ 05:05
+
 - Create `conf/mycount.json` in the production install with CMDB network
   defaults, preserve user overrides during upgrades, and load them on restart.
 - Add `scripts/restart.sh` to apply network configuration to Caddy, router

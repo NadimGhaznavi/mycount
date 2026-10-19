@@ -1,7 +1,7 @@
 {
   "artifacts": {
     "caddy/mycount.caddy": {
-      "digest": "0f5b8aca74255d51a54d97f5889232a32c66e2bd7606fb4daf16b16e4ec2c933",
+      "digest": "3b1dfe8f19b38ec885c9410e07e5bc11acdafe27cb8ec84838ee7d78e2ece5a0",
       "targets": [
         "filesystem"
       ]
@@ -13,7 +13,7 @@
       ]
     },
     "deployment/rules.json": {
-      "digest": "15ea5aeb936bf74102cb5499601f0a39d07503567debd2c7e1ec8d22a8a6ecf6",
+      "digest": "14548b051077e4eef29c75bd0493581c114a9c8d47b78b29f1d9e8be172e4e2d",
       "targets": [
         "filesystem"
       ]
@@ -99,7 +99,7 @@
       ]
     },
     "mycount/activity/MaintainRouterMappings.py": {
-      "digest": "b2bc17cd4ffb6128fa4a14e76a2aca8184a40c37893e3c3b86be4182f151cc14",
+      "digest": "91ce97019ed0efabf95c1b575ac3928f0ba17fe1fa836225373b232e702a2e5c",
       "targets": [
         "listener"
       ]
@@ -161,7 +161,7 @@
       ]
     },
     "mycount/constants/DCaddy.py": {
-      "digest": "dce4b07204df01192e4a2d7818fec238a1fb2e5ddbcb2d449cb50c59cb7c7beb",
+      "digest": "9995332b11f1e20aeb16db98860afb207b67814e85ace0884df3c0144eeb01bb",
       "targets": [
         "filesystem",
         "listener"
@@ -175,10 +175,9 @@
       ]
     },
     "mycount/constants/DControl.py": {
-      "digest": "271e6d47c8b587efefe6882ffd17f1b9182ef7735afdaab1d0704a19ab4f2de6",
+      "digest": "0a614db82b71e8fddda7be97ed027174c3303ed94b4fbb7eadf332d4fc63acdb",
       "targets": [
-        "filesystem",
-        "report-server"
+        "filesystem"
       ]
     },
     "mycount/constants/DCountryNameMigration.py": {
@@ -196,7 +195,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "e93da7caa5c193d6be801f96bb330f167f4ac52759aa7b18568b23390350ccd2",
+      "digest": "8c5f644f4a9a5f5d64d37f9d104b0dfb18f2db30ba72d185dbe9fc64e2a7803d",
       "targets": [
         "filesystem"
       ]
@@ -216,7 +215,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "a0e9dad2c2e9bcc56418f0e1a6f99ae13d13e465270bc7551d41df494feeb14f",
+      "digest": "3feffc9168589f450367db18d3f190a80c21654a1623e3fc5241a229930c5d6e",
       "targets": [
         "filesystem",
         "listener",
@@ -320,6 +319,14 @@
         "listener"
       ]
     },
+    "mycount/interface/Configuration.py": {
+      "digest": "40a683aff53a9d0b3d22ac6f219df5e970d0bd6e9e87d434636ebced583813f9",
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ]
+    },
     "mycount/interface/CountryNameMigration.py": {
       "digest": "7c9f672072b4042d8b2f3949c6313a541e5d79879fef49bcd9a9de270b4398e7",
       "targets": [
@@ -349,7 +356,7 @@
       ]
     },
     "mycount/interface/DeploymentConfiguration.py": {
-      "digest": "23f115a0b48c843dbe2240c9cadaa911cde34adc0608fe7dc9bd9e066b33f929",
+      "digest": "9f7a94d4f11d678a89b26910b631bbec0391675f119c96a58ad5c7664d28d7b9",
       "targets": [
         "filesystem"
       ]
@@ -404,6 +411,14 @@
         "report-server"
       ]
     },
+    "mycount/interface/Network.py": {
+      "digest": "833c3e25a4ec76e68286f8b548f59c59adbe1373c00c426cc257a565c0fc881d",
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ]
+    },
     "mycount/interface/ReleaseFiles.py": {
       "digest": "ca4e08c05c7547522fbb222d2e47effb9c007d77f10897c5a85757bb8da17e74",
       "targets": [
@@ -437,13 +452,13 @@
       ]
     },
     "mycount/interface/VisitPayload.py": {
-      "digest": "4a5c43b23be44e162cb4f1d000ebb01a0ec5bea50f95d52e1352eb6884df7cfd",
+      "digest": "38b91ac59f72eb2f513dc35cda301cbfb5a30e70e8ec11cee44bc139472a7514",
       "targets": [
         "listener"
       ]
     },
     "mycount/interface/VisitorAddress.py": {
-      "digest": "56e845e7e8bed0522d4d0a98f1d964060f57a3a2af496d7395bd1b44cd42a71f",
+      "digest": "8a90d6b22f34e9434c9db5c0ab69fdc28efb56954b1cd5c533b60c69d5805f09",
       "targets": [
         "listener"
       ]
@@ -481,13 +496,13 @@
       ]
     },
     "mycount/server/ControlServer.py": {
-      "digest": "ecd548bafd90395059d8cdf48d2e7715397388f19c6041a094ccf492af44b28f",
+      "digest": "02be7f832ec0c0c6d2b5bf9852ce20930d0f4019e3feac69b7513570a5d375ae",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/MyCountServer.py": {
-      "digest": "7e536f6a8e92af63fdc82f5845d953b7e1d6e917958bcd222273b153eae27eb0",
+      "digest": "7406f1caf170289f416c4db70f2e57049a3d32f3da25abb0caf7661ea471c511",
       "targets": [
         "listener"
       ]
@@ -622,19 +637,19 @@
       ]
     },
     "scripts/clear-upnpc-routes.sh": {
-      "digest": "5c068b82581e28a7cb533cea9f8e7333ef3961724aa6cc07b6d61d39fad56029",
+      "digest": "59e2a55b34559f8f82f9f1f1becf0f0f5f050649b147fcece7c7c852cd44c507",
       "targets": [
         "filesystem"
       ]
     },
     "scripts/install-caddy.sh": {
-      "digest": "56696dd7913a5ff3f620fd28e4a575fee286929f621e785d7e56ab022531e528",
+      "digest": "72fd0a5391f99f679f5766e13c5d5e4f230cfa9e3ef29fafe84bad351d28d302",
       "targets": [
         "filesystem"
       ]
     },
     "scripts/install-services.sh": {
-      "digest": "e2308ab850cc46132aee8353a774b2cc6c622130a1dd24a4799fee8bc6fa5c57",
+      "digest": "57a50dbe7226c74332f013d9baf3e97325e04dc8f19262b914fb416c10aed41a",
       "targets": [
         "filesystem"
       ]
@@ -651,8 +666,14 @@
         "filesystem"
       ]
     },
+    "scripts/restart.sh": {
+      "digest": "55376dae22e4da96bd16576c3a9c04b5d4c1be8a240707bd4e2f8da652145631",
+      "targets": [
+        "filesystem"
+      ]
+    },
     "scripts/uninstall.sh": {
-      "digest": "90a814411631e64fa173d5534276f9c165dafce8e73a085c3088d34576137c57",
+      "digest": "61c78ce978d36ca3571b26ad16bc6e947f285c2abdce2a1e2a67f6d2c4a9cd00",
       "targets": [
         "filesystem"
       ]
@@ -1193,6 +1214,14 @@
         "report-server"
       ],
       "version": "2.4.3"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "2.5.0"
     }
   ]
 }
