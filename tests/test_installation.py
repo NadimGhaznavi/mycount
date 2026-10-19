@@ -165,6 +165,8 @@ class DeploymentTests(unittest.TestCase):
         commands = [call.args[0] for call in self.run.call_args_list]
         self.assertIn(['caddy', 'reload', '--config', str(self.config), '--adapter', 'caddyfile'], commands)
         self.assertNotIn(['systemctl', 'reload', DCaddy.SERVICE], commands)
+        self.assertNotIn(['systemctl', 'enable', '--now', DCaddy.SERVICE], commands)
+        self.assertNotIn(['systemctl', 'start', DCaddy.SERVICE], commands)
         self.assertEqual(self.router.call_count, 2)
         self.router.assert_called_with((80, 443))
 
@@ -196,10 +198,37 @@ class DeploymentTests(unittest.TestCase):
         self.assertIn('reverse_proxy 127.0.0.1:37000', self.site.read_text())
         self.router.assert_called_once_with((80, 8443))
 
+    def test_caddy_pending_reload_does_not_queue_start(self):
+        def run(command, **kwargs):
+            if command[:2] in (['systemctl', 'start'], ['systemctl', 'reload']):
+                self.fail('Must not wait on a service job while Caddy is already running.')
+            if command[:2] == ['systemctl', 'enable']:
+                self.assertNotIn('--now', command)
+            return subprocess.CompletedProcess(command, 0)
+
+        self.run.side_effect = run
+        self.execute('install-caddy.sh')
+        self.assertEqual(self.run.call_args.args[0][:2], ['caddy', 'reload'])
+        self.assertEqual(self.run.call_args.kwargs['timeout'], DCaddy.COMMAND_TIMEOUT)
+        self.router.assert_called_once_with((80, 443))
+
+    def test_inactive_caddy_is_started_before_reload(self):
+        def run(command, **kwargs):
+            status = 3 if command[:2] == ['systemctl', 'is-active'] else 0
+            return subprocess.CompletedProcess(command, status)
+
+        self.run.side_effect = run
+        self.execute('install-caddy.sh')
+        commands = [call.args[0] for call in self.run.call_args_list]
+        start = commands.index(['systemctl', 'start', DCaddy.SERVICE])
+        reload = commands.index(['caddy', 'reload', '--config', str(self.config), '--adapter', 'caddyfile'])
+        self.assertLess(start, reload)
+        self.assertEqual(self.run.call_args_list[start].kwargs['timeout'], DCaddy.COMMAND_TIMEOUT)
+
     def test_caddy_reload_failure_restores_previous_files(self):
         original = self.config.read_text()
-        self.run.side_effect = [subprocess.CompletedProcess([], 0), subprocess.CompletedProcess([], 0),
-                                subprocess.CalledProcessError(1, 'systemctl')]
+        self.run.side_effect = [subprocess.CompletedProcess([], 0)] * 3 + [
+            subprocess.CalledProcessError(1, 'caddy reload')]
         with self.assertRaises(subprocess.CalledProcessError):
             self.execute('install-caddy.sh')
         self.assertEqual(self.config.read_text(), original)
@@ -207,8 +236,8 @@ class DeploymentTests(unittest.TestCase):
 
     def test_caddy_reload_timeout_restores_previous_files(self):
         original = self.config.read_text()
-        self.run.side_effect = [subprocess.CompletedProcess([], 0), subprocess.CompletedProcess([], 0),
-                                subprocess.TimeoutExpired('caddy reload', DCaddy.COMMAND_TIMEOUT)]
+        self.run.side_effect = [subprocess.CompletedProcess([], 0)] * 3 + [
+            subprocess.TimeoutExpired('caddy reload', DCaddy.COMMAND_TIMEOUT)]
         with self.assertRaises(subprocess.TimeoutExpired):
             self.execute('install-caddy.sh')
         self.assertEqual(self.config.read_text(), original)
