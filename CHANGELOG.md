@@ -9,6 +9,13 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.5.2] - 2026-10-19 @ 05:17
+
+The **Ulysses** release is named for the *Solar polar exploration spacecraft*.
+
+- Avoid waiting behind a pending Caddy reload job during upgrade: enable the
+  service separately, start it only when inactive, then reload Caddy directly.
+
 ## [2.5.1] - 2026-10-19 @ 05:13
 
 The **Tianwen** release is named for the *Chinese planetary exploration program*.

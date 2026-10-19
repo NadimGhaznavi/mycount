@@ -49,8 +49,14 @@ site.write_text(rendered)
 site.chmod(0o644)
 config.write_text(base + '\n' + directive + '\n')
 try:
-    subprocess.run(['systemctl', 'enable', '--now', DCaddy.SERVICE],
+    subprocess.run(['systemctl', 'enable', DCaddy.SERVICE],
                    check=True, timeout=DCaddy.COMMAND_TIMEOUT)
+    # An already-running Caddy may have a stale systemd reload job. Do not queue a start behind it.
+    active = subprocess.run(['systemctl', 'is-active', '--quiet', DCaddy.SERVICE],
+                            check=False, timeout=DCaddy.COMMAND_TIMEOUT)
+    if active.returncode != 0:
+        subprocess.run(['systemctl', 'start', DCaddy.SERVICE],
+                       check=True, timeout=DCaddy.COMMAND_TIMEOUT)
     # The direct reload reports Caddy's error without waiting on systemd's reload notification.
     subprocess.run(['caddy', 'reload', '--config', str(config), '--adapter', 'caddyfile'],
                    check=True, timeout=DCaddy.COMMAND_TIMEOUT)
