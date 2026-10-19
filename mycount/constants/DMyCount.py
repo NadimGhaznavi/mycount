@@ -10,14 +10,18 @@ class DMyCount:
     CMDB_CODENAME: Final[str] = "Pioneer"
     CMDB_COMPONENTS = (("Marketing Screenshots", "pages/marketing"),)
     CMDB_DATABASES = (("MyCount", "mycount"),)
+    CMDB_NETWORK: Final[tuple[tuple[str, str, int], ...]] = (
+        ("http", "0.0.0.0", 80),
+        ("https", "0.0.0.0", 443),
+        ("report", "0.0.0.0", 61777),
+        ("backend", "127.0.0.1", 36666),
+    )
     BASE_DIR: Final[str] = "/opt/prod/mycount"
     DATABASE_ENV: Final[str] = "/etc/mycount/database.env"
     DATABASE_NAME: Final[str] = "mycount"
     DATABASE_USER: Final[str] = "mycount"
     SERVICE_USER: Final[str] = "mycount"
     SERVICE_UNIT: Final[str] = "mycount-server.service"
-    HOST: Final[str] = "127.0.0.1"
-    PORT: Final[int] = 36666
     ORIGINS: Final[tuple[str, ...]] = (
         "https://aihydra.osoyalce.com",
         "https://ax3l.osoyalce.com",
@@ -64,7 +68,6 @@ class DMyCount:
     COUNT_PATH: Final[str] = "/get_count"
     COLLECTION_PATH: Final[str] = "/count"
     HEALTH_PATH: Final[str] = "/health"
-    HTTPS_PORT: Final[int] = 443
     PAYLOAD_FIELDS: Final[frozenset[str]] = frozenset(
         {
             "schema_version",

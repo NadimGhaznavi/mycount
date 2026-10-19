@@ -12,6 +12,19 @@ cd mycount
 sudo ./scripts/install.sh
 ```
 
+## Network configuration
+
+`DMyCount.CMDB_NETWORK` in `mycount/constants/DMyCount.py` is the shared
+network inventory for MyCount and CMDB discovery. Each entry contains
+`(use, interface, port)`. Keep the four uses: `http` and `https` for Caddy,
+`report` for MyCount Control, and `backend` for the collector.
+
+Server bindings, Caddy's listeners and upstream, public router mappings, and
+deployment health checks use this inventory. Apply changes through the normal
+deployment workflow. Control's `--host` and `--port` arguments still override
+its defaults for an individual invocation. Database and GeoIP connections have
+separate settings because they are outbound dependencies.
+
 ---
 
 ## Uninstall MyCount

@@ -116,9 +116,8 @@ class DDeployment:
         "mycount/activity/MaintainRouterMappings.py": (
             "mycount/__init__.py",
             "mycount/activity/__init__.py",
-            "mycount/constants/DCaddy.py",
-            "mycount/constants/DMyCount.py",
             "mycount/constants/DRouterMappings.py",
+            "mycount/interface/Network.py",
             "mycount/interface/RouterMappings.py",
         ),
         "mycount/activity/MarketingSchema.py": (
@@ -358,6 +357,11 @@ class DDeployment:
             "mycount/constants/DMarketing.py",
             "mycount/interface/__init__.py",
         ),
+        "mycount/interface/Network.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DMyCount.py",
+            "mycount/interface/__init__.py",
+        ),
         "mycount/interface/ReleaseFiles.py": (
             "deployment_tools/ReleaseFiles.py",
             "mycount/__init__.py",
@@ -398,7 +402,7 @@ class DDeployment:
         "mycount/interface/VisitorAddress.py": (
             "mycount/__init__.py",
             "mycount/constants/DCaddy.py",
-            "mycount/constants/DMyCount.py",
+            "mycount/interface/Network.py",
             "mycount/interface/VisitPayload.py",
             "mycount/interface/__init__.py",
         ),
@@ -453,7 +457,7 @@ class DDeployment:
         ),
         "mycount/server/ControlServer.py": (
             "mycount/__init__.py",
-            "mycount/constants/DControl.py",
+            "mycount/interface/Network.py",
             "mycount/server/ControlHandler.py",
             "mycount/server/__init__.py",
         ),
@@ -463,6 +467,7 @@ class DDeployment:
             "mycount/activity/CollectVisit.py",
             "mycount/constants/DMyCount.py",
             "mycount/interface/CollectorHttp.py",
+            "mycount/interface/Network.py",
             "mycount/interface/ServiceLogger.py",
             "mycount/interface/VisitPayload.py",
             "mycount/server/__init__.py",
@@ -536,14 +541,14 @@ class DDeployment:
         "requirements.txt": (
         ),
         "scripts/clear-upnpc-routes.sh": (
-            "mycount/constants/DCaddy.py",
-            "mycount/constants/DMyCount.py",
+            "mycount/interface/Network.py",
             "mycount/interface/RouterMappings.py",
         ),
         "scripts/install-caddy.sh": (
             "caddy/mycount.caddy",
             "mycount/constants/DCaddy.py",
             "mycount/constants/DMyCount.py",
+            "mycount/interface/Network.py",
             "mycount/interface/RouterMappings.py",
         ),
         "scripts/install-services.sh": (
@@ -559,6 +564,7 @@ class DDeployment:
             "mycount/interface/DatabaseEnvironment.py",
             "mycount/interface/DbMgr.py",
             "mycount/interface/DeploymentFiles.py",
+            "mycount/interface/Network.py",
             "mycount/interface/ReleaseFiles.py",
             "requirements.txt",
             "scripts/install-caddy.sh",

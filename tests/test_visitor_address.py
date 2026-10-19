@@ -1,9 +1,11 @@
 import unittest
+from unittest.mock import patch
 
 from werkzeug.test import EnvironBuilder
 from werkzeug.wrappers import Request
 
 from mycount.constants.DCaddy import DCaddy
+from mycount.constants.DMyCount import DMyCount
 from mycount.interface.VisitPayload import InvalidVisit
 from mycount.interface.VisitorAddress import VisitorAddress
 
@@ -16,6 +18,11 @@ class VisitorAddressTests(unittest.TestCase):
     def test_local_proxy(self):
         request = self.request('127.0.0.1', '2001:4860:4860::8888')
         self.assertEqual(VisitorAddress.resolve(request), '2001:4860:4860::8888')
+
+    def test_proxy_address_uses_backend_interface(self):
+        with patch.object(DMyCount, 'CMDB_NETWORK', (('backend', '127.0.0.2', 37000),)):
+            self.assertEqual(VisitorAddress.resolve(self.request('127.0.0.2', '8.8.8.8')), '8.8.8.8')
+            self.assertEqual(VisitorAddress.resolve(self.request('192.0.2.1', '8.8.8.8')), '192.0.2.1')
 
     def test_untrusted_peer_cannot_override_address(self):
         self.assertEqual(VisitorAddress.resolve(self.request('192.0.2.1', '8.8.8.8')), '192.0.2.1')

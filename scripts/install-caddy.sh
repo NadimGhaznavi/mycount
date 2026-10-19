@@ -14,14 +14,19 @@ from tempfile import NamedTemporaryFile
 
 from mycount.constants.DCaddy import DCaddy
 from mycount.constants.DMyCount import DMyCount
+from mycount.interface.Network import Network
 from mycount.interface.RouterMappings import RouterMappings
 
 config = Path(DCaddy.CONFIG)
 site = Path(DCaddy.SITE_CONFIG)
 original = config.read_text()
 rendered = Path('caddy/mycount.caddy').read_text()
+http_interface, http_port = Network.binding('http')
+https_interface, https_port = Network.binding('https')
 for name, value in {
-    'DOMAIN': DCaddy.HOSTNAME, 'UPSTREAM': f'{DMyCount.HOST}:{DMyCount.PORT}',
+    'DOMAIN': DCaddy.HOSTNAME, 'UPSTREAM': '{}:{}'.format(*Network.binding('backend')),
+    'HTTP_INTERFACE': http_interface, 'HTTP_PORT': http_port,
+    'HTTPS_INTERFACE': https_interface, 'HTTPS_PORT': https_port,
     'COUNT_PATH': DMyCount.COUNT_PATH,
     'COLLECTION_PATH': DMyCount.COLLECTION_PATH, 'HEALTH_PATH': DMyCount.HEALTH_PATH,
     'VISITOR_HEADER': DCaddy.VISITOR_HEADER,
@@ -51,6 +56,6 @@ except subprocess.CalledProcessError:
     else:
         site.write_bytes(previous_site)
     raise
-RouterMappings().forward((DCaddy.HTTP_PORT, DMyCount.HTTPS_PORT))
-print(f'Configured https://{DCaddy.HOSTNAME}{DMyCount.COLLECTION_PATH}; check certificate issuance in the Caddy journal.')
+RouterMappings().forward((http_port, https_port))
+print(f'Configured https://{DCaddy.HOSTNAME}:{https_port}{DMyCount.COLLECTION_PATH}; check certificate issuance in the Caddy journal.')
 PY

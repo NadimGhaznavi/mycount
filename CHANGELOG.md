@@ -9,6 +9,9 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Use `DMyCount.CMDB_NETWORK` as the source for local listener interfaces and
+  ports, including Caddy, router mappings, and deployment health checks.
+
 ## [2.4.3] - 2026-10-18 @ 08:17
 
 The **Pioneer** release is named to commemorate the early space exploration programs.
