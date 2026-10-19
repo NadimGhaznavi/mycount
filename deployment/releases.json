@@ -215,7 +215,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "0002ea4a076931403ce85bbd3e112358ce13a6a047833654cea7a0d3317ffec5",
+      "digest": "bda90ad1430793421a65f115280d853b1fc8d615dff79a2367c5ec4ae0e4188b",
       "targets": [
         "filesystem",
         "listener",
@@ -643,7 +643,7 @@
       ]
     },
     "scripts/install-caddy.sh": {
-      "digest": "725ddcaca0051d7983700a23bdc0f29e2d31b11ecf3d7ba2396ec416d60cad72",
+      "digest": "14f42dd62f970db1ff16b459534921c1fefef833bb3529c1c47a3726dcd7feca",
       "targets": [
         "filesystem"
       ]
@@ -1230,6 +1230,14 @@
         "report-server"
       ],
       "version": "2.5.1"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "2.5.2"
     }
   ]
 }

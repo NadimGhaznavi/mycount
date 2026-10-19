@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.5.2] - 2026-10-19 @ 05:17
+
 The **Ulysses** release is named for the *Solar polar exploration spacecraft*.
 
 - Avoid waiting behind a pending Caddy reload job during upgrade: enable the
