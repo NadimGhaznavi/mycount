@@ -7,11 +7,20 @@ permalink: /CHANGELOG/
 
 # MyCount Changelog
 
-The **Sputnik** release is named for the Soviet satellite, the first one to be put into orbit.
-
 ## [Unreleased]
 
+## [2.5.1] - 2026-10-19 @ 05:13
+
+The **Tianwen** release is named for the *Chinese planetary exploration program*.
+
+- Fix Caddy reload failures during upgrade by reusing its existing wildcard
+  listeners instead of introducing conflicting IPv4 sockets.
+- Reload Caddy directly with a bounded timeout and restore configuration files
+  on failure, avoiding an indefinite wait on systemd's reload notification.
+
 ## [2.5.0] - 2026-10-19 @ 05:05
+
+The **Sputnik** release is named for the Soviet satellite, the first one to be put into orbit.
 
 - Create `conf/mycount.json` in the production install with CMDB network
   defaults, preserve user overrides during upgrades, and load them on restart.

@@ -1,7 +1,7 @@
 {
   "artifacts": {
     "caddy/mycount.caddy": {
-      "digest": "3b1dfe8f19b38ec885c9410e07e5bc11acdafe27cb8ec84838ee7d78e2ece5a0",
+      "digest": "31200e8f1bc6b5b25dc1fc104d64cd9b23017c5f526bc74a43be1346a16f27f6",
       "targets": [
         "filesystem"
       ]
@@ -161,7 +161,7 @@
       ]
     },
     "mycount/constants/DCaddy.py": {
-      "digest": "9995332b11f1e20aeb16db98860afb207b67814e85ace0884df3c0144eeb01bb",
+      "digest": "e3e60bdd697381af4d89fc501f792b8dc9955269131810afbbec9021ffc9bdac",
       "targets": [
         "filesystem",
         "listener"
@@ -215,7 +215,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "3feffc9168589f450367db18d3f190a80c21654a1623e3fc5241a229930c5d6e",
+      "digest": "0002ea4a076931403ce85bbd3e112358ce13a6a047833654cea7a0d3317ffec5",
       "targets": [
         "filesystem",
         "listener",
@@ -643,7 +643,7 @@
       ]
     },
     "scripts/install-caddy.sh": {
-      "digest": "72fd0a5391f99f679f5766e13c5d5e4f230cfa9e3ef29fafe84bad351d28d302",
+      "digest": "725ddcaca0051d7983700a23bdc0f29e2d31b11ecf3d7ba2396ec416d60cad72",
       "targets": [
         "filesystem"
       ]
@@ -1222,6 +1222,14 @@
         "report-server"
       ],
       "version": "2.5.0"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "2.5.1"
     }
   ]
 }

@@ -148,7 +148,7 @@ class DeploymentTests(unittest.TestCase):
 
     def test_caddy_install_is_repeatable_and_validates_beside_config(self):
         def run(command, **kwargs):
-            if command[0] == 'caddy':
+            if command[:2] == ['caddy', 'validate']:
                 candidate = Path(command[command.index('--config') + 1])
                 self.assertEqual(candidate.parent, self.config.parent)
                 self.assertIn(self.other_sites.strip(), candidate.read_text())
@@ -161,6 +161,10 @@ class DeploymentTests(unittest.TestCase):
         self.assertIn(self.other_sites.strip(), self.config.read_text())
         self.assertEqual(self.config.with_name('Caddyfile.before-mycount').read_text(), original)
         self.assertIn('reverse_proxy', self.site.read_text())
+        self.assertNotIn('bind 0.0.0.0', self.site.read_text())
+        commands = [call.args[0] for call in self.run.call_args_list]
+        self.assertIn(['caddy', 'reload', '--config', str(self.config), '--adapter', 'caddyfile'], commands)
+        self.assertNotIn(['systemctl', 'reload', DCaddy.SERVICE], commands)
         self.assertEqual(self.router.call_count, 2)
         self.router.assert_called_with((80, 443))
 
@@ -200,6 +204,17 @@ class DeploymentTests(unittest.TestCase):
             self.execute('install-caddy.sh')
         self.assertEqual(self.config.read_text(), original)
         self.assertEqual(self.site.read_text(), 'previous site')
+
+    def test_caddy_reload_timeout_restores_previous_files(self):
+        original = self.config.read_text()
+        self.run.side_effect = [subprocess.CompletedProcess([], 0), subprocess.CompletedProcess([], 0),
+                                subprocess.TimeoutExpired('caddy reload', DCaddy.COMMAND_TIMEOUT)]
+        with self.assertRaises(subprocess.TimeoutExpired):
+            self.execute('install-caddy.sh')
+        self.assertEqual(self.config.read_text(), original)
+        self.assertEqual(self.site.read_text(), 'previous site')
+        self.assertEqual(self.run.call_args.kwargs['timeout'], DCaddy.COMMAND_TIMEOUT)
+        self.router.assert_not_called()
 
     def test_full_setup_removes_legacy_geoip_schedule_and_runner(self):
         legacy = self.app / 'scripts/update-geoip.sh'
