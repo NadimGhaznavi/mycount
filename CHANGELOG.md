@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.5.1] - 2026-10-19 @ 05:13
+
 The **Tianwen** release is named for the *Chinese planetary exploration program*.
 
 - Fix Caddy reload failures during upgrade by reusing its existing wildcard
