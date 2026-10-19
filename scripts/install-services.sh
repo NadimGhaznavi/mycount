@@ -31,6 +31,7 @@ python3 -B - <<'PY'
 from pathlib import Path
 from mycount.constants.DMyCount import DMyCount
 from mycount.interface.DatabaseEnvironment import DatabaseEnvironment
+from mycount.interface.Configuration import Configuration
 
 path = Path(DMyCount.DATABASE_ENV)
 if path.is_symlink() or path.stat().st_uid != 0 or path.stat().st_mode & 0o777 != 0o600:
@@ -38,6 +39,7 @@ if path.is_symlink() or path.stat().st_uid != 0 or path.stat().st_mode & 0o777 !
 values = DatabaseEnvironment.read(path)
 if values['DB_NAME'] != DMyCount.DATABASE_NAME or values['DB_USER'] != DMyCount.DATABASE_USER:
     raise SystemExit('Credentials do not belong to MyCount; run install.sh first.')
+Configuration.install()
 PY
 targets=(filesystem listener report-server)
 units=("${settings[@]:3}")
@@ -200,18 +202,19 @@ import sys
 import time
 from urllib.error import URLError
 from urllib.request import ProxyHandler, build_opener
-from mycount.constants.DMyCount import DMyCount
-
 from mycount.constants.DControl import DControl
+from mycount.constants.DMyCount import DMyCount
+from mycount.interface.Network import Network
 
 opener = build_opener(ProxyHandler({}))
-for port, expected, unit in (
-    (DMyCount.PORT, 204, DMyCount.SERVICE_UNIT),
-    (DControl.PORT, 200, DControl.SERVICE_UNIT),
+for use, expected, unit in (
+    ('backend', 204, DMyCount.SERVICE_UNIT),
+    ('report', 200, DControl.SERVICE_UNIT),
 ):
     if unit not in sys.argv[1:]:
         continue
-    url = f'http://127.0.0.1:{port}/health'
+    host, port = Network.destination(use)
+    url = f'http://{host}:{port}/health'
     for attempt in range(30):
         try:
             with opener.open(url, timeout=1) as response:
@@ -222,7 +225,7 @@ for port, expected, unit in (
         time.sleep(1)
     else:
         raise SystemExit('Health check failed; inspect journalctl -u ' + unit)
-print(f'MyCount Control: http://<server>:{DControl.PORT}/')
+print(f'MyCount Control: http://<server>:{Network.binding("report")[1]}/')
 PY
 }
 

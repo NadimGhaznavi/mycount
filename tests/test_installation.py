@@ -164,6 +164,34 @@ class DeploymentTests(unittest.TestCase):
         self.assertEqual(self.router.call_count, 2)
         self.router.assert_called_with((80, 443))
 
+    def test_caddy_uses_inventory_interfaces_and_ports(self):
+        inventory = (
+            ('report', '0.0.0.0', 62000),
+            ('backend', '127.0.0.2', 37000),
+            ('https', '192.0.2.11', 8443),
+            ('http', '192.0.2.12', 8080),
+        )
+        with patch.object(DMyCount, 'CMDB_NETWORK', inventory):
+            self.execute('install-caddy.sh')
+        rendered = self.site.read_text()
+        self.assertIn('http://count.osoyalce.com:8080 {', rendered)
+        self.assertIn('https://count.osoyalce.com:8443 {', rendered)
+        self.assertIn('bind 192.0.2.12', rendered)
+        self.assertIn('bind 192.0.2.11', rendered)
+        self.assertIn('redir https://count.osoyalce.com:8443{uri} permanent', rendered)
+        self.assertIn('reverse_proxy 127.0.0.2:37000', rendered)
+        self.router.assert_called_once_with((8080, 8443))
+
+    def test_caddy_uses_production_file_overrides(self):
+        from mycount.interface.Configuration import Configuration
+        Configuration.install()
+        path = self.app / DMyCount.CONFIG_FILE
+        path.write_text('{"network": {"backend": {"port": 37000}, "https": {"port": 8443}}}')
+        self.execute('install-caddy.sh')
+        self.assertIn('https://count.osoyalce.com:8443 {', self.site.read_text())
+        self.assertIn('reverse_proxy 127.0.0.1:37000', self.site.read_text())
+        self.router.assert_called_once_with((80, 8443))
+
     def test_caddy_reload_failure_restores_previous_files(self):
         original = self.config.read_text()
         self.run.side_effect = [subprocess.CompletedProcess([], 0), subprocess.CompletedProcess([], 0),

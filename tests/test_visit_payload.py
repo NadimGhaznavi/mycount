@@ -1,6 +1,8 @@
 import unittest
+from unittest.mock import patch
 from uuid import UUID
 
+from mycount.constants.DMyCount import DMyCount
 from mycount.interface.VisitPayload import InvalidVisit, VisitPayload
 
 
@@ -18,6 +20,13 @@ class VisitPayloadTests(unittest.TestCase):
         self.assertEqual(visit.site, 'ax3l')
         self.assertEqual(visit.url, self.origin + '/page')
         self.assertEqual(agent, 'Example')
+
+    def test_origin_default_port_is_independent_of_collector_listener(self):
+        with patch.object(DMyCount, 'CMDB_NETWORK', (('https', '0.0.0.0', 8443),)):
+            visit, _ = VisitPayload().resolve({**self.payload, 'url': self.origin + ':443/page'}, self.origin)
+            self.assertEqual(visit.url, self.origin + '/page')
+            with self.assertRaises(InvalidVisit):
+                VisitPayload().resolve({**self.payload, 'url': self.origin + ':8443/page'}, self.origin)
 
     def test_rejects_invalid_site_labels(self):
         for site in ('', 'a' * 101, 'site with spaces', [], None, '\ud800'):
