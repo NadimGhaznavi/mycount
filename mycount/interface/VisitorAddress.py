@@ -5,7 +5,7 @@ from ipaddress import ip_address
 from werkzeug.wrappers import Request
 
 from mycount.constants.DCaddy import DCaddy
-from mycount.constants.DMyCount import DMyCount
+from mycount.interface.Network import Network
 from mycount.interface.VisitPayload import InvalidVisit
 
 
@@ -13,7 +13,7 @@ class VisitorAddress:
     @staticmethod
     def resolve(request: Request) -> str | None:
         address = request.remote_addr
-        if address == DMyCount.HOST:
+        if address == Network.destination("backend")[0]:
             forwarded = request.headers.get(DCaddy.VISITOR_HEADER)
             if forwarded is not None:
                 try:

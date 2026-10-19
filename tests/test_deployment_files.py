@@ -24,7 +24,7 @@ class DeploymentFilesTests(unittest.TestCase):
             "mycount/setup.py": [DDeployment.FILESYSTEM],
             "mycount/constants/DMyCount.py": list(DDeployment.TARGETS),
         }
-        for name in (*self.paths, "requirements.txt", "scripts/uninstall.sh"):
+        for name in (*self.paths, "requirements.txt", "scripts/uninstall.sh", "scripts/restart.sh", "scripts/install-caddy.sh", "caddy/mycount.caddy"):
             for root, content in ((self.source, "new"), (self.installed, "old")):
                 path = root / name
                 path.parent.mkdir(parents=True, exist_ok=True)
@@ -71,10 +71,14 @@ class DeploymentFilesTests(unittest.TestCase):
         screenshot = self.installed / "pages/marketing/saved.png"
         screenshot.parent.mkdir(parents=True)
         screenshot.write_bytes(b"uploaded PNG")
+        config = self.installed / "conf/mycount.json"
+        config.parent.mkdir()
+        config.write_text('{"network": {"report": {"port": 62000}}}')
         self.files.copy_application(frozenset(DDeployment.TARGETS))
         self.files.copy_setup()
         self.assertEqual(screenshot.read_bytes(), b"uploaded PNG")
-        for name in (*self.paths, "requirements.txt", "scripts/uninstall.sh"):
+        self.assertEqual(config.read_text(), '{"network": {"report": {"port": 62000}}}')
+        for name in (*self.paths, "requirements.txt", "scripts/uninstall.sh", "scripts/restart.sh", "scripts/install-caddy.sh", "caddy/mycount.caddy"):
             self.assertEqual((self.installed / name).read_text(), "new")
 
     def test_completion_without_impact_only_updates_release_bookkeeping(self):

@@ -3,7 +3,7 @@
 set -euo pipefail
 umask 022
 if [[ ${1:-} == --help && $# == 1 ]]; then
-    printf 'Usage: sudo scripts/uninstall.sh\nRemove MyCount services, application, TCP port 80/443 mappings, and matching UDP mappings; preserve databases, credentials, and accounts.\n'
+    printf 'Usage: sudo scripts/uninstall.sh\nRemove MyCount services, application, configured public HTTP/HTTPS TCP mappings, and matching UDP mappings; preserve databases, credentials, and accounts.\n'
     exit 0
 fi
 [[ $# == 0 && $EUID == 0 ]] || { printf 'Run scripts/uninstall.sh as root, without arguments.\n' >&2; exit 1; }

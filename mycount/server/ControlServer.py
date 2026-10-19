@@ -4,14 +4,15 @@ import argparse
 from http.server import ThreadingHTTPServer
 import signal
 
-from mycount.constants.DControl import DControl
+from mycount.interface.Network import Network
 from mycount.server.ControlHandler import ControlHandler
 
 
 def main() -> None:
+    interface, port = Network.binding("report")
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--host", default=DControl.HOST)
-    parser.add_argument("--port", type=int, default=DControl.PORT)
+    parser.add_argument("--host", default=interface)
+    parser.add_argument("--port", type=int, default=port)
     args = parser.parse_args()
     if not 1 <= args.port <= 65535:
         parser.error("--port must be between 1 and 65535.")

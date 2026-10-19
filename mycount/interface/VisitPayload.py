@@ -1,6 +1,7 @@
 """Validate browser input once and convert it to application data."""
 
 from datetime import datetime, timezone
+from http.client import HTTPS_PORT
 import re
 from urllib.parse import urlsplit
 from uuid import UUID
@@ -38,7 +39,7 @@ class VisitPayload:
             same_origin = (
                 address.scheme == allowed_address.scheme
                 and address.hostname == allowed_address.hostname
-                and (address.port or DMyCount.HTTPS_PORT) == (allowed_address.port or DMyCount.HTTPS_PORT)
+                and (address.port or HTTPS_PORT) == (allowed_address.port or HTTPS_PORT)
             )
         except (ValueError, UnicodeError) as error:
             raise InvalidVisit("Invalid page URL.") from error

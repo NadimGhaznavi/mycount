@@ -7,7 +7,17 @@ permalink: /CHANGELOG/
 
 # MyCount Changelog
 
+The **Sputnik** release is named for the Soviet satellite, the first one to be put into orbit.
+
 ## [Unreleased]
+
+- Create `conf/mycount.json` in the production install with CMDB network
+  defaults, preserve user overrides during upgrades, and load them on restart.
+- Add `scripts/restart.sh` to apply network configuration to Caddy, router
+  mappings, and MyCount services without redeploying the application.
+
+- Use `DMyCount.CMDB_NETWORK` as the source for local listener interfaces and
+  ports, including Caddy, router mappings, and deployment health checks.
 
 ## [2.4.3] - 2026-10-18 @ 08:17
 

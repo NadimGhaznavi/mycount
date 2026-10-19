@@ -7,6 +7,7 @@ from unittest.mock import Mock, patch
 
 from mycount.activity.MaintainRouterMappings import MaintainRouterMappings
 from mycount.constants.DRouterMappings import DRouterMappings
+from mycount.constants.DMyCount import DMyCount
 from mycount.server.RouterWorker import main
 
 
@@ -35,6 +36,15 @@ class RouterWorkerTests(unittest.TestCase):
         router.forward.assert_called_once_with((80, 443))
         logger.return_value.info.assert_not_called()
         logger.return_value.warning.assert_not_called()
+
+    def test_router_uses_inventory_ports(self):
+        router = Mock()
+        router.forward.return_value = ()
+        stopping = Mock()
+        stopping.is_set.side_effect = [False, True]
+        with patch.object(DMyCount, 'CMDB_NETWORK', (('https', '0.0.0.0', 8443), ('http', '0.0.0.0', 8080))):
+            MaintainRouterMappings(router).run(stopping)
+        router.forward.assert_called_once_with((8080, 8443))
 
     def test_programming_errors_propagate(self):
         router = Mock()
