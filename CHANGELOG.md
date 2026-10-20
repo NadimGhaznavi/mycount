@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-10-20 @ 04:36
+
 The **Voyager** release is named for *NASA's Interstellar exploration spacecraft.*
 
 - Add a Site drop-down to Report filters on Map, Metrics, and Marketing.

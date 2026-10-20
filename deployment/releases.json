@@ -111,7 +111,7 @@
       ]
     },
     "mycount/activity/ReadReports.py": {
-      "digest": "75cf1d4a2f5a3fbd2b982c365da6301a2a2c5a73362d1cf94bc3d70cf7fa5a82",
+      "digest": "9aa574c5864faf5f48f292231b934990c395a0ce6b0a6275af3c31029e710c64",
       "targets": [
         "report-server"
       ]
@@ -195,7 +195,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "8c5f644f4a9a5f5d64d37f9d104b0dfb18f2db30ba72d185dbe9fc64e2a7803d",
+      "digest": "2a6d11fa113bccbdfee0c9b513c1f5081bcd58e8409008374ae9f3796286ca3a",
       "targets": [
         "filesystem"
       ]
@@ -215,7 +215,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "bda90ad1430793421a65f115280d853b1fc8d615dff79a2367c5ec4ae0e4188b",
+      "digest": "25dde7e662e8f182356ccdf570b59c65b785c59e89160a582e18559d3d5fc2a5",
       "targets": [
         "filesystem",
         "listener",
@@ -273,13 +273,13 @@
       ]
     },
     "mycount/entity/Report.py": {
-      "digest": "ac5fe2523435880b2269f9eff1148b0cefae5e23a8ba4bce6559c2bc66b0ea2d",
+      "digest": "c7b8c5ef5020d0e792e80bde54b87a9a58d2b2c87cabf7e03b592d42d08a304d",
       "targets": [
         "report-server"
       ]
     },
     "mycount/entity/ReportOptions.py": {
-      "digest": "cfe4c7991ea1d4f43c5c47484e65386f364b41f8a823ae9b24785abc0f22f626",
+      "digest": "786a4ca193a78dba06656a0025289ed0a76c5f4d1c326d795d1078b856dc5e5f",
       "targets": [
         "report-server"
       ]
@@ -426,7 +426,7 @@
       ]
     },
     "mycount/interface/ReportQuery.py": {
-      "digest": "31af4bf8900cc612d998b2612488a3793db5eea1dc2ebd08502a812ef247f0e8",
+      "digest": "faf9fdeccaa7987ae3e69a95a3acfb6938701fc6bbe3f5f3cdca306050fc17ab",
       "targets": [
         "report-server"
       ]
@@ -445,7 +445,7 @@
       ]
     },
     "mycount/interface/VisitDb.py": {
-      "digest": "a68983b8517d55fed25be3913bb80f9909a692609caf0d16550049fce8450c68",
+      "digest": "7a39a7f888d44fff682d2cc36be6137e65dc9abaec20116a2c23d962b1b938d4",
       "targets": [
         "listener",
         "report-server"
@@ -490,7 +490,7 @@
       ]
     },
     "mycount/server/ControlPages.py": {
-      "digest": "c102531fdebf9d520854eb356522b8f7ac9acf211d207db34d27d4d15cdfd624",
+      "digest": "5cf85c10958f860ab722ae7db53e5852cb7682f20e63002b7897c734698ca440",
       "targets": [
         "report-server"
       ]
@@ -593,13 +593,13 @@
       ]
     },
     "mycount/server/templates/report_filters.html": {
-      "digest": "314d8ac8419b294896c5bc9449a10bdaff4ea448dcf460549087e978e7e7b592",
+      "digest": "4381e1c417103b66a7fad2bd98b16c36c47dfa190680936955350e5932c311b7",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/templates/styles.html": {
-      "digest": "1196128089b83a7e7f1e58e9140f08f43e57fb8c6977a5ecb39571d676958d9d",
+      "digest": "641ffa69e2a6cd2036f7ab6c69876de0dec7faeb5f0ad4292916570a71e4039a",
       "targets": [
         "report-server"
       ]
@@ -1238,6 +1238,14 @@
         "report-server"
       ],
       "version": "2.5.2"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "2.6.0"
     }
   ]
 }
