@@ -1,10 +1,12 @@
 """Validate incoming report filters and build pagination links."""
 
 from datetime import date, datetime, timedelta
+import re
 from urllib.parse import urlencode
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from mycount.constants.DReports import DReports
+from mycount.constants.DMyCount import DMyCount
 from mycount.entity.ReportOptions import ReportOptions
 
 
@@ -17,6 +19,10 @@ class ReportQuery:
                 raise ValueError(f"Supply one {name} value.")
             return values[0]
 
+        site = field("site", "*")
+        if site != "*" and (not 1 <= len(site) <= DMyCount.MAX_SITE_LENGTH
+                            or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", site) is None):
+            raise ValueError("Choose a valid report site.")
         timezone = field("timezone", "UTC")
         try:
             zone = ZoneInfo(timezone)
@@ -45,12 +51,12 @@ class ReportQuery:
         bots = query.get("exclude_bots", ["1"])[-1]
         if bots not in ("0", "1"):
             raise ValueError("Invalid bot filter.")
-        return ReportOptions(start, end, timezone, bots == "1", before)
+        return ReportOptions(start, end, timezone, bots == "1", before, site)
 
     @staticmethod
     def link(path: str, options: ReportOptions, before: tuple[datetime, int] | None = None) -> str:
         query = {"start": options.start.isoformat(), "end": options.end.isoformat(),
-                 "timezone": options.timezone, "exclude_bots": "1" if options.exclude_bots else "0"}
+                 "timezone": options.timezone, "site": options.site, "exclude_bots": "1" if options.exclude_bots else "0"}
         if before is not None:
             query["before"] = f"{before[0].isoformat()},{before[1]}"
         return path + "?" + urlencode(query)

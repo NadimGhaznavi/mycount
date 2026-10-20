@@ -377,6 +377,7 @@ class DDeployment:
         ),
         "mycount/interface/ReportQuery.py": (
             "mycount/__init__.py",
+            "mycount/constants/DMyCount.py",
             "mycount/constants/DReports.py",
             "mycount/entity/ReportOptions.py",
             "mycount/interface/__init__.py",

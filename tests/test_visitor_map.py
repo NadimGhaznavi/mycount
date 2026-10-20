@@ -33,11 +33,12 @@ class VisitorMapTests(unittest.TestCase):
     @patch('mycount.activity.ReadReports.DbMgr')
     def test_map_reads_aggregates_in_snapshot_with_local_day_and_bot_filters(self, factory):
         first = datetime(2025, 1, 1)
-        factory.return_value.query.side_effect = [self.locations, [dict(first_visit_at=first)]]
+        factory.return_value.query.side_effect = [self.locations, [dict(first_visit_at=first)], [dict(site="example"), dict(site="other")]]
         report = ReadReports().visitor_map(self.options)
         self.assertEqual(report.locations, self.locations)
         self.assertEqual(report.first_visit_at, first)
         self.assertEqual(report.daily, [])
+        self.assertEqual(report.available_sites, ['example', 'other'])
         factory.return_value.transaction.assert_called_once_with(read_only=True)
         factory.return_value.close.assert_called_once()
         sql, parameters = factory.return_value.query.call_args_list[0].args
@@ -47,7 +48,7 @@ class VisitorMapTests(unittest.TestCase):
         self.assertIn('mycount_smoke_', parameters)
         self.assertEqual(parameters[-2:], (datetime(2026, 3, 8, 5), datetime(2026, 3, 9, 4)))
         self.assertNotIn('latitude IS NOT NULL', sql)
-        self.assertEqual(factory.return_value.query.call_count, 2)
+        self.assertEqual(factory.return_value.query.call_count, 3)
 
     def test_map_preserves_zero_coordinates_and_counts_missing_locations(self):
         mapped = [{**row, 'coordinate_source': 'GeoIP'} for row in self.locations[:2]]
@@ -76,7 +77,7 @@ class VisitorMapTests(unittest.TestCase):
     @patch('mycount.activity.ReadReports.DbMgr')
     def test_report_resolves_missing_city_after_database_snapshot_closes(self, factory, cities):
         missing = {**self.locations[1], 'latitude': None, 'longitude': None}
-        factory.return_value.query.side_effect = [[missing], [dict(first_visit_at=None)]]
+        factory.return_value.query.side_effect = [[missing], [dict(first_visit_at=None)], []]
         def locate(rows):
             factory.return_value.close.assert_called_once()
             self.assertEqual(rows, [missing])
@@ -96,19 +97,21 @@ class VisitorMapTests(unittest.TestCase):
         for path in ('/', '/map'):
             with self.subTest(path=path):
                 factory.reset_mock()
-                factory.return_value.query.side_effect = [self.locations, [dict(first_visit_at=None)]]
+                factory.return_value.query.side_effect = [self.locations, [dict(first_visit_at=None)], []]
                 with ThreadingHTTPServer(('127.0.0.1', 0), ControlHandler) as server:
                     thread = Thread(target=server.serve_forever)
                     thread.start()
                     connection = HTTPConnection('127.0.0.1', server.server_port, timeout=5)
                     try:
-                        connection.request('GET', path + '?start=2026-03-08&end=2026-03-08&timezone=America%2FToronto&exclude_bots=0')
+                        connection.request('GET', path + '?start=2026-03-08&end=2026-03-08&timezone=America%2FToronto&exclude_bots=0&site=example')
                         response = connection.getresponse()
                         self.assertEqual(response.status, 200)
                         body = response.read()
                         self.assertIn(b'<title>MyCount Map</title>', body)
                         self.assertNotIn(b'<h1>Visitor Map</h1>', body)
                         self.assertNotIn('COALESCE(v.is_bot, 0) = 0', factory.return_value.query.call_args_list[0].args[0])
+                        self.assertIn('example', factory.return_value.query.call_args_list[0].args[1])
+                        self.assertIn(b'<option value="example" selected>example</option>', body)
                         factory.return_value.close.assert_called_once()
                         factory.reset_mock()
                         connection.request('GET', path + '?start=bad')

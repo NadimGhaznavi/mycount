@@ -1,4 +1,4 @@
-"""Validated date range, timezone, and recent-visit position."""
+"""Validated report filters and recent-visit position."""
 
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
@@ -12,6 +12,7 @@ class ReportOptions:
     timezone: str
     exclude_bots: bool = True
     before: tuple[datetime, int] | None = None
+    site: str = "*"
 
     def day_ranges(self) -> list[tuple[str, datetime, datetime]]:
         zone = ZoneInfo(self.timezone)
