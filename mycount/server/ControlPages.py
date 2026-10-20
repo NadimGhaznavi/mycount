@@ -44,7 +44,7 @@ class ControlPages:
 
     @staticmethod
     def _report_context(report: Report, path: str) -> dict[str, object]:
-        return dict(options=report.options, daily=report.daily,
+        return dict(options=report.options, daily=report.daily, available_sites=report.available_sites,
                     first_visit_at=report.first_visit_at, exclude_bots=report.options.exclude_bots,
                     refreshed_at=datetime.now(timezone.utc),
                     newest_url=ReportQuery.link(path, report.options),

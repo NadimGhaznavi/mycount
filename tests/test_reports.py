@@ -9,6 +9,7 @@ import pymysql
 
 from mycount.activity.ReadReports import ReadReports
 from mycount.entity.ReportOptions import ReportOptions
+from mycount.entity.Report import Report
 from mycount.interface.ReportQuery import ReportQuery
 from mycount.server.ControlPages import ControlPages
 
@@ -24,12 +25,28 @@ class ReportTests(unittest.TestCase):
                         dict(timezone=['Missing/Zone']), dict(timezone=['../UTC']),
                         dict(before=['2026-03-10T00:00:00+00:00,1']), dict(before=['bad']),
                         dict(before=['2026-03-10,0']), dict(before=['2026-03-10,18446744073709551616']),
-                        dict(start=['2026-03-07', '2026-03-08']), dict(exclude_bots=['bad'])]:
+                        dict(start=['2026-03-07', '2026-03-08']), dict(exclude_bots=['bad']),
+                        dict(site=['']), dict(site=['a', 'b']), dict(site=['%']),
+                        dict(site=['a' * 101]), dict(site=['<script>'])]:
             with self.subTest(changes=changes), self.assertRaises(ValueError):
                 ReportQuery.resolve({**query, **changes})
         options = ReportQuery.resolve(dict(start=['2025-01-01'], end=['2026-01-01']))
         self.assertEqual(len(options.day_ranges()), 366)
         self.assertEqual((ReportQuery.resolve({}).end - ReportQuery.resolve({}).start).days, 29)
+
+    def test_site_defaults_and_selection_render_on_each_report_page(self):
+        pages = ControlPages()
+        for site in ('*', 'example', 'missing'):
+            options = ReportQuery.resolve({'site': [site]})
+            report = Report(options, [], None, available_sites=['example', 'other'])
+            self.assertEqual(ReportQuery.resolve(parse_qs(urlsplit(ReportQuery.link('/metrics', options)).query)).site, site)
+            for render in (pages.render, pages.visitor_map, pages.marketing):
+                with self.subTest(site=site, page=render.__name__):
+                    html = render(report).decode()
+                    self.assertIn('<select name="site">', html)
+                    self.assertIn(f'<option value="{site}" selected>{site}</option>', html)
+                    self.assertIn('<option value="other">other</option>', html)
+        self.assertEqual(ReportQuery.resolve({}).site, '*')
 
     def test_local_day_boundaries_include_dst_and_fractional_offsets(self):
         for day, zone, hours, start in [
@@ -50,8 +67,8 @@ class ReportTests(unittest.TestCase):
         factory.return_value.query.side_effect = [[], [], [], rows, [],
                                                   [dict(language_tag='en-CA', page_views=5000)],
                                                   [dict(day='2026-03-08', page_views=5000)],
-                                                  [dict(first_visit_at=timestamp)]]
-        options = ReportOptions(date(2026, 3, 8), date(2026, 3, 8), 'America/Toronto')
+                                                  [dict(first_visit_at=timestamp)], [dict(site="example"), dict(site="other")]]
+        options = ReportOptions(date(2026, 3, 8), date(2026, 3, 8), 'America/Toronto', site='example')
         report = ReadReports().metrics(options)
         self.assertEqual(len(report.recent), 50)
         self.assertEqual(report.older, (timestamp, 2))
@@ -67,22 +84,33 @@ class ReportTests(unittest.TestCase):
         query = parse_qs(urlsplit(ReportQuery.link('/metrics', options, report.older)).query)
         self.assertEqual(ReportQuery.resolve(query).before, report.older)
         self.assertEqual(query['timezone'], ['America/Toronto'])
+        self.assertEqual(query['site'], ['example'])
+        self.assertEqual(report.available_sites, ['example', 'other'])
+        for call in calls[:7]:
+            self.assertIn('site_page.site = %s', call.args[0])
+            self.assertIn('example', call.args[1])
         html = ControlPages().render(report).decode()
         recent_summary = html.split('<span>Recent Visits</span>', 1)[1].split('</summary>', 1)[0]
         self.assertIn('Older visits', recent_summary)
         self.assertIn('href="/metrics?', recent_summary)
         self.assertIn('<a href="/">Map</a>', html)
         self.assertIn('"page_views": 5000', html)
+        self.assertIn('<option value="example" selected>example</option>', html)
+        self.assertIn('<option value="other">other</option>', html)
         self.assertNotIn('const timestamps', html)
 
     @patch('mycount.activity.ReadReports.DbMgr')
     def test_marketing_uses_daily_totals_without_fetching_individual_visits(self, factory):
         factory.return_value.query.side_effect = [[], [dict(day='2026-03-08', page_views=0)],
-                                                  [dict(first_visit_at=None)]]
-        options = ReportOptions(date(2026, 3, 8), date(2026, 3, 8), 'UTC')
+                                                  [dict(first_visit_at=None)], [dict(site="example")]]
+        options = ReportOptions(date(2026, 3, 8), date(2026, 3, 8), 'UTC', site='example')
         report = ReadReports().marketing(options)
         self.assertEqual(report.daily, [dict(day='2026-03-08', page_views=0)])
-        self.assertFalse(any('JOIN pages' in call.args[0] for call in factory.return_value.query.call_args_list))
+        daily_call = factory.return_value.query.call_args_list[1]
+        self.assertIn('site_page.site = %s', daily_call.args[0])
+        self.assertIn('example', daily_call.args[1])
+        self.assertEqual(report.available_sites, ['example'])
+        self.assertNotIn('JOIN pages', daily_call.args[0])
         factory.return_value.transaction.assert_called_once_with(read_only=True)
         factory.return_value.close.assert_called_once()
 

@@ -20,3 +20,4 @@ class Report:
     languages: list[dict[str, object]] = field(default_factory=list)
     posts: list[dict[str, object]] = field(default_factory=list)
     older: tuple[datetime, int] | None = None
+    available_sites: list[str] = field(default_factory=list)

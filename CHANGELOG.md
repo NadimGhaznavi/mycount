@@ -9,6 +9,14 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-10-20 @ 04:36
+
+The **Voyager** release is named for *NASA's Interstellar exploration spacecraft.*
+
+- Add a Site drop-down to Report filters on Map, Metrics, and Marketing.
+  Default to `*` for all sites and filter traffic charts and tables by the
+  selected site, preserving it in recent-visit pagination.
+
 ## [2.5.2] - 2026-10-19 @ 05:17
 
 The **Ulysses** release is named for the *Solar polar exploration spacecraft*.

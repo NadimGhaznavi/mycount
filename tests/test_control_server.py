@@ -132,6 +132,7 @@ class ControlServerTests(unittest.TestCase):
             [{"language_tag": "en-CA", "page_views": 12}],
             [{"day": "2026-09-27", "page_views": 12}],
             [{"first_visit_at": datetime(2026, 9, 23, 12)}],
+            [{"site": "<example>"}],
         ]
         with ThreadingHTTPServer(("127.0.0.1", 0), ControlHandler) as server:
             thread = Thread(target=server.serve_forever)
@@ -177,15 +178,15 @@ class ControlServerTests(unittest.TestCase):
                     factory.return_value.transaction.assert_called_once_with(read_only=True)
                     factory.return_value.close.assert_called_once()
                     self.assertIn(b'value="1" checked', body)
-                    for call in factory.return_value.query.call_args_list[:-1]:
+                    for call in factory.return_value.query.call_args_list[:-2]:
                         self.assertIn('AND NOT (COALESCE(v.is_bot, 0) = 1', call.args[0])
                         self.assertIn('mycount_smoke_', call.args[1])
-                    first_visit_call = factory.return_value.query.call_args_list[-1]
+                    first_visit_call = factory.return_value.query.call_args_list[-2]
                     self.assertIn('mycount_smoke_', first_visit_call.args[1])
                     self.assertNotIn('Bytespider', first_visit_call.args[1])
                     for query, excluded in [('exclude_bots=0', False), ('exclude_bots=0&exclude_bots=1', True)]:
                         factory.reset_mock()
-                        factory.return_value.query.side_effect = [[], [], [], [], [], [], [], [{"first_visit_at": datetime(2026, 9, 23, 12)}]]
+                        factory.return_value.query.side_effect = [[], [], [], [], [], [], [], [{"first_visit_at": datetime(2026, 9, 23, 12)}], []]
                         connection.request("GET", "/metrics?" + query)
                         response = connection.getresponse()
                         self.assertEqual(response.status, 200)
@@ -194,7 +195,7 @@ class ControlServerTests(unittest.TestCase):
                         self.assertEqual(filtered.count(b'class="visits">0</td>'), 3)
                         self.assertIn(b'<summary>Referrers</summary>', filtered)
                         self.assertIn(b'data-local-time="long-date">September 23, 2026</time>', filtered)
-                        for call in factory.return_value.query.call_args_list[:-1]:
+                        for call in factory.return_value.query.call_args_list[:-2]:
                             self.assertEqual('AND NOT (COALESCE(v.is_bot, 0) = 1' in call.args[0], excluded)
                             self.assertIn('mycount_smoke_', call.args[1])
                     factory.reset_mock()
@@ -217,7 +218,7 @@ class ControlServerTests(unittest.TestCase):
                     self.assertIn(b'data-local-time="long-date">September 23, 2026</time>', reference)
                     factory.return_value.close.assert_called_once()
                     factory.reset_mock()
-                    factory.return_value.query.side_effect = [[], [], [{"first_visit_at": None}]]
+                    factory.return_value.query.side_effect = [[], [], [{"first_visit_at": None}], []]
                     connection.request("GET", "/marketing")
                     response = connection.getresponse()
                     self.assertEqual(response.status, 200)
