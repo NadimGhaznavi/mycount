@@ -32,7 +32,8 @@ class MarketingBrowserTests(unittest.TestCase):
                 query = parse_qs(urlsplit(self.path).query)
                 requests.append(query)
                 options = ReportQuery.resolve(query)
-                filters = template.render(options=options, exclude_bots=options.exclude_bots,
+                filters = template.render(options=options, available_sites=["example", "other"],
+                                          exclude_bots=options.exclude_bots,
                                           error=query.get('error'))
                 body = ('<!doctype html><pre id="result"></pre>' + filters + '''
                     <script>
@@ -64,7 +65,7 @@ class MarketingBrowserTests(unittest.TestCase):
                             CHROME, '--headless', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage',
                             '--disable-background-networking', '--no-first-run', '--no-default-browser-check',
                             f'--user-data-dir={temporary}/profile', '--dump-dom',
-                            f'http://127.0.0.1:{server.server_port}/?start=2026-03-07&end=2026-03-10&exclude_bots=0{suffix}',
+                            f'http://127.0.0.1:{server.server_port}/?start=2026-03-07&end=2026-03-10&exclude_bots=0&site=example{suffix}',
                         ], env={**os.environ, 'TZ': 'America/Toronto'}, check=True,
                            capture_output=True, text=True, timeout=30)
                         match = re.search(r'<pre id="result">(.*?)</pre>', result.stdout, re.DOTALL)
@@ -72,11 +73,12 @@ class MarketingBrowserTests(unittest.TestCase):
                         captured = json.loads(html.unescape(match[1]))
                         self.assertFalse(captured['visibleTimezone'])
                         self.assertEqual(captured['fields'], dict(start='2026-03-07', end='2026-03-10',
-                                                                 timezone='America/Toronto', exclude_bots='0'))
+                                                                 timezone='America/Toronto', exclude_bots='0', site='example'))
                         reports = [query for query in requests if 'start' in query]
                         self.assertEqual(len(reports), expected_requests)
                         if expected_requests == 2:
                             self.assertEqual(reports[-1]['timezone'], ['America/Toronto'])
+                            self.assertEqual(reports[-1]['site'], ['example'])
             finally:
                 server.shutdown()
                 thread.join()

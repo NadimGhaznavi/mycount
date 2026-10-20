@@ -16,7 +16,8 @@ from mycount.activity.ResolveVisitorLocations import ResolveVisitorLocations
 class ReadReports:
     def metrics(self, options: ReportOptions) -> Report:
         days = options.day_ranges()
-        filters = dict(exclude_bots=options.exclude_bots, start=days[0][1], end=days[-1][2])
+        filters = dict(site=options.site, exclude_bots=options.exclude_bots,
+                       start=days[0][1], end=days[-1][2])
         db = DbMgr()
         try:
             with db.transaction(read_only=True):
@@ -27,14 +28,16 @@ class ReadReports:
                 recent = visits.recent_visits(**filters, before=options.before, limit=DReports.PAGE_SIZE + 1)
                 referrers = visits.totals_by_referrer(**filters)
                 languages = visits.totals_by_language(**filters)
-                daily = visits.daily_totals(days, exclude_bots=options.exclude_bots)
+                daily = visits.daily_totals(days, exclude_bots=options.exclude_bots, site=options.site)
                 first = visits.first_visit_at()
+                available_sites = visits.available_sites()
             older = None
             if len(recent) > DReports.PAGE_SIZE:
                 recent = recent[:DReports.PAGE_SIZE]
                 older = (recent[-1]["received_at"], recent[-1]["page_view_id"])
             return Report(options, daily, first, sites=sites, pages=pages, locations=locations,
-                          recent=recent, referrers=referrers, languages=languages, older=older)
+                          recent=recent, referrers=referrers, languages=languages, older=older,
+                          available_sites=available_sites)
         finally:
             db.close()
 
@@ -61,12 +64,15 @@ class ReadReports:
             with db.transaction(read_only=True):
                 visits = VisitDb(db)
                 locations = visits.totals_by_coordinates(
-                    exclude_bots=options.exclude_bots, start=days[0][1], end=days[-1][2])
+                    exclude_bots=options.exclude_bots, start=days[0][1], end=days[-1][2],
+                    site=options.site)
                 first = visits.first_visit_at()
+                available_sites = visits.available_sites()
         finally:
             db.close()
         mapped = ResolveVisitorLocations(CityLocations()).resolve(locations)
-        return Report(options, [], first, locations=locations, map_locations=mapped)
+        return Report(options, [], first, locations=locations, map_locations=mapped,
+                      available_sites=available_sites)
 
     def marketing(self, options: ReportOptions) -> Report:
         days = options.day_ranges()
@@ -75,9 +81,10 @@ class ReadReports:
             with db.transaction(read_only=True):
                 posts = MarketingDb(db).posts(start=days[0][1], end=days[-1][2])
                 visits = VisitDb(db)
-                daily = visits.daily_totals(days, exclude_bots=options.exclude_bots)
+                daily = visits.daily_totals(days, exclude_bots=options.exclude_bots, site=options.site)
                 first = visits.first_visit_at()
-            return Report(options, daily, first, posts=posts)
+                available_sites = visits.available_sites()
+            return Report(options, daily, first, posts=posts, available_sites=available_sites)
         finally:
             db.close()
 

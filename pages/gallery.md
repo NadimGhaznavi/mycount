@@ -14,6 +14,11 @@ author_profile: true
 
 ## Map Page
 
+Map, Metrics, and Marketing share Report filters for site, date range, and
+bot exclusion. Site defaults to `*` (all sites); choose a recorded site and
+click **Apply filters** to limit traffic visualizations and tables to that site.
+Marketing post annotations remain shared because posts are not assigned to sites.
+
 ![Map Page](/pages/images/map-page.png)
 
 ---

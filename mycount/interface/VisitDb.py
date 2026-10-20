@@ -50,9 +50,10 @@ class VisitDb:
         return view_id
 
     def totals_by_page(self, *, exclude_bots: bool = False,
-                       start: datetime | None = None, end: datetime | None = None) -> list[dict[str, object]]:
+                       start: datetime | None = None, end: datetime | None = None,
+                       site: str = "*") -> list[dict[str, object]]:
         """Rank visited pages within each site by views, breaking ties by URL."""
-        where, params = self._filter(exclude_bots, start, end)
+        where, params = self._filter(exclude_bots, start, end, site)
         return self._db.query(f"""
             SELECT p.site, p.url, COUNT(*) AS page_views,
                    MAX(v.received_at) AS last_visited
@@ -63,13 +64,14 @@ class VisitDb:
         """, params)
 
     def totals_by_site(self, *, exclude_bots: bool = False,
-                       start: datetime | None = None, end: datetime | None = None) -> list[dict[str, object]]:
+                       start: datetime | None = None, end: datetime | None = None,
+                       site: str = "*") -> list[dict[str, object]]:
         """Count recorded browser IDs separately from views with no identifier.
 
         IDs are scoped to each site. Browser counts include automated clients;
         known bot views are reported separately, not treated as people.
         """
-        where, params = self._filter(exclude_bots, start, end)
+        where, params = self._filter(exclude_bots, start, end, site)
         bot_condition, bot_params = self._bot_condition()
         return self._db.query(f"""
             SELECT p.site, COUNT(*) AS page_views, MAX(v.received_at) AS last_visited,
@@ -83,9 +85,10 @@ class VisitDb:
         """, (*bot_params, *params))
 
     def totals_by_location(self, *, exclude_bots: bool = False,
-                       start: datetime | None = None, end: datetime | None = None) -> list[dict[str, object]]:
+                       start: datetime | None = None, end: datetime | None = None,
+                       site: str = "*") -> list[dict[str, object]]:
         """Rank all recorded views by country, state/province, and city."""
-        where, params = self._filter(exclude_bots, start, end)
+        where, params = self._filter(exclude_bots, start, end, site)
         return self._db.query(f"""
             SELECT NULLIF(country_code, '') AS country_code,
                    MAX(NULLIF(country_name, '')) AS country_name,
@@ -99,9 +102,10 @@ class VisitDb:
         """, params)
 
     def totals_by_coordinates(self, *, exclude_bots: bool = False,
-                             start: datetime | None = None, end: datetime | None = None) -> list[dict[str, object]]:
+                             start: datetime | None = None, end: datetime | None = None,
+                             site: str = "*") -> list[dict[str, object]]:
         """Count location snapshots, retaining views with missing coordinates."""
-        where, params = self._filter(exclude_bots, start, end)
+        where, params = self._filter(exclude_bots, start, end, site)
         return self._db.query(f"""
             SELECT latitude, longitude, NULLIF(country_code, '') AS country_code,
                    MAX(NULLIF(country_name, '')) AS country_name,
@@ -116,9 +120,10 @@ class VisitDb:
         """, params)
 
     def totals_by_language(self, *, exclude_bots: bool = False,
-                           start: datetime | None = None, end: datetime | None = None) -> list[dict[str, object]]:
+                           start: datetime | None = None, end: datetime | None = None,
+                           site: str = "*") -> list[dict[str, object]]:
         """Count each visit once using its first browser language preference."""
-        where, params = self._filter(exclude_bots, start, end)
+        where, params = self._filter(exclude_bots, start, end, site)
         return self._db.query(f"""
             SELECT l.language_tag, COUNT(*) AS page_views
             FROM page_views v
@@ -130,9 +135,10 @@ class VisitDb:
         """, params)
 
     def totals_by_referrer(self, *, exclude_bots: bool = False,
-                       start: datetime | None = None, end: datetime | None = None) -> list[dict[str, object]]:
+                       start: datetime | None = None, end: datetime | None = None,
+                       site: str = "*") -> list[dict[str, object]]:
         """Rank referrer hosts by visits, including visits with no known referrer."""
-        where, params = self._filter(exclude_bots, start, end)
+        where, params = self._filter(exclude_bots, start, end, site)
         return self._db.query(f"""
             SELECT NULLIF(v.referrer_host, '') AS referrer_host, COUNT(*) AS page_views
             FROM page_views v
@@ -140,6 +146,17 @@ class VisitDb:
             GROUP BY NULLIF(v.referrer_host, '')
             ORDER BY page_views DESC, referrer_host
         """, params)
+
+    def available_sites(self) -> list[str]:
+        """List sites with non-test traffic across all dates, including bots."""
+        where, params = self._traffic_filter(False)
+        rows = self._db.query(f"""
+            SELECT DISTINCT p.site
+            FROM page_views v JOIN pages p ON p.page_id = v.page_id
+            {where}
+            ORDER BY p.site
+        """, params)
+        return [row["site"] for row in rows]
 
     def first_visit_at(self) -> datetime | None:
         """Return the earliest non-test visit across all sites, including bots."""
@@ -151,9 +168,9 @@ class VisitDb:
     def recent_visits(self, *, exclude_bots: bool = False,
                       start: datetime | None = None, end: datetime | None = None,
                       before: tuple[datetime, int] | None = None,
-                      limit: int = DReports.PAGE_SIZE) -> list[dict[str, object]]:
+                      site: str = "*", limit: int = DReports.PAGE_SIZE) -> list[dict[str, object]]:
         """Read a bounded page using receipt time and ID as a stable cursor."""
-        where, params = self._filter(exclude_bots, start, end)
+        where, params = self._filter(exclude_bots, start, end, site)
         if before is not None:
             where += (" AND " if where else "WHERE ") + (
                 "(v.received_at < %s OR (v.received_at = %s AND v.page_view_id < %s))")
@@ -196,7 +213,7 @@ class VisitDb:
         """, (*params, limit))
 
     def daily_totals(self, days: list[tuple[str, datetime, datetime]], *,
-                     exclude_bots: bool) -> list[dict[str, object]]:
+                     exclude_bots: bool, site: str = "*") -> list[dict[str, object]]:
         """Count indexed UTC intervals for local days, including DST and zero days.
 
         Explicit day boundaries avoid requiring MariaDB timezone tables and
@@ -204,7 +221,7 @@ class VisitDb:
         """
         intervals = " UNION ALL ".join("SELECT %s AS day, %s AS start_at, %s AS end_at" for _ in days)
         parameters = tuple(value for day in days for value in day)
-        where, filters = self._traffic_filter(exclude_bots)
+        where, filters = self._traffic_filter(exclude_bots, site)
         condition = " AND " + where.removeprefix("WHERE ") if where else ""
         return self._db.query(f"""
             SELECT d.day, COUNT(v.page_view_id) AS page_views
@@ -225,8 +242,8 @@ class VisitDb:
 
     @classmethod
     def _filter(cls, exclude_bots: bool, start: datetime | None,
-                end: datetime | None) -> tuple[str, tuple[object, ...]]:
-        where, parameters = cls._traffic_filter(exclude_bots)
+                end: datetime | None, site: str = "*") -> tuple[str, tuple[object, ...]]:
+        where, parameters = cls._traffic_filter(exclude_bots, site)
         clauses = [where.removeprefix("WHERE ")] if where else []
         if start is not None:
             clauses.append("v.received_at >= %s")
@@ -237,7 +254,7 @@ class VisitDb:
         return ("WHERE " + " AND ".join(clauses) if clauses else "", parameters)
 
     @classmethod
-    def _traffic_filter(cls, exclude_bots: bool) -> tuple[str, tuple[object, ...]]:
+    def _traffic_filter(cls, exclude_bots: bool, site: str = "*") -> tuple[str, tuple[object, ...]]:
         """Exclude explicit tests on every report, and bots when requested.
 
         Looking up the page here also supports reports that do not join pages,
@@ -255,6 +272,12 @@ class VisitDb:
             condition, bot_params = cls._bot_condition()
             where += f" AND NOT ({condition})"
             params += bot_params
+        if site != "*":
+            where += """ AND EXISTS (
+                SELECT 1 FROM pages site_page
+                WHERE site_page.page_id = v.page_id AND site_page.site = %s
+            )"""
+            params += (site,)
         return where, params
 
     @staticmethod

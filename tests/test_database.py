@@ -506,6 +506,37 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(all_sites['example']['known_bot_views'], 13)
         self.assertEqual(visits.totals_by_site(exclude_bots=True)[0]['known_bot_views'], 0)
 
+    def test_site_filter_limits_every_report_and_preserves_empty_days(self):
+        visits = VisitDb(self.db)
+        visit = Visit(site='alpha', url='https://alpha.example/',
+                      received_at=datetime(2026, 9, 27, 12, tzinfo=timezone.utc),
+                      is_bot=False, browser_family='Chrome', country_code='CA',
+                      country_name='Canada', city_name='Toronto', latitude=43.7,
+                      longitude=-79.4, referrer_host='example.org', languages=('en-CA',))
+        human = visits.record(visit)
+        bot = visits.record(replace(visit, browser_family='Bytespider'))
+        visits.record(replace(visit, site='beta', url='https://beta.example/'))
+        visits.record(replace(visit, site='older', received_at=datetime(2025, 1, 1, tzinfo=timezone.utc)))
+        visits.record(replace(visit, site='mycount_smoke_1234'))
+        visits.record(replace(visit, site='test_only', url='https://alpha.example/__mycount_test__/1234'))
+        self.assertEqual(visits.available_sites(), ['alpha', 'beta', 'older'])
+        days = ReportOptions(date(2026, 9, 26), date(2026, 9, 28), 'UTC').day_ranges()
+        for exclude_bots, expected in [(False, 2), (True, 1)]:
+            for site, total in [('alpha', expected), ('beta', 1), ('missing', 0), ('*', expected + 1)]:
+                with self.subTest(site=site, exclude_bots=exclude_bots):
+                    filters = dict(site=site, exclude_bots=exclude_bots, start=days[0][1], end=days[-1][2])
+                    for query in (visits.totals_by_site, visits.totals_by_page, visits.totals_by_location,
+                                  visits.totals_by_coordinates, visits.totals_by_language, visits.totals_by_referrer):
+                        self.assertEqual(sum(row['page_views'] for row in query(**filters)), total)
+                    self.assertEqual(len(visits.recent_visits(**filters)), total)
+                    self.assertEqual(visits.daily_totals(days, site=site, exclude_bots=exclude_bots), [
+                        dict(day='2026-09-26', page_views=0), dict(day='2026-09-27', page_views=total),
+                        dict(day='2026-09-28', page_views=0),
+                    ])
+        self.assertEqual([row['page_view_id'] for row in visits.recent_visits(site='alpha')], [bot, human])
+        self.assertEqual([row['page_view_id'] for row in visits.recent_visits(
+            site='alpha', before=(visit.received_at.replace(tzinfo=None), bot))], [human])
+
     def test_explicit_tests_are_excluded_from_every_report_with_either_bot_setting(self):
         visits = VisitDb(self.db)
         visit = Visit(site='example', url='https://example.com/',

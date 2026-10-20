@@ -1,6 +1,17 @@
 <form class="metrics-filters" method="get">
   <fieldset>
     <legend>Report filters</legend>
+    <label>Site
+      <select name="site">
+        <option value="*"{% if options.site == '*' %} selected{% endif %}>*</option>
+        {% if options.site != '*' and options.site not in available_sites %}
+        <option value="{{ options.site }}" selected>{{ options.site }}</option>
+        {% endif %}
+        {% for site in available_sites %}
+        <option value="{{ site }}"{% if options.site == site %} selected{% endif %}>{{ site }}</option>
+        {% endfor %}
+      </select>
+    </label>
     <label>From <input type="date" name="start" value="{{ options.start.isoformat() }}" required></label>
     <label>Through <input type="date" name="end" value="{{ options.end.isoformat() }}" required></label>
     <input type="hidden" name="timezone" value="{{ options.timezone }}">
