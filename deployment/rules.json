@@ -5,7 +5,7 @@
       "deployment/DDeployment.py.in"
     ],
     "mycount/server/ControlPages.py": [
-      "pages/images/mycount.png",
+      "mycount/server/assets/mycount.png",
       "mycount/server/templates/control.html",
       "mycount/server/templates/visitor_map.html",
       "mycount/server/templates/visitors.html",
@@ -51,6 +51,7 @@
   ],
   "scan": [
     "mycount/**/*.py",
+    "mycount/server/assets/*",
     "mycount/server/templates/*.html",
     "deployment_tools/**/*.py",
     "scripts/*.sh",

@@ -9,6 +9,11 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+This release is named for the element **Neon (Ne)**. Neon glows reddish-orange in an electrical discharge, even though many so-called neon signs use other gases for different colors.
+
+- Fix Control favicon errors after deployment by packaging the image with the
+  server and verifying it through the deployment copier and HTTP endpoint.
+
 ## [2.6.0] - 2026-10-20 @ 04:36
 
 The **Voyager** release is named for *NASA's Interstellar exploration spacecraft.*
