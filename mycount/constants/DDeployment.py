@@ -456,12 +456,12 @@ class DDeployment:
             "mycount/interface/ReportQuery.py",
             "mycount/interface/VisitorsQuery.py",
             "mycount/server/__init__.py",
+            "mycount/server/assets/mycount.png",
             "mycount/server/templates/control.html",
             "mycount/server/templates/marketing.html",
             "mycount/server/templates/reference.html",
             "mycount/server/templates/visitor_map.html",
             "mycount/server/templates/visitors.html",
-            "pages/images/mycount.png",
         ),
         "mycount/server/ControlServer.py": (
             "mycount/__init__.py",
@@ -493,6 +493,8 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/server/MyCountServer.py",
             "mycount/server/__init__.py",
+        ),
+        "mycount/server/assets/mycount.png": (
         ),
         "mycount/server/templates/all_traffic.html": (
         ),
@@ -543,8 +545,6 @@ class DDeployment:
         ),
         "mycount/server/templates/visitors.html": (
             "mycount/server/templates/base.html",
-        ),
-        "pages/images/mycount.png": (
         ),
         "requirements.txt": (
         ),

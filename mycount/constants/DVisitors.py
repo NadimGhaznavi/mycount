@@ -12,6 +12,7 @@ class DVisitors:
         ("country_name", "Country"),
         ("region_name", "Region"),
         ("city_name", "City"),
+        ("languages", "Languages"),
         ("page_view_id", "Page view ID"),
         ("page_id", "Page ID"),
         ("country_code", "Country code"),
