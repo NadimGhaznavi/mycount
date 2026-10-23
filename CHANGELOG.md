@@ -13,6 +13,8 @@ This release is named for the element **Neon (Ne)**. Neon glows reddish-orange i
 
 - Fix Control favicon errors after deployment by packaging the image with the
   server and verifying it through the deployment copier and HTTP endpoint.
+- Show browser language preferences after City on Visitors, in preference order,
+  with column filtering and sorting.
 
 ## [2.6.0] - 2026-10-20 @ 04:36
 
