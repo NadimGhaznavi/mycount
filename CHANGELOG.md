@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.6.1] - 2026-10-23 @ 17:20
+
 This release is named for the element **Neon (Ne)**. Neon glows reddish-orange in an electrical discharge, even though many so-called neon signs use other gases for different colors.
 
 - Fix Control favicon errors after deployment by packaging the image with the
