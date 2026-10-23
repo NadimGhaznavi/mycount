@@ -193,6 +193,7 @@ class DatabaseTests(unittest.TestCase):
         base = Visit(site='mycount_smoke_visitors', url='https://example.com/50%_=',
                      received_at=timestamp, country_name='Canada', city_name='Toronto',
                      visitor_id=bytes.fromhex('AB' * 16), is_bot=True,
+                     languages=('en-CA', 'fr'),
                      client_details=(('timezone', 'America/Toronto'),))
         first = visits.record(base)
         second = visits.record(base)
@@ -202,13 +203,34 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(rows[0]['visitor_id'], 'AB' * 16)
         self.assertEqual(rows[0]['is_bot'], 1)
         columns = {column['Field'] for column in self.db.query('SHOW COLUMNS FROM page_views')}
-        self.assertEqual(set(rows[0]), columns | {'site', 'url'})
+        self.assertEqual(set(rows[0]), columns | {'site', 'url', 'languages'})
+        self.assertEqual(rows[0]['languages'], 'en-CA, fr')
         older = visits.visitor_records({'url': '50%_='},
                                       before=(rows[0]['received_at'], second), limit=1)
         self.assertEqual(older[0]['page_view_id'], first)
         self.assertEqual(visits.visitor_records({'site': "' OR 1=1 --"}), [])
         self.assertEqual(len(visits.visitor_records({'visitor_id': 'AB' * 16})), 3)
         self.assertEqual(len(visits.visitor_records({'client_details': 'America/Toronto'})), 3)
+
+    def test_visitor_languages_preserve_preference_order_and_filter_before_pagination(self):
+        visits = VisitDb(self.db)
+        base = Visit(site='example', url='https://example.com/',
+                     received_at=datetime(2026, 10, 9, 12, tzinfo=timezone.utc),
+                     languages=('fr', 'en-CA', 'en'))
+        first = visits.record(base)
+        second = visits.record(base)
+        missing = visits.record(replace(base, languages=()))
+        rows = visits.visitor_records({})
+        self.assertEqual([row['page_view_id'] for row in rows], [missing, second, first])
+        self.assertIsNone(rows[0]['languages'])
+        self.assertEqual(rows[1]['languages'], 'fr, en-CA, en')
+        filtered = visits.visitor_records({'languages': 'en-CA'}, limit=1)
+        self.assertEqual(filtered[0]['page_view_id'], second)
+        older = visits.visitor_records({'languages': 'en-CA'},
+                                      before=(filtered[0]['received_at'], second), limit=1)
+        self.assertEqual(older[0]['page_view_id'], first)
+        self.assertEqual(visits.visitor_records({'languages': "' OR 1=1 --"}), [])
+        self.assertEqual(visits.visitor_records({'languages': '%_='}), [])
 
     def test_daily_totals_use_local_dst_boundaries_and_include_empty_days(self):
         visits = VisitDb(self.db)

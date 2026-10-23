@@ -189,6 +189,10 @@ class VisitDb:
         expressions = {name: (f"p.{name}" if name in ("site", "url") else
                               "HEX(v.visitor_id)" if name == "visitor_id" else f"v.{name}")
                        for name, _ in DVisitors.COLUMNS}
+        expressions["languages"] = """(
+            SELECT GROUP_CONCAT(l.language_tag ORDER BY l.preference_order SEPARATOR ', ')
+            FROM page_view_languages l WHERE l.page_view_id = v.page_view_id
+        )"""
         clauses = []
         params: tuple[object, ...] = ()
         if exclude_bots:

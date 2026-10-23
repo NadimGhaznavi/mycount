@@ -20,6 +20,10 @@ class DeploymentImpactTests(unittest.TestCase):
         self.assertEqual(self.impact.affected_targets(
             "mycount/server/templates/styles.html"), {DDeployment.REPORT_SERVER})
 
+    def test_control_favicon_affects_only_report_server(self):
+        self.assertEqual(self.impact.affected_targets(
+            "mycount/server/assets/mycount.png"), {DDeployment.REPORT_SERVER})
+
     def test_collection_module_affects_only_listener(self):
         self.assertEqual(self.impact.affected_targets(
             "mycount/interface/CollectorHttp.py"), {DDeployment.LISTENER})

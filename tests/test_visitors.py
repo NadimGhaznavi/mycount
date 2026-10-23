@@ -20,6 +20,21 @@ from mycount.server.ControlPages import ControlPages
 
 
 class VisitorsTests(unittest.TestCase):
+    def test_languages_follow_city_and_preserve_filter_in_pagination(self):
+        row = dict.fromkeys(name for name, _ in DVisitors.COLUMNS)
+        row.update(received_at=datetime(2026, 10, 9, 12), page_view_id=10,
+                   city_name='Toronto', languages='fr, en-CA, en')
+        report = Report(ReportQuery.resolve({}), [], None, recent=[row],
+                        older=(row['received_at'], row['page_view_id']))
+        filters = {'languages': 'en-CA'}
+        body = ControlPages().visitors(report, filters).decode()
+        self.assertIn('<th scope="col">City</th><th scope="col">Languages</th>', body)
+        self.assertIn('<td>Toronto</td><td>fr, en-CA, en</td>', body)
+        self.assertIn('name="languages" value="en-CA" aria-label="Filter Languages"', body)
+        query = parse_qs(urlsplit(VisitorsQuery.link(filters, report.older)).query)
+        self.assertEqual(VisitorsQuery.filters(query), filters)
+        self.assertEqual(ReportQuery.resolve(query).before, report.older)
+
     def test_table_has_filter_row_and_escapes_records_and_filters(self):
         row = dict.fromkeys(name for name, _ in DVisitors.COLUMNS)
         row.update(received_at=datetime(2026, 10, 9, 12), site='<script>bad</script>',

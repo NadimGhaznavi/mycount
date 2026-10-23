@@ -9,15 +9,20 @@ from http.client import HTTPConnection
 from http.server import ThreadingHTTPServer
 import json
 from pathlib import Path
-import shutil
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
+from textwrap import dedent
 from threading import Thread
 import unittest
 
 from mycount.server.ControlHandler import ControlHandler
 from mycount.server.ControlPages import ControlPages
+from mycount.activity.DeploymentImpact import DeploymentImpact
+from mycount.constants.DDeployment import DDeployment
+from mycount.constants.DMyCount import DMyCount
+from mycount.interface.DeploymentFiles import DeploymentFiles
+from mycount.interface.ReleaseFiles import ReleaseFiles
 from mycount.entity.Report import Report
 from mycount.entity.ReportOptions import ReportOptions
 
@@ -238,7 +243,7 @@ class ControlServerTests(unittest.TestCase):
                     response = connection.getresponse()
                     self.assertEqual(response.status, 200)
                     self.assertEqual(response.getheader("Content-Type"), "image/png")
-                    self.assertEqual(response.read(), (Path(__file__).resolve().parents[1] / "pages/images/mycount.png").read_bytes())
+                    self.assertEqual(response.read(), (Path(__file__).resolve().parents[1] / "mycount/server/assets/mycount.png").read_bytes())
                     factory.assert_not_called()
                     for path in ('/?start=bad', '/marketing?start=2020-01-01&end=2026-01-01', '/?timezone=Missing/Zone'):
                         connection.request("GET", path)
@@ -278,29 +283,64 @@ class ControlServerTests(unittest.TestCase):
     def test_installed_entry_point_and_templates(self):
         root = Path(__file__).resolve().parents[1]
         with TemporaryDirectory() as directory:
-            # Use the same package copy rule as installation, outside the checkout.
-            shutil.copytree(root / "mycount", Path(directory) / "mycount",
-                            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
-            image_directory = Path(directory) / "pages/images"
-            image_directory.mkdir(parents=True)
-            shutil.copy2(root / "pages/images/mycount.png", image_directory)
+            installed = Path(directory) / "installed"
+            installed.mkdir()
+            # Build current artifact metadata without invoking release scripts.
+            source = Path(directory) / "source"
+            source.mkdir()
+            for folder in ("mycount", "deployment_tools"):
+                (source / folder).symlink_to(root / folder, target_is_directory=True)
+            impact = DeploymentImpact()
+            ReleaseFiles(source).write({
+                "releases": [{"version": DMyCount.VERSION, "targets": []}],
+                "artifacts": {
+                    name: {"digest": digest, "targets": sorted(impact.affected_targets(name))}
+                    for name, digest in ReleaseFiles(root).snapshot().items()
+                },
+            })
+            DeploymentFiles(source, installed).copy_application(frozenset({DDeployment.REPORT_SERVER}))
+            self.assertFalse((installed / "pages").exists())
             result = subprocess.run(
                 [sys.executable, "-B", "-m", "mycount.server.ControlServer", "--help"],
-                cwd=directory, capture_output=True, text=True, check=True,
+                cwd=installed, capture_output=True, text=True, check=True,
             )
             self.assertIn("--port", result.stdout)
-            result = subprocess.run(
-                [sys.executable, "-B", "-m", "mycount.activity.RefreshCities", "--help"],
-                cwd=directory, capture_output=True, text=True, check=True,
-            )
-            self.assertIn("--scheduled", result.stdout)
             subprocess.run(
                 [sys.executable, "-B", "-c",
-                 "from mycount.server.ControlPages import ControlPages; "
-                 "from mycount.entity.Report import Report; from mycount.interface.ReportQuery import ReportQuery; "
-                 "assert b'MyCount <span>Metrics</span>' in ControlPages().render(Report(ReportQuery.resolve({}), [], None)); "
-                 "assert ControlPages.favicon().startswith(bytes([137, 80, 78, 71, 13, 10, 26, 10])); "
-                 "assert b'Optional browser details' in ControlPages().reference(); "
-                 "assert b'L.map(' in ControlPages().visitor_map(Report(ReportQuery.resolve({}), [], None))"],
-                cwd=directory, check=True,
+                 dedent("""
+                    from http.client import HTTPConnection
+                    from http.server import ThreadingHTTPServer
+                    from threading import Thread
+                    from mycount.server.ControlHandler import ControlHandler
+                    from mycount.server.ControlPages import ControlPages
+                    from mycount.entity.Report import Report
+                    from mycount.interface.ReportQuery import ReportQuery
+
+                    report = Report(ReportQuery.resolve({}), [], None)
+                    assert b'MyCount <span>Metrics</span>' in ControlPages().render(report)
+                    assert b'Optional browser details' in ControlPages().reference()
+                    assert b'L.map(' in ControlPages().visitor_map(report)
+                    with ThreadingHTTPServer(('127.0.0.1', 0), ControlHandler) as server:
+                        thread = Thread(target=server.handle_request, daemon=True)
+                        thread.start()
+                        connection = HTTPConnection('127.0.0.1', server.server_port, timeout=5)
+                        try:
+                            connection.request('GET', '/favicon.png')
+                            response = connection.getresponse()
+                            assert response.status == 200
+                            assert response.getheader('Content-Type') == 'image/png'
+                            image = response.read()
+                            assert image.startswith(bytes([137, 80, 78, 71, 13, 10, 26, 10]))
+                            assert image == ControlPages.favicon()
+                        finally:
+                            connection.close()
+                            thread.join(timeout=5)
+                    """)],
+                cwd=installed, check=True,
             )
+            DeploymentFiles(source, installed).copy_application(frozenset(DDeployment.TARGETS))
+            result = subprocess.run(
+                [sys.executable, "-B", "-m", "mycount.activity.RefreshCities", "--help"],
+                cwd=installed, capture_output=True, text=True, check=True,
+            )
+            self.assertIn("--scheduled", result.stdout)
