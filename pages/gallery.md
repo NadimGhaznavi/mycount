@@ -81,6 +81,14 @@ This page shows the complete set of data that the system collects. By design, th
 
 ![Bot Filter](/pages/images/exclude-bots.png)
 
+With **Exclude bots** enabled, reports also recognize combinations of browser,
+platform, screen, memory, touch, and referrer signals associated with automation.
+These include phone renderers, desktop/iPhone platform mismatches, oversized
+renderer viewports, and Facebook preview profiles. Matching new visits are
+flagged during collection; the report filter also checks historical visits whose
+stored bot flag is false or missing. Recorded visits remain available with bot
+exclusion disabled. The rules do not use IP addresses or countries.
+
 ---
 
 [Back](/)

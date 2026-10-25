@@ -10,6 +10,19 @@ class DVisitorDetails:
     BOT_USER_AGENT_TOKENS: Final[tuple[str, ...]] = (
         "headlesschrome/", "dataprovider.com", "web-image-collection-research",
     )
+    BOT_CLIENT_VENDOR: Final[str] = "Google Inc."
+    BOT_LINUX_PLATFORM: Final[str] = "Linux x86_64"
+    BOT_DESKTOP_OS_FAMILIES: Final[tuple[str, ...]] = ("Windows", "Mac OS X")
+    BOT_IOS_DESKTOP_PLATFORMS: Final[tuple[str, ...]] = ("Win32", "MacIntel")
+    BOT_PHONE_SCREEN: Final[tuple[int, int]] = (375, 812)
+    BOT_PHONE_MIN_CPUS: Final[int] = 30
+    BOT_PHONE_TOUCH_POINTS: Final[int] = 3
+    BOT_IPHONE_TOUCH_POINTS: Final[int] = 1
+    BOT_RENDERER_MEMORY: Final[int] = 32
+    BOT_RENDERER_SCREEN: Final[tuple[int, int]] = (800, 600)
+    BOT_PREVIEW_PLATFORM: Final[str] = "Windows"
+    BOT_PREVIEW_SCREEN: Final[tuple[int, int]] = (2000, 2000)
+    BOT_PREVIEW_REFERRER: Final[str] = "www.facebook.com"
     MAX_REFERRER_LENGTH: Final[int] = 4096
     MAX_HOST_LENGTH: Final[int] = 253
     TEXT_LENGTH: Final[int] = 128

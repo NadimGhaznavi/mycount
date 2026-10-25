@@ -4,6 +4,7 @@ from dataclasses import replace
 
 from user_agents import parse
 
+from mycount.activity.BrowserAutomation import BrowserAutomation
 from mycount.entity.Visit import Visit
 from mycount.constants.DVisitorDetails import DVisitorDetails
 
@@ -19,11 +20,7 @@ class BrowserMetadata:
             device = "desktop"
         else:
             device = "other"
-        is_bot = (browser.is_bot or browser.browser.family in DVisitorDetails.BOT_BROWSER_FAMILIES
-                  or any(token in user_agent.lower()
-                         for token in DVisitorDetails.BOT_USER_AGENT_TOKENS)
-                  or dict(visit.client_details).get("webdriver") is True)
-        return replace(
+        enriched = replace(
             visit,
             browser_family=browser.browser.family if browser.browser.family != "Other" else None,
             os_family=browser.os.family if browser.os.family != "Other" else None,
@@ -32,5 +29,10 @@ class BrowserMetadata:
             os_version=browser.os.version_string[:DVisitorDetails.VERSION_LENGTH] or None,
             device_brand=(browser.device.brand or "")[:DVisitorDetails.TEXT_LENGTH] or None,
             device_model=(browser.device.model or "")[:DVisitorDetails.TEXT_LENGTH] or None,
-            is_bot=is_bot if user_agent or is_bot else None,
         )
+        is_bot = (browser.is_bot or browser.browser.family in DVisitorDetails.BOT_BROWSER_FAMILIES
+                  or any(token in user_agent.lower()
+                         for token in DVisitorDetails.BOT_USER_AGENT_TOKENS)
+                  or dict(visit.client_details).get("webdriver") is True
+                  or BrowserAutomation.matches(enriched))
+        return replace(enriched, is_bot=is_bot if user_agent or is_bot else None)
