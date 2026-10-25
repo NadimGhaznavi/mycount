@@ -87,8 +87,15 @@ class DDeployment:
         ),
         "mycount/__init__.py": (
         ),
+        "mycount/activity/BrowserAutomation.py": (
+            "mycount/__init__.py",
+            "mycount/activity/__init__.py",
+            "mycount/constants/DVisitorDetails.py",
+            "mycount/entity/Visit.py",
+        ),
         "mycount/activity/BrowserMetadata.py": (
             "mycount/__init__.py",
+            "mycount/activity/BrowserAutomation.py",
             "mycount/activity/__init__.py",
             "mycount/constants/DVisitorDetails.py",
             "mycount/entity/Visit.py",

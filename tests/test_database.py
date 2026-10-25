@@ -29,6 +29,7 @@ from mycount.activity.SaveMarketingPost import SaveMarketingPost
 from mycount.entity.ReportOptions import ReportOptions
 from mycount.interface.DbCommitUncertain import DbCommitUncertain
 from mycount.interface.MarketingScreenshots import MarketingScreenshots
+from browser_automation_cases import browser_automation_cases
 
 
 @unittest.skipUnless(shutil.which("mariadb-install-db") and shutil.which("mariadbd"),
@@ -527,6 +528,36 @@ class DatabaseTests(unittest.TestCase):
         all_sites = {row['site']: row for row in visits.totals_by_site()}
         self.assertEqual(all_sites['example']['known_bot_views'], 13)
         self.assertEqual(visits.totals_by_site(exclude_bots=True)[0]['known_bot_views'], 0)
+
+    def test_automation_profiles_filter_historical_false_and_missing_flags(self):
+        visits = VisitDb(self.db)
+        retained, excluded = set(), set()
+        for name, visit, agent, expected in browser_automation_cases():
+            enriched = BrowserMetadata().enrich(visit, agent)
+            for flag in (False, None):
+                with self.subTest(profile=name, stored_flag=flag):
+                    view_id = visits.record(replace(enriched, is_bot=flag))
+                    (excluded if expected else retained).add(view_id)
+        # Valid historical JSON can contain explicit nulls, unlike new validated payloads.
+        unknown = visits.record(Visit(site='example', url='https://example.com/',
+                                     received_at=datetime(2026, 10, 18, 12, tzinfo=timezone.utc)))
+        self.db.execute('UPDATE page_views SET client_details = %s WHERE page_view_id = %s',
+                        (json.dumps(dict(vendor=None, screen_width=None, viewport_width=None)), unknown))
+        retained.add(unknown)
+        total = len(retained) + len(excluded)
+        for enabled, expected_ids in [(False, retained | excluded), (True, retained)]:
+            with self.subTest(exclude_bots=enabled):
+                rows = visits.visitor_records({}, exclude_bots=enabled, limit=total)
+                self.assertEqual({row['page_view_id'] for row in rows}, expected_ids)
+                recent = visits.recent_visits(exclude_bots=enabled, limit=total)
+                self.assertEqual({row['page_view_id'] for row in recent}, expected_ids)
+                for query in (visits.totals_by_site, visits.totals_by_page, visits.totals_by_location,
+                              visits.totals_by_coordinates, visits.totals_by_language,
+                              visits.totals_by_referrer):
+                    self.assertEqual(sum(row['page_views'] for row in query(exclude_bots=enabled)),
+                                     len(expected_ids))
+        self.assertEqual(visits.count_by_site('example'), len(retained))
+        self.assertEqual(visits.totals_by_site()[0]['known_bot_views'], len(excluded))
 
     def test_site_filter_limits_every_report_and_preserves_empty_days(self):
         visits = VisitDb(self.db)

@@ -285,7 +285,7 @@ class VisitDb:
         return where, params
 
     @staticmethod
-    def _bot_condition() -> tuple[str, tuple[str, ...]]:
+    def _bot_condition() -> tuple[str, tuple[object, ...]]:
         """Recognize known automation even when its stored bot flag is false."""
         families = DVisitorDetails.BOT_BROWSER_FAMILIES
         placeholders = ", ".join("%s" for _ in families)
@@ -293,8 +293,54 @@ class VisitDb:
         agent_conditions = " OR ".join(
             "LOCATE(%s, LOWER(COALESCE(v.user_agent, ''))) > 0" for _ in tokens
         )
+        profile_condition, profile_params = VisitDb._automation_profile_condition()
         return (f"COALESCE(v.is_bot, 0) = 1 "
                 f"OR COALESCE(v.browser_family, '') IN ({placeholders}) "
                 f"OR {agent_conditions} "
                 "OR COALESCE(JSON_UNQUOTE(JSON_EXTRACT(v.client_details, '$.webdriver')), "
-                "'false') = 'true'", families + tokens)
+                "'false') = 'true' "
+                f"OR {profile_condition}", families + tokens + profile_params)
+
+    @staticmethod
+    def _automation_profile_condition() -> tuple[str, tuple[object, ...]]:
+        """Apply BrowserAutomation's profiles without rewriting historical flags.
+
+        COALESCE keeps incomplete metadata from turning NOT(bot) into SQL NULL.
+        """
+        desktop_os = DVisitorDetails.BOT_DESKTOP_OS_FAMILIES
+        desktop_platforms = DVisitorDetails.BOT_IOS_DESKTOP_PLATFORMS
+        os_placeholders = ", ".join("%s" for _ in desktop_os)
+        platform_placeholders = ", ".join("%s" for _ in desktop_platforms)
+        return (f"""COALESCE(
+            JSON_VALUE(v.client_details, '$.vendor') = %s AND (
+                (v.device_category = %s
+                 AND JSON_VALUE(v.client_details, '$.platform') = %s
+                 AND JSON_VALUE(v.client_details, '$.screen_width') = %s
+                 AND JSON_VALUE(v.client_details, '$.screen_height') = %s
+                 AND JSON_VALUE(v.client_details, '$.device_memory') = %s
+                 AND JSON_VALUE(v.client_details, '$.max_touch_points') = %s
+                 AND JSON_VALUE(v.client_details, '$.hardware_concurrency') >= %s)
+                OR (v.os_family IN ({os_placeholders})
+                    AND JSON_VALUE(v.client_details, '$.platform') = %s)
+                OR (JSON_VALUE(v.client_details, '$.screen_width') = %s
+                    AND JSON_VALUE(v.client_details, '$.screen_height') = %s
+                    AND JSON_VALUE(v.client_details, '$.viewport_width') > %s)
+                OR (JSON_VALUE(v.client_details, '$.platform') = %s
+                    AND JSON_VALUE(v.client_details, '$.screen_width') = %s
+                    AND JSON_VALUE(v.client_details, '$.screen_height') = %s
+                    AND JSON_VALUE(v.client_details, '$.device_memory') = %s
+                    AND v.referrer_host = %s)
+                OR (v.os_family = %s
+                    AND JSON_VALUE(v.client_details, '$.platform') IN ({platform_placeholders})
+                    AND JSON_VALUE(v.client_details, '$.max_touch_points') = %s)
+            ), 0)""", (
+                DVisitorDetails.BOT_CLIENT_VENDOR,
+                "mobile", DVisitorDetails.BOT_LINUX_PLATFORM,
+                *DVisitorDetails.BOT_PHONE_SCREEN, DVisitorDetails.BOT_RENDERER_MEMORY,
+                DVisitorDetails.BOT_PHONE_TOUCH_POINTS, DVisitorDetails.BOT_PHONE_MIN_CPUS,
+                *desktop_os, DVisitorDetails.BOT_LINUX_PLATFORM,
+                *DVisitorDetails.BOT_RENDERER_SCREEN, DVisitorDetails.BOT_RENDERER_SCREEN[0],
+                DVisitorDetails.BOT_PREVIEW_PLATFORM, *DVisitorDetails.BOT_PREVIEW_SCREEN,
+                DVisitorDetails.BOT_RENDERER_MEMORY, DVisitorDetails.BOT_PREVIEW_REFERRER,
+                "iOS", *desktop_platforms, DVisitorDetails.BOT_IPHONE_TOUCH_POINTS,
+            ))
