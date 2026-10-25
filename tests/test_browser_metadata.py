@@ -3,9 +3,17 @@ import unittest
 
 from mycount.activity.BrowserMetadata import BrowserMetadata
 from mycount.entity.Visit import Visit
+from browser_automation_cases import browser_automation_cases
 
 
 class BrowserMetadataTests(unittest.TestCase):
+    def test_automation_profiles_and_nearby_legitimate_browsers(self):
+        for name, visit, agent, expected in browser_automation_cases():
+            with self.subTest(profile=name):
+                enriched = BrowserMetadata().enrich(visit, agent)
+                self.assertEqual(enriched.is_bot, expected)
+                self.assertEqual(enriched.client_details, visit.client_details)
+
     def test_mobile_versions_and_device_preserve_city_and_referrer(self):
         visit = Visit(site='r3el', url='https://r3el.osoyalce.com/',
                       received_at=datetime.now(timezone.utc), city_name='Hamilton',

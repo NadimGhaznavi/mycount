@@ -74,8 +74,14 @@
         "report-server"
       ]
     },
+    "mycount/activity/BrowserAutomation.py": {
+      "digest": "1681a9ced9f62c8a060b5bd114268ceefdf1f82e09ed296a548832b03dda04ef",
+      "targets": [
+        "listener"
+      ]
+    },
     "mycount/activity/BrowserMetadata.py": {
-      "digest": "184c78210b2f2cef0f4883ee743c65bfced0268d06772db7edd233ceefdaa874",
+      "digest": "fa4a905278b21fdf942fe212dc84bb23259474a8ea8911bc4e0d054610332833",
       "targets": [
         "listener"
       ]
@@ -195,7 +201,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "0ff02c115fa069255a81600fe5bd17559fa4497f3711e3c25c1a501f6e36c4d0",
+      "digest": "d844ea4d86cdc95674430288691fca52f63488f0d8c33e1fc853b574082acea2",
       "targets": [
         "filesystem"
       ]
@@ -215,7 +221,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "71b10d252c4828f2ed7220a69c8b2fbfe731e04c97869b8c4bec59a5b91dbb71",
+      "digest": "6be21328d7b3071bf4bb8b8934608ab462c2925120fed7dbae0ee6f18ab8a7ac",
       "targets": [
         "filesystem",
         "listener",
@@ -237,7 +243,7 @@
       ]
     },
     "mycount/constants/DVisitorDetails.py": {
-      "digest": "6ff01b18e0255b52ee7440e0f8b5d900b45eb2b0e9ff5654ec97f2ecf7fe18a4",
+      "digest": "034086d417993d4f84ad802e624c7566c21ec2bbd107b04f3a9dc93e7f8e8a34",
       "targets": [
         "filesystem",
         "listener",
@@ -445,7 +451,7 @@
       ]
     },
     "mycount/interface/VisitDb.py": {
-      "digest": "05aaa4813523ace1a2907ead5b85e0b1d1fcf05438f524a1f0b9fdc60b367768",
+      "digest": "7855279604986cfc38a1625513ececd6e4e2ff071cfb6eb0e2bafc6b7894c191",
       "targets": [
         "listener",
         "report-server"
@@ -1254,6 +1260,14 @@
         "report-server"
       ],
       "version": "2.6.1"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "2.7.0"
     }
   ]
 }

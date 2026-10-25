@@ -7,7 +7,16 @@ permalink: /CHANGELOG/
 
 # MyCount Changelog
 
+This release is named for the element **Silver (Ag)**. Silver conducts electricity
+better than copper, better than any other metal.
+
 ## [Unreleased]
+
+## [2.7.0] - 2026-10-25 @ 15:14
+
+- Filter phone renderers, desktop/iPhone platform mismatches, oversized renderer
+  viewports, and Facebook preview profiles from bot-filtered reports. Apply the
+  same checks to new visits and historical visits with false or missing bot flags.
 
 ## [2.6.1] - 2026-10-23 @ 17:20
 
