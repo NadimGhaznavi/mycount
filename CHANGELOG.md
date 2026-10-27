@@ -12,6 +12,24 @@ better than copper, better than any other metal.
 
 ## [Unreleased]
 
+### Summary
+
+Adopt pinned BMForge engineering guidance and troubleshooting skills while
+preserving MyCount's existing application and development conventions.
+
+Performed a security analysis for the exposure of the listener. Identified
+[firewalld](https://firewalld.org/), 
+[nftables](https://www.netfilter.org/projects/nftables/index.html), and 
+[Fail2ban](https://www.fail2ban.org/) as technologies to integrate into a 
+standalone service that this application can use.
+
+### Added
+
+- Attach BMForge RCA, HTTP, database, and visualization skills with their
+  reference snapshots, version lock, and a local integrity check that runs
+  without Git or network access. Document how to use them within MyCount's
+  existing coding guidelines and owner-managed update process.
+
 ## [2.7.0] - 2026-10-25 @ 15:14
 
 - Filter phone renderers, desktop/iPhone platform mismatches, oversized renderer

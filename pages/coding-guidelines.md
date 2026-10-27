@@ -215,6 +215,45 @@ Give each guide one purpose and an accurate title. Document implemented behavior
 and verified commands. Add installation, configuration, running, and uninstall
 guides when those workflows exist, keeping each in its own page.
 
+## Use pinned BMForge guidance
+
+MyCount uses BMForge as development guidance, with selected skill bundles under
+`.agents/skills/`. It is not a runtime dependency. This guide remains canonical
+for MyCount; use the pinned engineering contract and Activity / Interface /
+Entity classification alongside the rules above.
+
+The attached skills are:
+
+| Skill | Use |
+| --- | --- |
+| `bmforge-rca` | Collect production evidence read-only from an authorized host, then reproduce, investigate, and test locally. |
+| `bmforge-http` | Apply request validation, lifecycle, health-check, and presentation practices to the existing HTTP interfaces. |
+| `bmforge-db-server` | Keep SQL in domain interfaces, use the existing shared manager, and verify transactions and resource ownership. |
+| `bmforge-visualization` | Build charts and maps within the existing display interface, safely passing application data to browser libraries. |
+
+Read each skill's `SKILL.md` and relevant bundled references when its workflow
+applies. The [project instructions](https://github.com/NadimGhaznavi/mycount/blob/main/AGENTS.md)
+link to those files. Apply their practices within the requested work, without
+turning existing differences into an unrelated migration. Keep MyCount's
+existing HTTP transports, database manager, dependencies, browser library
+versions, and release process. A change to those choices requires its own
+explicit scope and approval. Skill installation alone does not establish
+component compliance or justify adding `BMFORGE_COMPONENT` markers.
+
+Before first using a pinned skill in a session, run the local integrity check:
+
+```sh
+python3 -B .agents/bmforge/verify.py
+```
+
+It verifies the bundles and upstream manager against `.agents/bmforge/lock.json`
+without running Git or accessing the network. It does not check for upstream
+updates. The project owner can compare against the separately maintained local
+BMForge source with `python3 -B .agents/bmforge/manage.py check --project .`;
+the assistant must leave that command to the owner because it invokes Git.
+Report verification limits and continue using intact pinned bundles when the
+upstream source is unavailable. Apply updates only with direct user approval.
+
 ## Update the CHANGELOG.md
 
 Update the CHANGELOG. If there are many low level changes, then include a `### Summary` 
