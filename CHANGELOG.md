@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Updated README.
+
 ## [2.8.0] - 2026-10-28 @ 04:15
 
 This release is named for the element **Gadolinium (Gd)**. Certain 
