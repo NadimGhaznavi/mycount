@@ -286,6 +286,11 @@ framework, database driver or plotting library as a shortcut.
 Component selection and application-specific behaviour belong to this project's
 requirements. A pinned skill is an instruction bundle, not executable app code.
 
+For applications with more than one service, create an executable
+`scripts/services` supporting `start` and `stop`. Run the application's
+start/stop commands sequentially in an explicit order. Keep it simple;
+no dependency awareness is required.
+
 Implementation authorization gate: discussion, brainstorming, design and
 proposed specifications do not authorize implementation. Read-only investigation
 is permitted, but do not modify project files (including code, tests,

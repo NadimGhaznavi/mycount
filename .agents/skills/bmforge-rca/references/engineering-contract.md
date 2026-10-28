@@ -53,6 +53,8 @@ Every new project must also satisfy the [Installation Lifecycle contract]({{ sit
 
 ## Scope gate for Codex
 
+For applications with more than one service, create an executable `scripts/services` supporting `start` and `stop`. Run the application's start/stop commands sequentially in an explicit order. Keep it simple; no dependency awareness is required.
+
 Before adding nontrivial defensive logic or an additional layer, identify **the requirement or observed failure it solves**. If none exists, omit it. Prefer an understandable, observable failure over code that quietly limps forward.
 
 The [component blueprints]({{ site.baseurl }}{% link pages/component-blueprints.md %}) define specific behaviours; [CMDB compliance]({{ site.baseurl }}{% link pages/cmdb-compliance.md %}) and the other existing processes govern deployment. A component skill must follow this contract, not replace it.

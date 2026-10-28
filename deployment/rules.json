@@ -74,7 +74,8 @@
       "deployment_tools/__main__.py",
       "mycount/activity/ReconcileMarketingScreenshots.py",
       "mycount/activity/RefreshCities.py",
-      "scripts/restart.sh"
+      "scripts/restart.sh",
+      "scripts/services.sh"
     ],
     "listener": [
       "systemd/mycount-server.service",
