@@ -12,6 +12,19 @@ cd mycount
 sudo ./scripts/install.sh
 ```
 
+## Start and stop services
+
+From the checkout or installed directory, run:
+
+```sh
+sudo ./scripts/services.sh start
+sudo ./scripts/services.sh stop
+```
+
+Start runs the collector, Control, and router worker sequentially. Stop uses
+the reverse order. The command stops at the first failed service operation.
+Use `./scripts/services.sh --help` to display usage.
+
 ## Network configuration
 
 Installation creates `/opt/prod/mycount/conf/mycount.json` using the defaults

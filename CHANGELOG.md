@@ -9,6 +9,19 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+This release is named for the element **Tungsten (W)**. Tungsten has the 
+highest melting point of any pure metal, about 3,422°C.
+
+### Summary
+
+Add a single command to start or stop MyCount's three services sequentially.
+
+### Added
+
+- Add executable `scripts/services.sh start|stop`, starting the collector,
+  Control, and router worker in order and stopping them in reverse order.
+  Include the helper in deployment and document its usage.
+
 ### Changed
 
 - Refresh the four attached BMForge skill bundles and manager to BMForge 0.15.0

@@ -24,7 +24,8 @@ class DeploymentFilesTests(unittest.TestCase):
             "mycount/setup.py": [DDeployment.FILESYSTEM],
             "mycount/constants/DMyCount.py": list(DDeployment.TARGETS),
         }
-        for name in (*self.paths, "requirements.txt", "scripts/uninstall.sh", "scripts/restart.sh", "scripts/install-caddy.sh", "caddy/mycount.caddy"):
+        for name in (*self.paths, "requirements.txt", "scripts/uninstall.sh", "scripts/restart.sh",
+                     "scripts/services.sh", "scripts/install-caddy.sh", "caddy/mycount.caddy"):
             for root, content in ((self.source, "new"), (self.installed, "old")):
                 path = root / name
                 path.parent.mkdir(parents=True, exist_ok=True)
@@ -78,7 +79,8 @@ class DeploymentFilesTests(unittest.TestCase):
         self.files.copy_setup()
         self.assertEqual(screenshot.read_bytes(), b"uploaded PNG")
         self.assertEqual(config.read_text(), '{"network": {"report": {"port": 62000}}}')
-        for name in (*self.paths, "requirements.txt", "scripts/uninstall.sh", "scripts/restart.sh", "scripts/install-caddy.sh", "caddy/mycount.caddy"):
+        for name in (*self.paths, "requirements.txt", "scripts/uninstall.sh", "scripts/restart.sh",
+                     "scripts/services.sh", "scripts/install-caddy.sh", "caddy/mycount.caddy"):
             self.assertEqual((self.installed / name).read_text(), "new")
 
     def test_completion_without_impact_only_updates_release_bookkeeping(self):
