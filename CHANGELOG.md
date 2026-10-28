@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.8.1] - 2026-10-28 @ 05:19
+
 - Updated README.
 
 ## [2.8.0] - 2026-10-28 @ 04:15
