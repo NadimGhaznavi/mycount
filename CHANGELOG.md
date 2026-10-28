@@ -25,6 +25,8 @@ standalone service that this application can use.
 
 ### Added
 
+- Show the country name when hovering over a Unicode flag in the Metrics page's
+  Recent Visits table, and include the full name in its screen-reader label.
 - Attach BMForge RCA, HTTP, database, and visualization skills with their
   reference snapshots, version lock, and a local integrity check that runs
   without Git or network access. Document how to use them within MyCount's
