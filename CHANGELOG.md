@@ -7,12 +7,42 @@ permalink: /CHANGELOG/
 
 # MyCount Changelog
 
-This release is named for the element **Silver (Ag)**. Silver conducts electricity
-better than copper, better than any other metal.
-
 ## [Unreleased]
 
+## [2.8.0] - 2026-10-28 @ 04:15
+
+This release is named for the element **Gadolinium (Gd)**. Certain 
+gadolinium compounds are used as contrast agents in MRI scans.
+
+### Summary
+
+Adopt pinned BMForge engineering guidance and troubleshooting skills while
+preserving MyCount's existing application and development conventions.
+
+Performed a security analysis for the exposure of the listener. Identified
+[firewalld](https://firewalld.org/), 
+[nftables](https://www.netfilter.org/projects/nftables/index.html), and 
+[Fail2ban](https://www.fail2ban.org/) as technologies to integrate into a 
+standalone service that this application can use.
+
+### Added
+
+- Show the country name when hovering over a Unicode flag in the Metrics page's
+  Recent Visits table, and include the full name in its screen-reader label.
+- Attach BMForge RCA, HTTP, database, and visualization skills with their
+  reference snapshots, version lock, and a local integrity check that runs
+  without Git or network access. Document how to use them within MyCount's
+  existing coding guidelines and owner-managed update process.
+
+### Changed
+
+- Rename the Metrics location table to "Visits by City Table" and the location
+  chart to "Visits by Country Chart".
+
 ## [2.7.0] - 2026-10-25 @ 15:14
+
+This release is named for the element **Silver (Ag)**. Silver conducts electricity
+better than copper, better than any other metal.
 
 - Filter phone renderers, desktop/iPhone platform mismatches, oversized renderer
   viewports, and Facebook preview profiles from bot-filtered reports. Apply the

@@ -27,6 +27,7 @@ class ControlPages:
             undefined=StrictUndefined,
         )
         self._templates.filters["country_flag"] = self._country_flag
+        self._templates.filters["country_name"] = self._country_name
         self._templates.filters["utc_iso"] = lambda value: value.replace(tzinfo=timezone.utc).isoformat()
 
     def render(self, report: Report, *, error: str | None = None) -> bytes:
@@ -130,6 +131,11 @@ class ControlPages:
                             "platform": post["platform"], "id": post["id"]} for post in report.posts],
             **self._report_context(report, "/marketing"),
         ).encode("utf-8")
+
+    @staticmethod
+    def _country_name(code: str) -> str:
+        """Name a country code already validated by the country_flag filter."""
+        return pycountry.countries.get(alpha_2=code.upper()).name
 
     @staticmethod
     def _country_flag(code: str | None) -> str:

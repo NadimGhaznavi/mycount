@@ -68,7 +68,7 @@
       <tr>
         <td><time datetime="{{ visit.received_at | utc_iso }}" data-local-time="date-only">{{ visit.received_at.strftime('%Y-%m-%d') }} UTC</time></td>
         <td><time datetime="{{ visit.received_at | utc_iso }}" data-local-time="time-12">{{ visit.received_at.strftime('%I:%M %p') }} UTC</time></td>
-        <td data-sort-value="{{ visit.city_name or '---' }}">{% set flag = visit.country_code | country_flag %}{% if flag %}<span role="img" aria-label="Country: {{ visit.country_code }}">{{ flag }}</span> {% endif %}{{ visit.city_name or '---' }}</td>
+        <td data-sort-value="{{ visit.city_name or '---' }}">{% set flag = visit.country_code | country_flag %}{% if flag %}{% set country = visit.country_code | country_name %}<span role="img" aria-label="Country: {{ country }}" title="{{ country }}">{{ flag }}</span> {% endif %}{{ visit.city_name or '---' }}</td>
         <td>{{ visit.url }}</td>
       </tr>
       {% else %}
@@ -83,7 +83,7 @@
 <div class="metrics-preference-charts">
 <section class="country-chart" aria-labelledby="country-chart-title">
 <details class="metric-panel">
-  <summary><h2 id="country-chart-title">Visits by Location Chart</h2></summary>
+  <summary><h2 id="country-chart-title">Visits by Country Chart</h2></summary>
   {% if country_slices %}
   <div class="country-chart-content">
     <div id="country-pie" class="country-pie" role="img" aria-label="Visits by country. Counts and percentages are listed in the legend."></div>
@@ -118,9 +118,9 @@
 </section>
 </div>
 <details class="metric-panel">
-  <summary>Visits by Location Table</summary>
-<div class="table-wrap table-scroll" tabindex="0" role="region" aria-label="Visits by Location scroll area">
-  <table aria-label="Visits by Location">
+  <summary>Visits by City Table</summary>
+<div class="table-wrap table-scroll" tabindex="0" role="region" aria-label="Visits by City scroll area">
+  <table aria-label="Visits by City">
     <thead><tr><th scope="col">Country</th><th scope="col">State/Province</th><th scope="col">City</th><th scope="col" class="visits">Visits</th></tr></thead>
     <tbody>
       {% for location in locations %}
