@@ -7,10 +7,10 @@ permalink: /CHANGELOG/
 
 # MyCount Changelog
 
-This release is named for the element **Silver (Ag)**. Silver conducts electricity
-better than copper, better than any other metal.
-
 ## [Unreleased]
+
+This release is named for the element **Gadolinium (Gd)**. Certain 
+gadolinium compounds are used as contrast agents in MRI scans.
 
 ### Summary
 
@@ -38,6 +38,9 @@ standalone service that this application can use.
   chart to "Visits by Country Chart".
 
 ## [2.7.0] - 2026-10-25 @ 15:14
+
+This release is named for the element **Silver (Ag)**. Silver conducts electricity
+better than copper, better than any other metal.
 
 - Filter phone renderers, desktop/iPhone platform mismatches, oversized renderer
   viewports, and Facebook preview profiles from bot-filtered reports. Apply the
