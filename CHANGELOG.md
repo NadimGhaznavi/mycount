@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-10-28 @ 18:07
+
 This release is named for the element **Tungsten (W)**. Tungsten has the 
 highest melting point of any pure metal, about 3,422°C.
 

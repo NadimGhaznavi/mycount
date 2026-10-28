@@ -13,7 +13,7 @@
       ]
     },
     "deployment/rules.json": {
-      "digest": "959f8d1178933a36b4c93b6796c1d3973829f0488a6d3f4fc9d7fa24dc8c9198",
+      "digest": "54d7edfba9fff3c8ffc277361786d876eefeeb43f895d5cb9666182f87e75533",
       "targets": [
         "filesystem"
       ]
@@ -201,7 +201,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "d844ea4d86cdc95674430288691fca52f63488f0d8c33e1fc853b574082acea2",
+      "digest": "4fab4dcc60b82e9ff0d04907cfee143ad8de2c6434d2a336fd59ae11ff50910a",
       "targets": [
         "filesystem"
       ]
@@ -221,7 +221,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "c50abb27d101127ede49ccac67457f7c24f5befcf4e9499e96e14b8cdcb786e8",
+      "digest": "6927de4c1ed80f53a6a7ea072106dfb01babef5fb295b9b488caf949193e8780",
       "targets": [
         "filesystem",
         "listener",
@@ -362,7 +362,7 @@
       ]
     },
     "mycount/interface/DeploymentConfiguration.py": {
-      "digest": "9f7a94d4f11d678a89b26910b631bbec0391675f119c96a58ad5c7664d28d7b9",
+      "digest": "34ae11f734b6f050f9271bab8cb940f01611eec967198994c04f33ca579d5c64",
       "targets": [
         "filesystem"
       ]
@@ -674,6 +674,12 @@
     },
     "scripts/restart.sh": {
       "digest": "55376dae22e4da96bd16576c3a9c04b5d4c1be8a240707bd4e2f8da652145631",
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "scripts/services.sh": {
+      "digest": "9b0ebe768e520e42b707667b7a37048d4a076fca72f7a44c91d7f065f272896b",
       "targets": [
         "filesystem"
       ]
@@ -1284,6 +1290,14 @@
         "report-server"
       ],
       "version": "2.8.1"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "2.9.0"
     }
   ]
 }
