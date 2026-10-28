@@ -9,6 +9,13 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Changed
+
+- Refresh the four attached BMForge skill bundles and manager to BMForge 0.15.0
+  (source revision `7817daa5bdec`), including shared guidance for sequential
+  multi-service start and stop commands. Update the pinned hashes; component
+  specification versions remain unchanged.
+
 ## [2.8.1] - 2026-10-28 @ 05:19
 
 - Updated README.
