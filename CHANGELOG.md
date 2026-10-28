@@ -32,6 +32,11 @@ standalone service that this application can use.
   without Git or network access. Document how to use them within MyCount's
   existing coding guidelines and owner-managed update process.
 
+### Changed
+
+- Rename the Metrics location table to "Visits by City Table" and the location
+  chart to "Visits by Country Chart".
+
 ## [2.7.0] - 2026-10-25 @ 15:14
 
 - Filter phone renderers, desktop/iPhone platform mismatches, oversized renderer
