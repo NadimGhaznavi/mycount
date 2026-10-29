@@ -12,7 +12,7 @@ import subprocess
 import tempfile
 import time
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from uuid import uuid4
 
 import pymysql
@@ -23,18 +23,85 @@ from mycount.interface.VisitDb import VisitDb
 from mycount.interface.MarketingDb import MarketingDb
 from mycount.entity.MarketingPost import MarketingPost
 from mycount.entity.Visit import Visit
+from mycount.entity.GeoLocation import GeoLocation
 from mycount.interface.VisitPayload import VisitPayload
 from mycount.activity.BrowserMetadata import BrowserMetadata
+from mycount.activity.DetectCrawlCampaigns import DetectCrawlCampaigns
+from mycount.activity.CollectVisit import CollectVisit
 from mycount.activity.SaveMarketingPost import SaveMarketingPost
 from mycount.entity.ReportOptions import ReportOptions
 from mycount.interface.DbCommitUncertain import DbCommitUncertain
 from mycount.interface.MarketingScreenshots import MarketingScreenshots
 from browser_automation_cases import browser_automation_cases
+from test_crawl_campaigns import campaign
 
 
 @unittest.skipUnless(shutil.which("mariadb-install-db") and shutil.which("mariadbd"),
                      "MariaDB server binaries are required for isolated integration tests")
 class DatabaseTests(unittest.TestCase):
+    def test_collection_reclassifies_the_campaign_when_evidence_becomes_sufficient(self):
+        visits = VisitDb(self.db)
+        rows = campaign(site='collected')
+        for row in rows[:-1]:
+            visit = Visit(site=row.site, url=row.url,
+                          received_at=row.received_at.replace(tzinfo=timezone.utc),
+                          visitor_id=row.visitor_id, ip_address=row.ip_address,
+                          referrer_host=row.referrer_host, browser_family='Chrome', os_family='Windows',
+                          client_details=(('platform', 'Win32'), ('vendor', 'Google Inc.')),
+                          is_bot=False)
+            visits.record(visit)
+        self.assertEqual(DetectCrawlCampaigns.find(visits.campaign_candidates('collected')), ())
+        final = rows[-1]
+        visit = replace(visit, url=final.url, referrer_host=final.referrer_host,
+                        received_at=final.received_at.replace(tzinfo=timezone.utc))
+        payload = Mock()
+        payload.resolve.return_value = (visit, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                                       'AppleWebKit/537.36 (KHTML, like Gecko) '
+                                       'Chrome/155.0.0.0 Safari/537.36')
+        with patch('mycount.activity.CollectVisit.DbMgr', return_value=self.db), \
+                patch('mycount.activity.CollectVisit.GeoIp') as geo, \
+                patch.object(self.db, 'close') as close:
+            geo.return_value.locate.return_value = GeoLocation()
+            view_id = CollectVisit(payload, BrowserMetadata()).record({}, final.ip_address,
+                                                                      'https://example.com')
+            close.assert_called_once()
+        self.assertEqual(visits.count_by_site('collected'), 0)
+        self.assertEqual(len(visits.visitor_records({'site': 'collected'}, exclude_bots=False)), 24)
+        self.assertEqual(self.db.query('SELECT is_bot FROM page_views WHERE page_view_id=%s',
+                                       (view_id,)), [{'is_bot': 1}])
+
+    def test_campaign_classification_is_site_scoped_persistent_and_used_by_reports(self):
+        visits = VisitDb(self.db)
+        rows = campaign(site='campaign')
+        ids = []
+        for row in rows:
+            visit = Visit(site=row.site, url=row.url,
+                          received_at=row.received_at.replace(tzinfo=timezone.utc),
+                          visitor_id=row.visitor_id, ip_address=row.ip_address,
+                          referrer_host=row.referrer_host, browser_family='Chrome', os_family='Windows',
+                          client_details=(('platform', 'Win32'), ('vendor', 'Google Inc.')),
+                          is_bot=False, country_code='CA', city_name='Example',
+                          latitude=43.2, longitude=-79.8, languages=('en-CA',))
+            ids.append(visits.record(visit))
+        other = visits.record(replace(visit, site='other', url='https://other.example/'))
+        end = rows[-1].received_at.replace(tzinfo=timezone.utc)
+        detector = DetectCrawlCampaigns(visits)
+        self.assertEqual(detector.classify('other', end), 0)
+        self.assertEqual(detector.classify('campaign', end), len(ids))
+        self.assertEqual(detector.classify('campaign', end), 0)
+        self.assertEqual(visits.count_by_site('campaign'), 0)
+        self.assertEqual(visits.count_by_site('other'), 1)
+        for query in (visits.totals_by_page, visits.totals_by_site, visits.totals_by_location,
+                      visits.totals_by_coordinates, visits.totals_by_referrer, visits.totals_by_language):
+            with self.subTest(query=query.__name__):
+                self.assertEqual(query(site='campaign', exclude_bots=True), [])
+                self.assertEqual(sum(row['page_views'] for row in query(
+                    site='campaign', exclude_bots=False)), len(ids))
+        self.assertEqual(visits.visitor_records({'site': 'campaign'}, exclude_bots=True), [])
+        self.assertEqual(visits.recent_visits(site='campaign', exclude_bots=True), [])
+        self.assertEqual(self.db.query('SELECT is_bot FROM page_views WHERE page_view_id=%s',
+                                       (other,)), [{'is_bot': 0}])
+
     @classmethod
     def setUpClass(cls):
         temporary = tempfile.TemporaryDirectory(prefix="mycount-db-test-")

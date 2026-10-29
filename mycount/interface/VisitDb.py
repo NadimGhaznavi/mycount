@@ -8,11 +8,48 @@ from mycount.constants.DVisitorDetails import DVisitorDetails
 from mycount.interface.DbMgr import DbMgr
 from mycount.constants.DReports import DReports
 from mycount.constants.DVisitors import DVisitors
+from mycount.constants.DCrawlCampaigns import DCrawlCampaigns
+from mycount.entity.CampaignVisit import CampaignVisit
 
 
 class VisitDb:
     def __init__(self, db: DbMgr) -> None:
         self._db = db
+
+    def campaign_candidates(self, site: str, *, start: datetime | None = None,
+                            end: datetime | None = None) -> list[CampaignVisit]:
+        """Read one site's Windows/Chrome sessions, including earlier classifications.
+
+        These are evidence candidates, not bot decisions. Missing identity or browser
+        metadata cannot establish the rotating identity pattern.
+        """
+        where, params = self._filter(False, start, None, site)
+        if end is not None:
+            where += " AND v.received_at <= %s"
+            params += (end,)
+        where += """ AND v.visitor_id IS NOT NULL AND v.ip_address IS NOT NULL
+            AND v.browser_family = %s AND v.os_family = %s
+            AND JSON_VALUE(v.client_details, '$.platform') = %s
+            AND JSON_VALUE(v.client_details, '$.vendor') = %s"""
+        params += (DCrawlCampaigns.BROWSER, DCrawlCampaigns.OS,
+                   DCrawlCampaigns.PLATFORM, DCrawlCampaigns.VENDOR)
+        rows = self._db.query(f"""
+            SELECT v.page_view_id, p.site, p.url, v.received_at,
+                   v.visitor_id, v.ip_address, v.referrer_host
+            FROM page_views v JOIN pages p ON p.page_id = v.page_id
+            {where} ORDER BY v.received_at, v.page_view_id
+        """, params)
+        return [CampaignVisit(**row) for row in rows]
+
+    def mark_campaign_bots(self, ids: tuple[int, ...]) -> int:
+        """Classify the reviewed rows atomically without deleting their evidence."""
+        if not ids:
+            return 0
+        placeholders = ", ".join("%s" for _ in ids)
+        with self._db.transaction():
+            return self._db.execute(
+                f"UPDATE page_views SET is_bot = 1 WHERE page_view_id IN ({placeholders}) "
+                "AND COALESCE(is_bot, 0) <> 1", ids)
 
     def record(self, visit: Visit) -> int:
         """Commit the page, view, and language preferences together."""

@@ -3,6 +3,7 @@
 from dataclasses import replace
 
 from mycount.activity.BrowserMetadata import BrowserMetadata
+from mycount.activity.DetectCrawlCampaigns import DetectCrawlCampaigns
 from mycount.interface.DbMgr import DbMgr
 from mycount.interface.GeoIp import GeoIp
 from mycount.interface.VisitDb import VisitDb
@@ -25,6 +26,10 @@ class CollectVisit:
                             city_name=location.city_name,
                             latitude=location.latitude, longitude=location.longitude,
                             zip=location.zip, timezone=location.timezone)
-            return VisitDb(db).record(visit)
+            visits = VisitDb(db)
+            view_id = visits.record(visit)
+            if DetectCrawlCampaigns.is_candidate(visit):
+                DetectCrawlCampaigns(visits).classify(visit.site, visit.received_at)
+            return view_id
         finally:
             db.close()

@@ -104,6 +104,7 @@ class DDeployment:
         "mycount/activity/CollectVisit.py": (
             "mycount/__init__.py",
             "mycount/activity/BrowserMetadata.py",
+            "mycount/activity/DetectCrawlCampaigns.py",
             "mycount/activity/__init__.py",
             "mycount/interface/DbMgr.py",
             "mycount/interface/GeoIp.py",
@@ -121,6 +122,15 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/activity/__init__.py",
             "mycount/constants/DDeployment.py",
+        ),
+        "mycount/activity/DetectCrawlCampaigns.py": (
+            "mycount/__init__.py",
+            "mycount/activity/__init__.py",
+            "mycount/constants/DCrawlCampaigns.py",
+            "mycount/entity/CampaignVisit.py",
+            "mycount/entity/Visit.py",
+            "mycount/interface/DbMgr.py",
+            "mycount/interface/VisitDb.py",
         ),
         "mycount/activity/MaintainRouterMappings.py": (
             "mycount/__init__.py",
@@ -209,6 +219,10 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
         ),
+        "mycount/constants/DCrawlCampaigns.py": (
+            "mycount/__init__.py",
+            "mycount/constants/__init__.py",
+        ),
         "mycount/constants/DDbMgr.py": (
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
@@ -249,6 +263,10 @@ class DDeployment:
         ),
         "mycount/constants/__init__.py": (
             "mycount/__init__.py",
+        ),
+        "mycount/entity/CampaignVisit.py": (
+            "mycount/__init__.py",
+            "mycount/entity/__init__.py",
         ),
         "mycount/entity/GeoLocation.py": (
             "mycount/__init__.py",
@@ -401,9 +419,11 @@ class DDeployment:
         ),
         "mycount/interface/VisitDb.py": (
             "mycount/__init__.py",
+            "mycount/constants/DCrawlCampaigns.py",
             "mycount/constants/DReports.py",
             "mycount/constants/DVisitorDetails.py",
             "mycount/constants/DVisitors.py",
+            "mycount/entity/CampaignVisit.py",
             "mycount/entity/Visit.py",
             "mycount/interface/DbMgr.py",
             "mycount/interface/__init__.py",
