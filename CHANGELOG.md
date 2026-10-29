@@ -9,6 +9,26 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.9.1] - 2026-10-29 @ 16:54
+
+This release is named for the element **Iridium (Ir)**. An iridium-rich layer 
+found worldwide helped scientists identify the asteroid impact linked to the 
+dinosaurs' extinction.
+
+### Summary
+
+Recognize coordinated page sweeps that rotate browser identities and pass the
+existing per-visit bot checks. Detect campaigns independently for each site and
+keep classified visits available when bot exclusion is disabled.
+
+### Added
+
+- Detect sustained Windows/Chrome crawl campaigns from distinct pages, rotating
+  visitor IDs and IPs, repeated short navigation pairs, and regular timing.
+  Recheck the last 48 hours during collection and log new classifications.
+- Add a read-only historical scan with an explicit `--apply` option, and document
+  the evidence thresholds and heuristic's limits.
+
 ## [2.9.0] - 2026-10-28 @ 18:07
 
 This release is named for the element **Tungsten (W)**. Tungsten has the 
@@ -46,9 +66,10 @@ Adopt pinned BMForge engineering guidance and troubleshooting skills while
 preserving MyCount's existing application and development conventions.
 
 Performed a security analysis for the exposure of the listener. Identified
-[firewalld](https://firewalld.org/), 
-[nftables](https://www.netfilter.org/projects/nftables/index.html), and 
-[Fail2ban](https://www.fail2ban.org/) as technologies to integrate into a 
+
+- [firewalld](https://firewalld.org/), 
+- [nftables](https://www.netfilter.org/projects/nftables/index.html), and 
+- [Fail2ban](https://www.fail2ban.org/) as technologies to integrate into a 
 standalone service that this application can use.
 
 ### Added
