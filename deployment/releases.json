@@ -87,7 +87,7 @@
       ]
     },
     "mycount/activity/CollectVisit.py": {
-      "digest": "0c63c1310adc9fe59ff99789a3c3fb83a8d271776c435c676cc9ad7d7be33ab9",
+      "digest": "37bd1c3812ba6c2d822f854d6bb7ee663b54c28f036d207d60172a0d9d5a9bcc",
       "targets": [
         "listener"
       ]
@@ -102,6 +102,12 @@
       "digest": "56bf7b742bda37889ed717c1c4e6108a55afb947119c9434feaa04945547110d",
       "targets": [
         "filesystem"
+      ]
+    },
+    "mycount/activity/DetectCrawlCampaigns.py": {
+      "digest": "b286c7e27ce181dd2617b56821b85aec148988bc94447b1607d2674a3ffc40cc",
+      "targets": [
+        "listener"
       ]
     },
     "mycount/activity/MaintainRouterMappings.py": {
@@ -192,6 +198,13 @@
         "filesystem"
       ]
     },
+    "mycount/constants/DCrawlCampaigns.py": {
+      "digest": "f6d8e876e174b501449732441a5b0690746d20e9096486a6540fd0c3f9c875de",
+      "targets": [
+        "listener",
+        "report-server"
+      ]
+    },
     "mycount/constants/DDbMgr.py": {
       "digest": "f4e8b594dcfcdace8119c2edca90aa266dbc47b67ba7246c042d0a5fce2d44d6",
       "targets": [
@@ -201,7 +214,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "4fab4dcc60b82e9ff0d04907cfee143ad8de2c6434d2a336fd59ae11ff50910a",
+      "digest": "9435a651c471f0f88624e78244bc98ef9b00870b1b3cffe47f6cd028bcfb9152",
       "targets": [
         "filesystem"
       ]
@@ -221,7 +234,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "6927de4c1ed80f53a6a7ea072106dfb01babef5fb295b9b488caf949193e8780",
+      "digest": "d51023371787906741bb232b5b3626154a743a3ab7f805cf7f6c0e911f56bfe4",
       "targets": [
         "filesystem",
         "listener",
@@ -261,6 +274,13 @@
       "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "targets": [
         "filesystem",
+        "listener",
+        "report-server"
+      ]
+    },
+    "mycount/entity/CampaignVisit.py": {
+      "digest": "05004f6decdcfdb472ff6ac9ecf938e0ad60e4918def21ca462403351161e9d8",
+      "targets": [
         "listener",
         "report-server"
       ]
@@ -451,7 +471,7 @@
       ]
     },
     "mycount/interface/VisitDb.py": {
-      "digest": "7855279604986cfc38a1625513ececd6e4e2ff071cfb6eb0e2bafc6b7894c191",
+      "digest": "05c679cff10a0b934e359cec02db35469bf02c85daad38e5be77c3d6ed33865c",
       "targets": [
         "listener",
         "report-server"
@@ -1298,6 +1318,14 @@
         "report-server"
       ],
       "version": "2.9.0"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "2.9.1"
     }
   ]
 }

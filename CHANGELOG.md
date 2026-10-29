@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [2.9.1] - 2026-10-29 @ 16:54
+
 This release is named for the element **Iridium (Ir)**. An iridium-rich layer 
 found worldwide helped scientists identify the asteroid impact linked to the 
 dinosaurs' extinction.
