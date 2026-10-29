@@ -13,7 +13,7 @@ permalink: /CHANGELOG/
 
 This release is named for the element **Iridium (Ir)**. An iridium-rich layer 
 found worldwide helped scientists identify the asteroid impact linked to the 
-dinosaurs' extinction.
+dinosaurs' extinction. 
 
 ### Summary
 
@@ -28,6 +28,40 @@ keep classified visits available when bot exclusion is disabled.
   Recheck the last 48 hours during collection and log new classifications.
 - Add a read-only historical scan with an explicit `--apply` option, and document
   the evidence thresholds and heuristic's limits.
+
+### One-time historical backfill
+
+Deploying this release enables detection on new visits; existing visits retain
+their stored bot flags. Run this command on **wintermute** to classify the 72
+confirmed KB crawler page views from the October 29 backup. The timestamps are
+UTC. Visits remain available with **Exclude bots** disabled.
+
+```sh
+sudo mariadb --database=mycount <<'SQL'
+UPDATE page_views AS v
+JOIN pages AS p ON p.page_id = v.page_id
+SET v.is_bot = 1
+WHERE p.site = 'kb'
+  AND v.browser_family = 'Chrome'
+  AND v.os_family = 'Windows'
+  AND v.received_at >= '2026-10-27 13:35:06'
+  AND v.received_at < '2026-10-29 12:51:34'
+  AND COALESCE(v.is_bot, 0) = 0
+  AND v.page_view_id IN (
+    1319, 1321, 1335, 1336, 1337, 1338, 1343, 1345, 1346, 1350, 1351, 1352,
+    1355, 1356, 1357, 1367, 1371, 1372, 1381, 1382, 1383, 1384, 1385, 1387,
+    1389, 1390, 1392, 1393, 1394, 1410, 1411, 1414, 1415, 1416, 1417, 1418,
+    1419, 1420, 1425, 1426, 1429, 1432, 1440, 1441, 1444, 1445, 1446, 1447,
+    1449, 1451, 1452, 1469, 1470, 1474, 1481, 1482, 1486, 1492, 1512, 1513,
+    1517, 1518, 1519, 1523, 1524, 1525, 1528, 1529, 1534, 1536, 1537, 1539
+  );
+SELECT ROW_COUNT() AS newly_classified_bot_views;
+SQL
+```
+
+Expect 72 newly classified views, or fewer if automatic detection has already
+flagged some. Repeating the command leaves already classified rows unchanged.
+Refresh the reports afterward; no service restart is needed.
 
 ## [2.9.0] - 2026-10-28 @ 18:07
 
