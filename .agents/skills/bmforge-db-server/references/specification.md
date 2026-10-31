@@ -4,7 +4,7 @@ lang: en
 locale: en-US
 language_name: English
 component_id: "bmforge.db-server"
-spec_version: "0.4.0"
+spec_version: "0.5.0"
 spec_status: "draft"
 translation_key: bmforge-component-db-server
 ---
@@ -19,7 +19,7 @@ Provide a minimal application-owned database service layer backed by MariaDB usi
 
 ## Approved runtime modules
 
-This is the **complete approved module inventory for the canonical, reusable `DbMgr.py`** in specification `0.4.0`.
+This is the **complete approved module inventory for the canonical, reusable `DbMgr.py`** in specification `0.5.0`.
 
 | Origin | Module | Purpose |
 | --- | --- | --- |
@@ -59,6 +59,31 @@ An `activity/CollectVisit.py` class calls named `VisitorDb` operations and works
 
 **New project integration:** copy `DbMgr.py` unchanged, pass the resolved configuration, write only the required domain `*Db` interfaces and entities, and test the application transaction and health paths. Existing applications do not require an automatic migration merely because this draft specification has changed.
 
+## Character set and collation standard
+
+Use **`CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`** for application databases, tables and their ordinary character columns, and the same charset/collation for every application connection. Collation controls text comparison and sorting; it is separate from the storage engine or SQL column type. This pins the setting that previously differed between SnakeLab's `run_id` (`utf8mb4_unicode_ci`) and Ax3l's `process_id` (`utf8mb4_uca1400_ai_ci`), breaking cross-database text comparisons.
+
+Name **both** settings explicitly when provisioning databases and creating tables; do not inherit version-dependent MariaDB server or charset defaults. Character columns may inherit the explicitly pinned table default. Any column-level charset/collation declaration must name the same pair; a different comparison policy requires an explicit approved specification change. Text identifiers compared across application databases must use this same collation on both sides, not a query-specific `COLLATE` workaround.
+
+MariaDB's `JSON` alias has a type-defined `utf8mb4_bin` collation; preserve that semantic exception and identify it during schema audits rather than converting JSON payloads. Store shared textual identifiers in ordinary columns using the standard pair, not JSON payloads. Frozen source examples may have older or domain-specific collations; their DDL is not the current standard.
+
+For example, in application-owned provisioning/schema code:
+
+```sql
+CREATE DATABASE example_app
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE example_app.records (
+  record_id VARCHAR(64) NOT NULL PRIMARY KEY
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+The canonical manager pins PyMySQL's `charset="utf8mb4"` and `collation="utf8mb4_unicode_ci"`. A connection setting does **not** rewrite a database, table or existing text column. Provisioning and upgrades must inspect the effective settings in `information_schema.SCHEMATA`, `TABLES` and `COLUMNS`, and verify `@@character_set_connection` and `@@collation_connection` through the application's own connection. Merely changing a database default leaves existing tables and columns unchanged.
+
+Existing applications retain their pinned implementation until an owner-approved upgrade. If adoption requires converting existing text, plan an explicit data migration and check indexes, uniqueness and foreign keys under the target comparison rules. Never automatically alter deployed databases or change the MariaDB server-wide defaults from `DbMgr`.
+
+Upstream references: [MariaDB charset/collation settings](https://mariadb.com/docs/server/reference/data-types/string-data-types/character-sets/setting-character-sets-and-collations), [MariaDB JSON semantics](https://mariadb.com/docs/server/reference/data-types/string-data-types/json) and [PyMySQL connection options](https://pymysql.readthedocs.io/en/latest/modules/connections.html). These explain mechanics; BMForge pins the pair above rather than following upstream defaults.
+
 ## Reference snapshot
 
 - `components/reference/bmgeoip/bmgeoip/interface/DbMgr.py`: historical version of the mechanics, **not** the copyable canonical file (it imports BMGeoIP constants)
@@ -70,7 +95,7 @@ An `activity/CollectVisit.py` class calls named `VisitorDb` operations and works
 
 - The **unchanged canonical `DbMgr.py`** owns one MariaDB connection, created from resolved application configuration and closed deterministically. The application provides its DB host/port or socket, schema name, credentials and timeouts when constructing it. Never share one manager instance between worker threads.
 - Resolve and validate external connection configuration in an application interface **before** constructing `DbMgr`; do not add configuration-file parsing or application-specific constants to the manager. No credentials in source, public documentation, status messages or HTTP output.
-- Use utf8mb4, dictionary results as needed, explicit connect/read/write timeouts, and strict SQL mode consistent with the reference implementation.
+- Use `utf8mb4` with `utf8mb4_unicode_ci` for schemas, tables, text columns and connections as specified above, dictionary results as needed, explicit connect/read/write timeouts, and strict SQL mode consistent with the reference implementation. Preserve the manager's UTC database session; local-time display belongs to the HTTP presentation contract.
 - Use the canonical methods: parameterised `execute`, `insert` (generated ID), `execute_many`, `query`, `transaction(read_only=False)`, `health` and `close`. All SQL and dynamic identifier allowlists live in the application's `*Db` interfaces, not the manager. Use driver-bound parameters for data values.
 - Transaction context commits only on success and rolls back on exceptions, preserving the original exception even when rollback also fails. DDL and schema creation are handled separately from multi-statement data transactions.
 - The application's **interface/** domain `*Db` classes own SQL schema, indexes, constraints, read/write methods, row/entity mapping and atomic write workflows. `activity/` uses their named operations and `entity/` stores the data. **Never import GeoIpDb or create GeoIP tables** for an unrelated application.
@@ -87,6 +112,7 @@ An `activity/CollectVisit.py` class calls named `VisitorDb` operations and works
 5. Invalid/missing configuration and a database outage yield explicit errors and do not leave a partially reported success.
 6. Application-internal DB health succeeds while the app can query through its own connection, fails on a simulated outage, and causes the application's aggregate `/health` to become unhealthy; no direct CMDB-to-MariaDB connection is used.
 7. Only the new application's schema and SQL are present; no BMForge/bmgeoip runtime imports. Verify CMDB declarations agree with deployment.
-8. Verify `<app>/interface/DbMgr.py` is an unchanged copy of `components/templates/db-server/interface/DbMgr.py`, with `BMFORGE_COMPONENT` version `0.4.0`. No application SQL, constants or domain names belong in the manager.
+8. Verify `<app>/interface/DbMgr.py` is an unchanged copy of `components/templates/db-server/interface/DbMgr.py`, with `BMFORGE_COMPONENT` version `0.5.0`. No application SQL, constants or domain names belong in the manager.
 9. Verify each `*Db` domain interface delegates SQL execution and transactions to its injected `DbMgr`, while activities and entities have no direct PyMySQL access.
 10. Verify the DB Server uses only approved modules and MariaDB; any infrastructure change must be approved by the user before updating this component specification.
+11. On a dedicated MariaDB test instance, inspect effective database/table/ordinary-text-column charset and collation plus connection variables: all must match `utf8mb4` / `utf8mb4_unicode_ci`; account explicitly for JSON's type-defined exception above. Create two disposable application schemas with the standard, insert matching text identifiers, and verify a cross-database join succeeds without query-level `COLLATE` or casts. An upgrade check must detect a mismatched existing column even when its database default already matches; do not silently convert it.

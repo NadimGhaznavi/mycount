@@ -4,7 +4,7 @@ lang: en
 locale: en-US
 language_name: English
 component_id: "bmforge.http-server"
-spec_version: "0.4.0"
+spec_version: "0.5.0"
 spec_status: "draft"
 translation_key: bmforge-component-http
 ---
@@ -19,11 +19,12 @@ Provide a small, locally owned HTTP service using Python's `ThreadingHTTPServer`
 
 ## Approved runtime modules
 
-This is the **complete approved module inventory for the reusable HTTP Display Server infrastructure** in specification `0.4.0`.
+This is the **complete approved module inventory for the reusable HTTP Display Server infrastructure** in specification `0.5.0`.
 
 | Origin | Module | Purpose |
 | --- | --- | --- |
 | Python stdlib | `argparse` | CLI host and port options |
+| Python stdlib | `datetime` | Timezone-aware local date/time conversion and display formatting |
 | Python stdlib | `http.server` | `ThreadingHTTPServer`, `BaseHTTPRequestHandler` and HTTP lifecycle |
 | Python stdlib | `ipaddress` | Validate the configured IPv4 bind address |
 | Python stdlib | `json` | JSON requests and the `/health` response |
@@ -31,6 +32,7 @@ This is the **complete approved module inventory for the reusable HTTP Display S
 | Python stdlib | `pathlib` | Resolve templates and static assets |
 | Python stdlib | `signal` | SIGTERM shutdown handling |
 | Python stdlib | `urllib.parse` | URL and query-string parsing |
+| Python stdlib | `zoneinfo` | Apply an explicitly configured IANA local timezone when required |
 | Third-party | `jinja2` | `Environment`, `FileSystemLoader`, `StrictUndefined`, `select_autoescape` for server-rendered HTML |
 
 **Approval boundary:** This list is binding for the reusable component infrastructure. Codex may rename local classes, configure ports and paths, and implement the application-owned handlers, but **must pause and ask the user** before adding, removing, or replacing an approved module or framework. Do not install another package as a workaround. User-approved changes belong in a revised BMForge specification before adoption.
@@ -55,6 +57,14 @@ When an HTTP application provides a browser GUI, **use a dark, high-contrast vis
 
 The pinned BMDynIP HTML and CSS are **design references only**. Inspect their variables, spacing, table scroll behavior, focus, buttons and media queries, then build the application's own interface. Never import assets directly from the BMDynIP runtime.
 
+## Date and time display
+
+- Display human-facing timestamps in **local time**, using the application's configured local timezone or, by default, the server's operating-system local timezone. Browser-rendered values must use the same timezone as server-rendered values; do not silently substitute the visitor's browser timezone. Identify the active timezone near the view or in a label where needed.
+- Use the standard full date/time format **`yyyy-mm-dd hh:mm:ss`**, with zero-padded fields and a **24-hour clock**: for example, `2026-10-30 07:05:09`. Python's equivalent is `%Y-%m-%d %H:%M:%S`. Date-only values use `yyyy-mm-dd`; time-only values use `hh:mm:ss`. Axis ticks and compact labels may omit context or seconds when appropriate, but never show fractional seconds.
+- Apply the rule consistently to tables, details, status timestamps, tooltips, charts and timeline editing views. Localization changes surrounding text, not this numeric format. Convert the instant into local time **before** formatting, and truncate display precision rather than rounding into the next second. Do not display a raw ISO timestamp or use `toISOString().slice(...)` as a local-time formatter.
+- Keep persistence and machine-facing timestamp contracts unambiguous: UTC or ISO 8601 with `Z` or an explicit offset where instants are exchanged. The display rule does not change HTTP protocol date headers, database storage, or discard stored subsecond precision. Keep calendar dates as dates rather than converting them into instants.
+- Test conversion across midnight and daylight-saving changes, including a browser in a different timezone from the server. Editing local times must reject nonexistent times and disambiguate repeated times, following the timeline contract when that component is selected. Use the approved stdlib modules or browser built-ins; no extra date/time package is required by this standard.
+
 ## Reference snapshot
 
 - `components/reference/bmgeoip/bmgeoip/server/BMGeoIPServer.py`: listener, CLI binding, integration, lifecycle
@@ -76,6 +86,7 @@ The BMGeoIP examples contain GeoIP-specific routes, globals and integration code
 - Serve `GET /health` on the existing HTTP listener as the application's CMDB-facing check: `200` when its required components are usable, `503` when a known required component is unavailable. Return the small component-status JSON defined by Application Health Checks. A fixed `200` for a running process is insufficient. Do not add a separate `/ready` implementation without a concrete requirement.
 - Cleanly close the HTTP listener and any owned background workers during termination, including SIGTERM. No orphaned threads.
 - When a human-facing GUI is requested, apply the **GUI design contract** above. An API-only service need not render HTML.
+- Apply the **Date and time display** contract to all human-facing timestamps; keep wire/storage timestamps distinct from formatted display text.
 - Keep application-specific business logic out of the generic HTTP mechanics. Use typed interfaces or injected collaborators where useful without inventing extra layers.
 
 ## Acceptance checks
@@ -88,3 +99,4 @@ The BMGeoIP examples contain GeoIP-specific routes, globals and integration code
 6. Confirm the installed application exposes its declared address/port, respects production overrides, and has no runtime import of BMForge/bmgeoip.
 7. Verify the HTTP implementation uses the approved runtime modules only; any proposed replacement or addition was approved by the user before implementation.
 8. **GUI only:** visually inspect desktop and narrow/mobile pages for a consistent dark, high-contrast, non-pastel palette; legible panels, tables and forms; saturated primary accents; visible keyboard focus; labeled status; and no clipped essential actions. Verify applicable text and control contrast targets. API-only services skip this check.
+9. **Timestamp displays:** verify zero-padded local `yyyy-mm-dd hh:mm:ss` output, a 24-hour clock, no fractional seconds and the same display timezone in server/browser rendering. Cover UTC inputs, a different browser timezone, local midnight and daylight-saving boundaries; ensure machine timestamps retain their offset and stored precision.

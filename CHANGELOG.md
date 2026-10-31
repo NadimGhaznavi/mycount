@@ -9,6 +9,19 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Added
+
+- Added the bmcyber.osoyalce.com site to the CORS whitelist.
+
+### Changed
+
+- Refresh the four attached BMForge skill bundles and manager from local
+  BMForge 0.21.1 (source revision `cbf2ad642fe7`) and update the pinned hashes.
+  HTTP and database specifications advance to 0.5.0, adding local timestamp
+  display and explicit charset/collation guidance; RCA and visualization
+  remain at 0.1.0. This updates development guidance and reference assets only;
+  application runtime and database migrations are outside this update.
+
 ## [2.9.1] - 2026-10-29 @ 16:54
 
 This release is named for the element **Iridium (Ir)**. An iridium-rich layer 

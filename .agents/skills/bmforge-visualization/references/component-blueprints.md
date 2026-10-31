@@ -20,7 +20,11 @@ Use the [Codex bootstrap]({{ site.baseurl }}{% link pages/codex-skills.md %}) to
 
 Installing the Codex skills does not install an application. After requirements are known, the **installation** skill requires Codex to complete and test all three lifecycle operations before the first release, with a versioned `/opt/prod` footprint even for a custom library or client-only program. Use DevLog's frozen role-aware example only when a genuine split client/server topology is required.
 
+The optional [Timeline Editing component]({{ site.baseurl }}{% link pages/component-timeline.md %}) requires HTTP. Select both skills explicitly, or add timeline to a project with HTTP already pinned; the manager checks the prerequisite before writing files.
+
 ## Codex workflow
+
+For per-host security-event blocking, select [Fail2ban]({{ site.baseurl }}{% link pages/component-fail2ban.md %}) for native log detection and its thin local action client, [ZMQ]({{ site.baseurl }}{% link pages/component-zmq.md %}) for communication, and [nftables]({{ site.baseurl }}{% link pages/component-nftables.md %}) for timed bans. Fail2ban requires ZMQ; nftables has no skill prerequisite. These contracts define only this small integration subset. Applications emit security logs; each host owns its detection and enforcement independently.
 
 1. Select only the components requested by the application's requirements. Read each specification in full.
 2. For HTTP and ZeroMQ, inspect the pinned examples under `components/reference/bmgeoip/` as **local reference snapshots**, then adapt the relevant mechanics into the application. For MariaDB, copy `components/templates/db-server/interface/DbMgr.py` **unchanged** into the application and build only the required domain `*Db` interfaces above it. Use the Git component's own standalone template for Git. Never fetch moving upstream source.
@@ -36,8 +40,12 @@ Animated GIF exports are separately covered by [GIF Animation]({{ site.baseurl }
 
 ## Blueprints
 
+- [Project GitHub Pages: shared theme, required logo and site scaffold]({{ site.baseurl }}{% link pages/jekyll-setup.md %})
 - [HTTP Display Server]({{ site.baseurl }}{% link pages/component-http.md %})
+- [Timeline Editing: vis-timeline, requires HTTP]({{ site.baseurl }}{% link pages/component-timeline.md %})
 - [ZeroMQ Request/Reply Server]({{ site.baseurl }}{% link pages/component-zmq.md %})
+- [Timed Host IP Bans: nftables]({{ site.baseurl }}{% link pages/component-nftables.md %})
+- [Security Log Detection: Fail2ban, requires ZMQ]({{ site.baseurl }}{% link pages/component-fail2ban.md %})
 - [DB Server]({{ site.baseurl }}{% link pages/component-db-server.md %})
 - [Display Visualizations: charts, maps and graphs]({{ site.baseurl }}{% link pages/component-visualization.md %})
 - [GIF Animation: rendered frames to animated GIF]({{ site.baseurl }}{% link pages/component-gif-animation.md %})

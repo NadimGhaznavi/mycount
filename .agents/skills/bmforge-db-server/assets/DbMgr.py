@@ -6,7 +6,7 @@ import pymysql
 from pymysql.cursors import DictCursor
 
 
-BMFORGE_COMPONENT = {"id": "bmforge.db-server", "spec_version": "0.4.0"}
+BMFORGE_COMPONENT = {"id": "bmforge.db-server", "spec_version": "0.5.0"}
 
 
 class DbMgr:
@@ -17,7 +17,8 @@ class DbMgr:
         # The application resolves configuration before constructing this interface.
         self._connection = pymysql.connect(
             host=host, port=port, user=user, password=password, database=database,
-            unix_socket=unix_socket, charset="utf8mb4", cursorclass=DictCursor,
+            unix_socket=unix_socket, charset="utf8mb4",
+            collation="utf8mb4_unicode_ci", cursorclass=DictCursor,
             autocommit=True, connect_timeout=connect_timeout,
             read_timeout=read_timeout, write_timeout=write_timeout,
             sql_mode="STRICT_ALL_TABLES,NO_ENGINE_SUBSTITUTION",

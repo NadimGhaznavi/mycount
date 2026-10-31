@@ -78,9 +78,17 @@ SKILLS = {
     "bmforge-gif-animation": ("pages/component-gif-animation.md", (
         "components/reference/snake-web-code/snakewebcode/activity/SimulationAnimation.py",
     )),
+    "bmforge-timeline": ("pages/component-timeline.md", ()),
+    "bmforge-nftables": ("pages/component-nftables.md", ()),
+    "bmforge-fail2ban": ("pages/component-fail2ban.md", ()),
+    "bmforge-github-pages": ("pages/jekyll-setup.md", ()),
     "bmforge-rca": (None, ()),
 }
 BASE_SKILLS = ("bmforge-project", "bmforge-constants", "bmforge-localization", "bmforge-installation")
+REQUIRES = {
+    "bmforge-timeline": ("bmforge-http",),
+    "bmforge-fail2ban": ("bmforge-zmq",),
+}
 COMMON = (
     "pages/engineering-contract.md",
     "pages/classification.md",
@@ -107,6 +115,15 @@ RELEASE_TEMPLATES = {
 RELEASE_GUIDES = ("pages/release-setup.md", "pages/creating-a-release.md",
                   "pages/changelog-maintenance.md")
 INSTALLATION_GUIDES = ("pages/installation-scripts.md", "pages/cmdb-compliance.md")
+GITHUB_PAGES_ASSETS = {
+    "_config.yml": "templates/_config.yml",
+    "jekyll-gh-pages.yml": "templates/jekyll-gh-pages.yml",
+    "index.md": "templates/github-pages/index.md",
+    "README.md": "templates/github-pages/README.md",
+    "page.md": "templates/github-pages/page.md",
+}
+GITHUB_PAGES_GUIDES = ("pages/github-pages-publishing.md",
+                      "pages/multilingual-documentation.md")
 LOCK = Path(".agents/bmforge/lock.json")
 MANAGER = Path(".agents/bmforge/manage.py")
 DEFAULT_SOURCE_CACHE = Path.home() / ".cache/bmforge-upstream"
@@ -161,6 +178,14 @@ def selected_names(value):
     return names
 
 
+def require_components(names, installed=()):
+    available = set(names) | set(installed)
+    for name in names:
+        for dependency in REQUIRES.get(name, ()):
+            if dependency not in available:
+                raise SetupError(f"{name} requires {dependency}; select both components or install the dependency first")
+
+
 def bundle(source, name):
     spec, snapshots = SKILLS[name]
     files = {"SKILL.md": f"skills/{name}/SKILL.md"}
@@ -176,6 +201,12 @@ def bundle(source, name):
     if name == "bmforge-installation":
         for guide in INSTALLATION_GUIDES:
             files["references/" + Path(guide).name] = guide
+    if name == "bmforge-github-pages":
+        for destination, original in GITHUB_PAGES_ASSETS.items():
+            files["assets/" + destination] = original
+        for guide in GITHUB_PAGES_GUIDES:
+            files["references/" + Path(guide).name] = guide
+        files["agents/openai.yaml"] = "skills/bmforge-github-pages/agents/openai.yaml"
     if name in ("bmforge-http", "bmforge-zmq", "bmforge-db-server"):
         files["references/health-checks.md"] = HEALTH
     for snapshot in snapshots:
@@ -390,6 +421,7 @@ def start_init(args):
     if (root / ".agents").exists() or (root / "AGENTS.md").exists():
         raise SetupError("Refusing to overwrite existing .agents/ or AGENTS.md")
     names = [*BASE_SKILLS, *selected_names(args.components)]
+    require_components(names)
     with source_checkout(args.source) as (source, revision):
         bundles = {name: bundle(source, name) for name in names}
         versions = {name: spec_version(source, name) for name in names}
@@ -444,6 +476,7 @@ def start_attach(args):
     names = selected_names(args.components)
     if not names:
         raise SetupError("Select at least one component to attach")
+    require_components(names)
     agents = root / ".agents"
     skills_dir = agents / "skills"
     manager_dir = root / LOCK.parent
@@ -525,6 +558,7 @@ def start_add(args):
     names = selected_names(args.components)
     if not names:
         raise SetupError("Select at least one additional component")
+    require_components(names, lock["skills"])
     present = sorted(set(names) & set(lock["skills"]))
     if present:
         raise SetupError("Already installed, will not overwrite: " + ", ".join(present))
