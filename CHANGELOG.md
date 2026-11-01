@@ -15,6 +15,7 @@ Publish trusted collector request and malformed-payload events through the
 existing systemd journal, ready for BMCyber's native Fail2ban integration.
 The companion thresholds are 60 POST attempts or 5 malformed submissions
 within 60 seconds per IP; BMCyber changes and activation remain outstanding.
+Performed impact analysis of an update to BMForge standards. It's significant.
 
 ### Added
 
