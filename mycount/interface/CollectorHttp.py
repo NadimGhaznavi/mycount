@@ -5,21 +5,25 @@ import logging
 import re
 
 import pymysql
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import BadRequest, HTTPException, RequestEntityTooLarge, UnsupportedMediaType
 from werkzeug.wrappers import Request, Response
 
 from mycount.activity.CollectVisit import CollectVisit
 from mycount.activity.CountVisits import CountVisits
 from mycount.constants.DMyCount import DMyCount
+from mycount.constants.DSecurityEvents import DSecurityEvents
+from mycount.interface.SecurityEvents import SecurityEvents
 from mycount.interface.VisitPayload import InvalidVisit
 from mycount.interface.VisitorAddress import VisitorAddress
 from mycount.interface.GeoIpUnavailable import GeoIpUnavailable
 
 
 class CollectorHttp:
-    def __init__(self, collector: CollectVisit, origins: tuple[str, ...]) -> None:
+    def __init__(self, collector: CollectVisit, origins: tuple[str, ...],
+                 security_events: SecurityEvents) -> None:
         self._collector = collector
         self._origins = origins
+        self._security_events = security_events
 
     def __call__(self, environ, start_response):
         request = Request(environ)
@@ -41,6 +45,8 @@ class CollectorHttp:
             return self._count(request)
         if request.path != DMyCount.COLLECTION_PATH:
             return Response(status=404)
+        if request.method == "POST":
+            return self._collect(request)
         if request.headers.get("Origin") not in self._origins:
             return Response(status=403)
         if request.method == "OPTIONS":
@@ -53,19 +59,32 @@ class CollectorHttp:
                 "Access-Control-Allow-Methods": "POST",
                 "Access-Control-Allow-Headers": "Content-Type",
             })
-        if request.method != "POST":
-            return Response(status=405, headers={"Allow": "POST, OPTIONS"})
-        payload = request.get_json()
+        return Response(status=405, headers={"Allow": "POST, OPTIONS"})
+
+    def _collect(self, request: Request) -> Response:
         try:
-            self._collector.record(payload, VisitorAddress.resolve(request), request.headers["Origin"])
+            address = VisitorAddress.resolve(request)
         except InvalidVisit:
             return Response(status=400)
-        except GeoIpUnavailable:
-            logging.getLogger(__name__).exception("Geolocation unavailable.")
-            return Response(status=503)
-        except pymysql.OperationalError as error:
-            logging.getLogger(__name__).error("Database unavailable (code %s).", error.args[0])
-            return Response(status=503)
+        with self._security_events.trusted_source(address):
+            self._security_events.emit(DSecurityEvents.COLLECTION_REQUEST)
+            if request.headers.get("Origin") not in self._origins:
+                return Response(status=403)
+            try:
+                payload = request.get_json()
+                self._collector.record(payload, address, request.headers["Origin"])
+            except (BadRequest, RequestEntityTooLarge, UnsupportedMediaType) as error:
+                self._security_events.emit(DSecurityEvents.MALFORMED_PAYLOAD)
+                return Response(status=error.code)
+            except InvalidVisit:
+                self._security_events.emit(DSecurityEvents.MALFORMED_PAYLOAD)
+                return Response(status=400)
+            except GeoIpUnavailable:
+                logging.getLogger(__name__).exception("Geolocation unavailable.")
+                return Response(status=503)
+            except pymysql.OperationalError as error:
+                logging.getLogger(__name__).error("Database unavailable (code %s).", error.args[0])
+                return Response(status=503)
         return Response(status=204)
 
     def _count(self, request: Request) -> Response:

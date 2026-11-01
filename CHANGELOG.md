@@ -9,11 +9,98 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-11-01 @ 04:15
+
+### Summary
+
+Publish trusted collector request and malformed-payload events through the
+existing systemd journal, ready for BMCyber's native Fail2ban integration.
+The companion thresholds are 60 POST attempts or 5 malformed submissions
+within 60 seconds per IP; BMCyber changes and activation remain outstanding.
+Performed impact analysis of an update to BMForge standards. It's significant.
+
+### Added
+
+- Added the bmcyber.osoyalce.com site to the CORS whitelist.
+- Add request-scoped `collection_request` and `malformed_payload` events,
+  a message-only security logger, explicit journal service output, source
+  validation, concurrency/error cleanup tests, and an integration guide.
+- Count each attributable `POST /count` before origin/body validation. Add
+  the malformed event for allowed-origin JSON/content-type/size/schema
+  failures. Health, OPTIONS, counter reads, other routes, dependency outages,
+  and analytics bot classifications do not generate malformed events.
+
+### Changed
+
+- Complete the BMForge 0.21.2 refresh (`efb49f99fc86`) after checking upstream.
+  Update the shared component blueprints in the database, RCA, and visualization
+  bundles and pin all five attached skills to that revision. HTTP,
+  security-events, and the manager are already current; specification versions
+  and application runtime remain unchanged.
+- Allow the assistant to use Git for inspection, routine development, and
+  BMForge maintenance within the authorized scope. Keep commits, pushes,
+  destructive Git operations, and releases subject to explicit authorization.
+- Pin BMForge security-events 0.1.0 and HTTP 0.5.1 plus the manager from local
+  BMForge 0.21.2 (`efb49f99fc86`). Keep the existing HTTP stack and Python
+  dependencies; MyCount has no event counter or enforcement client.
+- Reject missing/invalid client attribution rather than falling back to
+  Caddy's address; normalize numeric direct and trusted-proxy sources.
+- Refresh the four attached BMForge skill bundles and manager from local
+  BMForge 0.21.1 (source revision `cbf2ad642fe7`) and update the pinned hashes.
+  HTTP and database specifications advance to 0.5.0, adding local timestamp
+  display and explicit charset/collation guidance; RCA and visualization
+  remain at 0.1.0. This updates development guidance and reference assets only;
+  application runtime and database migrations are outside this update.
+
+### Required BMCyber companion changes (not implemented)
+
+The BMCyber checkout is unchanged. Its existing file-based `fail2safe` jail
+does not consume MyCount's new journal events. In a separate BMCyber change:
+
+- Adopt BMForge Fail2ban 0.3.0. Use native `backend = systemd`, remove
+  `logpath`, and scope matching to the verified
+  `_SYSTEMD_UNIT=mycount-server.service` journal metadata.
+- Provide anchored matching for the exact `collection_request` and
+  `malformed_payload` events. Either parameterize the existing filter's
+  event name or provide separate owned filters; keep unrelated messages
+  and user-supplied free text outside matching.
+- Configure two initially disabled jails with these agreed policies:
+
+  | Jail | Event | `findtime` | `maxretry` |
+  | --- | --- | --- | --- |
+  | `bmcyber-mycount-flood` | `collection_request` | 60 seconds | 60 |
+  | `bmcyber-mycount-malformed` | `malformed_payload` | 60 seconds | 5 |
+
+- Aggregate by IP across sites, page URLs and collector workers. Preserve
+  `usedns = no`, administrative/proxy exemptions, the existing finite
+  20-hour Fail2ban ticket interval and BMCyber's 20–24-hour enforcement
+  policy. Both jails invoke the existing ban-only BMCyber action with their
+  own source identifiers; unban/stop/flush hooks remain empty.
+- Verify the Fail2ban host interpreter's native journal bindings and journal
+  access during preflight, including read-only `--check`. The distribution's
+  `python3-systemd` package belongs to Fail2ban's host environment, not
+  MyCount's or BMCyber's application venv.
+- Update the existing installer/service controls to own and manage both
+  jails. Explicitly migrate or retire the legacy `bmcyber-mycount` jail:
+  the installer currently preserves existing `.local` files, so replacing
+  a shipped template alone is insufficient. Retain the prior configuration
+  and operator exemptions, and leave the new jails disabled for verification.
+- Update companion documentation and tests. On a disposable systemd host,
+  start from actual MyCount requests through the trusted proxy and verify
+  exact journal messages/metadata, IPv4/IPv6, multi-worker aggregation,
+  below/at-threshold behavior and time-window expiry, exemptions, and the
+  received BMCyber request. Exercise unavailable-service/error/lost-reply
+  action failures without retries. Reuse BMCyber's existing firewall tests.
+
+Native journal/Fail2ban acceptance and production activation have not been
+performed here. No host packages, services, firewall rules or BMCyber files
+were changed by this implementation.
+
 ## [2.9.1] - 2026-10-29 @ 16:54
 
 This release is named for the element **Iridium (Ir)**. An iridium-rich layer 
 found worldwide helped scientists identify the asteroid impact linked to the 
-dinosaurs' extinction.
+dinosaurs' extinction. 
 
 ### Summary
 
@@ -28,6 +115,40 @@ keep classified visits available when bot exclusion is disabled.
   Recheck the last 48 hours during collection and log new classifications.
 - Add a read-only historical scan with an explicit `--apply` option, and document
   the evidence thresholds and heuristic's limits.
+
+### One-time historical backfill
+
+Deploying this release enables detection on new visits; existing visits retain
+their stored bot flags. Run this command on **wintermute** to classify the 72
+confirmed KB crawler page views from the October 29 backup. The timestamps are
+UTC. Visits remain available with **Exclude bots** disabled.
+
+```sh
+sudo mariadb --database=mycount <<'SQL'
+UPDATE page_views AS v
+JOIN pages AS p ON p.page_id = v.page_id
+SET v.is_bot = 1
+WHERE p.site = 'kb'
+  AND v.browser_family = 'Chrome'
+  AND v.os_family = 'Windows'
+  AND v.received_at >= '2026-10-27 13:35:06'
+  AND v.received_at < '2026-10-29 12:51:34'
+  AND COALESCE(v.is_bot, 0) = 0
+  AND v.page_view_id IN (
+    1319, 1321, 1335, 1336, 1337, 1338, 1343, 1345, 1346, 1350, 1351, 1352,
+    1355, 1356, 1357, 1367, 1371, 1372, 1381, 1382, 1383, 1384, 1385, 1387,
+    1389, 1390, 1392, 1393, 1394, 1410, 1411, 1414, 1415, 1416, 1417, 1418,
+    1419, 1420, 1425, 1426, 1429, 1432, 1440, 1441, 1444, 1445, 1446, 1447,
+    1449, 1451, 1452, 1469, 1470, 1474, 1481, 1482, 1486, 1492, 1512, 1513,
+    1517, 1518, 1519, 1523, 1524, 1525, 1528, 1529, 1534, 1536, 1537, 1539
+  );
+SELECT ROW_COUNT() AS newly_classified_bot_views;
+SQL
+```
+
+Expect 72 newly classified views, or fewer if automatic detection has already
+flagged some. Repeating the command leaves already classified rows unchanged.
+Refresh the reports afterward; no service restart is needed.
 
 ## [2.9.0] - 2026-10-28 @ 18:07
 

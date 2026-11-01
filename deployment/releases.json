@@ -214,7 +214,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "9435a651c471f0f88624e78244bc98ef9b00870b1b3cffe47f6cd028bcfb9152",
+      "digest": "96c121bd7b68a2405a346f8977ea837f6cebe185ba6e88cbebe8eeb428e13778",
       "targets": [
         "filesystem"
       ]
@@ -234,7 +234,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "d51023371787906741bb232b5b3626154a743a3ab7f805cf7f6c0e911f56bfe4",
+      "digest": "992a786af291638342248d0c2fa285b8cc646a8dc2fc9d954f829c3e838acfdb",
       "targets": [
         "filesystem",
         "listener",
@@ -252,6 +252,12 @@
       "digest": "1c1f8eb7948b592f4632e14d390fc53cc0b18bf630256fc6613dfe25dfc3159e",
       "targets": [
         "filesystem",
+        "listener"
+      ]
+    },
+    "mycount/constants/DSecurityEvents.py": {
+      "digest": "f42975f2fb3e698847b2329dcc80cae50bfb2b6f70a3d19f3c537676e4a2ccd5",
+      "targets": [
         "listener"
       ]
     },
@@ -340,7 +346,7 @@
       ]
     },
     "mycount/interface/CollectorHttp.py": {
-      "digest": "5886d9a3acf016fed3969c464a3d1fc9613dabd4e8615b63e1a58b221f17ea06",
+      "digest": "32c2b72fe5dbf0ebdceb4cf1fab1f067a5971ac760e38efacc13f7df72b4564d",
       "targets": [
         "listener"
       ]
@@ -464,6 +470,12 @@
         "listener"
       ]
     },
+    "mycount/interface/SecurityEvents.py": {
+      "digest": "d22fc66cd5c0ad83eea71806c9d8082b55463e2001a050746970778464ae9a0d",
+      "targets": [
+        "listener"
+      ]
+    },
     "mycount/interface/ServiceLogger.py": {
       "digest": "d81f56d3c7c52eab588e9508dd29d96c938e149a34c9a48b27778eabfac47d64",
       "targets": [
@@ -484,7 +496,7 @@
       ]
     },
     "mycount/interface/VisitorAddress.py": {
-      "digest": "8a90d6b22f34e9434c9db5c0ab69fdc28efb56954b1cd5c533b60c69d5805f09",
+      "digest": "750032d96883488c06ead4a336ae05efe6b16ee97ef5a49c4f2bf38d1bee0eeb",
       "targets": [
         "listener"
       ]
@@ -528,7 +540,7 @@
       ]
     },
     "mycount/server/MyCountServer.py": {
-      "digest": "7406f1caf170289f416c4db70f2e57049a3d32f3da25abb0caf7661ea471c511",
+      "digest": "98da4f13d005eb377e7080bdcf06898166bec79463771973f14e90876b2faa32",
       "targets": [
         "listener"
       ]
@@ -735,7 +747,7 @@
       ]
     },
     "systemd/mycount-server.service": {
-      "digest": "2efc6faddf5d8ff68d785a4cc9a38f5a2fab1941f962a325236d681338849957",
+      "digest": "85f535b5e698b8af942835cee5cdf14ead472c8bbc8eba5d288c88e8a914efbc",
       "targets": [
         "listener"
       ]
@@ -1326,6 +1338,14 @@
         "report-server"
       ],
       "version": "2.9.1"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "3.0.0"
     }
   ]
 }

@@ -31,6 +31,23 @@ class VisitorAddressTests(unittest.TestCase):
         with self.assertRaises(InvalidVisit):
             VisitorAddress.resolve(self.request('127.0.0.1', '8.8.8.8, 1.1.1.1'))
 
-    def test_direct_local_request(self):
+    def test_proxy_without_client_address_is_rejected(self):
         request = Request(EnvironBuilder(environ_base={'REMOTE_ADDR': '127.0.0.1'}).get_environ())
-        self.assertEqual(VisitorAddress.resolve(request), '127.0.0.1')
+        with self.assertRaises(InvalidVisit):
+            VisitorAddress.resolve(request)
+
+    def test_numeric_sources_are_normalized(self):
+        self.assertEqual(VisitorAddress.resolve(self.request('127.0.0.1', '2001:0DB8::0001')),
+                         '2001:db8::1')
+        self.assertEqual(VisitorAddress.resolve(self.request('2001:0DB8::0002', '192.0.2.1')),
+                         '2001:db8::2')
+
+    def test_missing_invalid_and_unusable_sources_are_rejected(self):
+        for source in (None, '', 'not-an-address', '::1%lo', '0.0.0.0', '::', '224.0.0.1',
+                       'ff02::1', '192.0.2.1:80', '192.0.2.1/24'):
+            with self.subTest(source=source), self.assertRaises(InvalidVisit):
+                VisitorAddress.resolve(self.request('127.0.0.1', source))
+
+        for peer in (None, '', 'not-an-address', '::1%lo', '::'):
+            with self.subTest(peer=peer), self.assertRaises(InvalidVisit):
+                VisitorAddress.resolve(self.request(peer, '192.0.2.1'))

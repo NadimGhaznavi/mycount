@@ -4,10 +4,10 @@ from typing import Final
 
 
 class DMyCount:
-    VERSION: Final[str] = "2.9.1"
+    VERSION: Final[str] = "3.0.0"
     CMDB_SUBTYPE: Final[str] = "Web Analytics"
     CMDB_SUPPLIER: Final[str] = "Nadim-Daniel"
-    CMDB_CODENAME: Final[str] = "Iridium"
+    CMDB_CODENAME: Final[str] = "Roentgenium"
     CMDB_COMPONENTS = (("Marketing Screenshots", "pages/marketing"),)
     CMDB_DATABASES = (("MyCount", "mycount"),)
     CMDB_NETWORK: Final[tuple[tuple[str, str, int], ...]] = (
@@ -28,6 +28,7 @@ class DMyCount:
         "https://ax3l.osoyalce.com",
         "https://blog.osoyalce.com",
         "https://bmca.osoyalce.com",
+        "https://bmcyber.osoyalce.com",
         "https://bmdynip.osoyalce.com",
         "https://bmforge.osoyalce.com",
         "https://bmgeoip.osoyalce.com",
