@@ -9,6 +9,11 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Summary
+
+Restore distinct visitor map borders by reducing dot fill lightness by two-thirds
+while preserving the original 2-pixel outline. Match the legend to the dot styling.
+
 ## [3.1.0] - 2026-11-01 @ 05:00
 
 ### Summary
