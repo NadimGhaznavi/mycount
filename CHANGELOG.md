@@ -29,6 +29,11 @@ within 60 seconds per IP; BMCyber changes and activation remain outstanding.
 
 ### Changed
 
+- Complete the BMForge 0.21.2 refresh (`efb49f99fc86`) after checking upstream.
+  Update the shared component blueprints in the database, RCA, and visualization
+  bundles and pin all five attached skills to that revision. HTTP,
+  security-events, and the manager are already current; specification versions
+  and application runtime remain unchanged.
 - Allow the assistant to use Git for inspection, routine development, and
   BMForge maintenance within the authorized scope. Keep commits, pushes,
   destructive Git operations, and releases subject to explicit authorization.

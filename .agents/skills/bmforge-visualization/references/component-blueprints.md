@@ -24,7 +24,7 @@ The optional [Timeline Editing component]({{ site.baseurl }}{% link pages/compon
 
 ## Codex workflow
 
-For per-host security-event blocking, select [Fail2ban]({{ site.baseurl }}{% link pages/component-fail2ban.md %}) for native log detection and its thin local action client, [ZMQ]({{ site.baseurl }}{% link pages/component-zmq.md %}) for communication, and [nftables]({{ site.baseurl }}{% link pages/component-nftables.md %}) for timed bans. Fail2ban requires ZMQ; nftables has no skill prerequisite. These contracts define only this small integration subset. Applications emit security logs; each host owns its detection and enforcement independently.
+For a producer-only application, select [Security Events]({{ site.baseurl }}{% link pages/component-security-events.md %}) **alone**. Business code emits a semantic event; the trusted ingress adapter supplies the verified address and the systemd journal carries the log. No HTTP, ZMQ, Fail2ban or nftables skill dependency is implied. For a blocking/consumer project, select [Fail2ban]({{ site.baseurl }}{% link pages/component-fail2ban.md %}) for native **journald** detection and its thin ban action, [ZMQ]({{ site.baseurl }}{% link pages/component-zmq.md %}) for communication, and [nftables]({{ site.baseurl }}{% link pages/component-nftables.md %}) for timed bans. Fail2ban still requires ZMQ in that project. All detection windows/counts belong to native Fail2ban, never to the producer. No new file log or ban-state machinery is selected.
 
 1. Select only the components requested by the application's requirements. Read each specification in full.
 2. For HTTP and ZeroMQ, inspect the pinned examples under `components/reference/bmgeoip/` as **local reference snapshots**, then adapt the relevant mechanics into the application. For MariaDB, copy `components/templates/db-server/interface/DbMgr.py` **unchanged** into the application and build only the required domain `*Db` interfaces above it. Use the Git component's own standalone template for Git. Never fetch moving upstream source.
@@ -45,7 +45,8 @@ Animated GIF exports are separately covered by [GIF Animation]({{ site.baseurl }
 - [Timeline Editing: vis-timeline, requires HTTP]({{ site.baseurl }}{% link pages/component-timeline.md %})
 - [ZeroMQ Request/Reply Server]({{ site.baseurl }}{% link pages/component-zmq.md %})
 - [Timed Host IP Bans: nftables]({{ site.baseurl }}{% link pages/component-nftables.md %})
-- [Security Log Detection: Fail2ban, requires ZMQ]({{ site.baseurl }}{% link pages/component-fail2ban.md %})
+- [Security Event Producer: fire-and-forget journald, no prerequisites]({{ site.baseurl }}{% link pages/component-security-events.md %})
+- [Security Journal Detection: Fail2ban, requires ZMQ only in blocking project]({{ site.baseurl }}{% link pages/component-fail2ban.md %})
 - [DB Server]({{ site.baseurl }}{% link pages/component-db-server.md %})
 - [Display Visualizations: charts, maps and graphs]({{ site.baseurl }}{% link pages/component-visualization.md %})
 - [GIF Animation: rendered frames to animated GIF]({{ site.baseurl }}{% link pages/component-gif-animation.md %})

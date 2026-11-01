@@ -6,8 +6,8 @@
   "schema": 1,
   "skills": {
     "bmforge-db-server": {
-      "sha256": "020ccadc5eda4428df6f466a08316b731a3085e1d7155d91cb46fb728adad308",
-      "source_commit": "cbf2ad642fe732d0ecdc71a4330aa229e5605f61",
+      "sha256": "bf5c188ff2e1f4b6eddc1c15e2e2834ee151da84e5b3f6f8ef5cc029bec2b212",
+      "source_commit": "efb49f99fc862003091618646d4690b27fa2cf5e",
       "spec_version": "0.5.0"
     },
     "bmforge-http": {
@@ -16,8 +16,8 @@
       "spec_version": "0.5.1"
     },
     "bmforge-rca": {
-      "sha256": "df97c3eb0f314b0e31075c64151a2fe175fa0bb1e1319ed69e3f01e85b676bf2",
-      "source_commit": "cbf2ad642fe732d0ecdc71a4330aa229e5605f61",
+      "sha256": "2b7b9e2ea2ffa401ef9fadaecd067ff5b5fc9ad0d55f14c7581880f5132147ff",
+      "source_commit": "efb49f99fc862003091618646d4690b27fa2cf5e",
       "spec_version": "0.1.0"
     },
     "bmforge-security-events": {
@@ -26,8 +26,8 @@
       "spec_version": "0.1.0"
     },
     "bmforge-visualization": {
-      "sha256": "73e25a5260e1410f43d9decdf2e1bffd2ec7ce72dd4f43aeb48ee76b6b6d7ae2",
-      "source_commit": "cbf2ad642fe732d0ecdc71a4330aa229e5605f61",
+      "sha256": "eb5c935b3e231e3acacb91530ad9cb5f002c98c0e71ed010f3052c653ae9e59e",
+      "source_commit": "efb49f99fc862003091618646d4690b27fa2cf5e",
       "spec_version": "0.1.0"
     }
   },
