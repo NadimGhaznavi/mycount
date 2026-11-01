@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [3.1.2] - 2026-11-01 @ 05:11
+
 ### Summary
 
 Emphasize visitor map density with nine colors from green through yellow to red
