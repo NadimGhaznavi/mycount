@@ -40,6 +40,7 @@ Please contact me via email to provide feedback, report bugs, have feature reque
 
 - [Download, Install, Uninstall]({% link pages/setup.md %})
 - [Adding a New Site]({% link pages/add-new-site.md %})
+- [Security Events and BMCyber Integration]({% link pages/security-events.md %})
 - [Deployment Dependency Subsystem]({% link pages/deployment-dependencies.md %})
 - [Coding guidelines]({% link pages/coding-guidelines.md %})
 - [Release management]({% link pages/releases.md %})

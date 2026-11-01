@@ -23,6 +23,8 @@ Read the relevant skill and only the references needed for the task:
   local investigation; remote access requires authorization for that host.
 - [HTTP](.agents/skills/bmforge-http/SKILL.md): request boundaries, server
   lifecycle, health checks, and accessible presentation.
+- [Security events](.agents/skills/bmforge-security-events/SKILL.md): trusted
+  request-scoped event publication through the existing systemd journal.
 - [Database](.agents/skills/bmforge-db-server/SKILL.md): domain data access,
   transactions, and resource ownership.
 - [Visualization](.agents/skills/bmforge-visualization/SKILL.md): browser charts,
@@ -41,7 +43,7 @@ python3 -B .agents/bmforge/verify.py
 ```
 
 This check uses no Git commands or network access. The upstream manager invokes
-Git even for `check`; leave its commands and upstream-source maintenance to the
-project owner, as required by the coding guidelines. Report integrity failures
-or unavailable update checks. Never replace pinned skills or apply updates
-without direct user approval.
+read-only Git operations for `check`; the assistant may run it under the coding
+guidelines. Refresh the upstream source only when authorized by the user.
+Report integrity failures or unavailable update checks. Never replace pinned
+skills or apply updates without direct user approval.

@@ -1,3 +1,4 @@
+import logging
 import unittest
 from unittest.mock import Mock, patch
 from uuid import UUID
@@ -6,18 +7,33 @@ from werkzeug.test import Client
 
 from mycount.constants.DCaddy import DCaddy
 from mycount.constants.DMyCount import DMyCount
+from mycount.constants.DSecurityEvents import DSecurityEvents
 from mycount.interface.GeoIpUnavailable import GeoIpUnavailable
 from mycount.interface.CollectorHttp import CollectorHttp
+from mycount.interface.SecurityEvents import SecurityEvents
 from mycount.interface.VisitPayload import VisitPayload
 from mycount.activity.BrowserMetadata import BrowserMetadata
 from mycount.activity.CollectVisit import CollectVisit
 from mycount.entity.GeoLocation import GeoLocation
 
 
+class CollectorClient(Client):
+    """Supply a real direct peer unless the test specifies a proxy connection."""
+
+    def open(self, *args, **kwargs):
+        overrides = {"REMOTE_ADDR": "192.0.2.1"}
+        overrides.update(kwargs.pop("environ_overrides", {}))
+        return super().open(*args, environ_overrides=overrides, **kwargs)
+
+
 class CollectorHttpTests(unittest.TestCase):
     def setUp(self):
         self.collector = Mock()
-        self.client = Client(CollectorHttp(self.collector, DMyCount.ORIGINS))
+        logger = logging.Logger('collector-test-security')
+        logger.addHandler(logging.NullHandler())
+        self.security_events = SecurityEvents(logger, DSecurityEvents.EVENTS)
+        self.client = CollectorClient(CollectorHttp(
+            self.collector, DMyCount.ORIGINS, self.security_events))
 
     def test_count_preflight_and_post(self):
         response = self.client.options('/count', headers={
@@ -81,7 +97,7 @@ class CollectorHttpTests(unittest.TestCase):
                 response = self.client.post('/count', json={
                     'schema_version': 1, 'event': 'page_view', 'site': site,
                     'url': origin + '/example', 'languages': ['en'], 'user_agent': '',
-                }, headers={'Origin': origin}, environ_overrides={'REMOTE_ADDR': '127.0.0.1'})
+                }, headers={'Origin': origin})
                 self.assertEqual(response.status_code, 204)
                 self.assertEqual(response.headers['Access-Control-Allow-Origin'], origin)
 
@@ -99,12 +115,12 @@ class CollectorHttpTests(unittest.TestCase):
         response = self.client.post('/count', json={
             'schema_version': 1, 'event': 'page_view', 'site': 'ax3l',
             'url': DMyCount.ORIGINS[1] + '/', 'languages': [], 'user_agent': '',
-        }, headers={'Origin': DMyCount.ORIGINS[0]}, environ_overrides={'REMOTE_ADDR': '127.0.0.1'})
+        }, headers={'Origin': DMyCount.ORIGINS[0]})
         self.assertEqual(response.status_code, 400)
 
     def test_extended_visit_keeps_city_and_referrer_through_collection(self):
         collector = CollectVisit(VisitPayload(), BrowserMetadata())
-        client = Client(CollectorHttp(collector, DMyCount.ORIGINS))
+        client = CollectorClient(CollectorHttp(collector, DMyCount.ORIGINS, self.security_events))
         origin = 'https://r3el.osoyalce.com'
         payload = {
             'schema_version': 1, 'event': 'page_view', 'site': 'r3el',
