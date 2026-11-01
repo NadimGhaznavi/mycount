@@ -9,6 +9,17 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Summary
+
+Reduce visitor map crowding with smaller dots and green, yellow, and red density
+bands based on equal thirds of the busiest mapped location's visit count.
+
+### Changed
+
+- Scale visitor map dots to two-thirds of their previous size and add a Low / Mid /
+  High legend using `#2ECC71`, `#F4D03F`, and `#E74C3C`. Density thresholds follow
+  the current report filters.
+
 ## [3.0.0] - 2026-11-01 @ 04:15
 
 ### Summary
