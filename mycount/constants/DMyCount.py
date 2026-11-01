@@ -34,6 +34,7 @@ class DMyCount:
         "https://bmgeoip.osoyalce.com",
         "https://cmdb.osoyalce.com",
         "https://db4e.osoyalce.com",
+        "https://devlog.osoyalce.com",
         "https://diskha.osoyalce.com",
         "https://kb.osoyalce.com",
         "https://llamaserver.osoyalce.com",

@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Added
+
+- Added devlog.osoyalce.com to CORS whitelist.
+
 ## [3.1.2] - 2026-11-01 @ 05:11
 
 ### Summary
