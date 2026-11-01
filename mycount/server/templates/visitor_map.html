@@ -1,4 +1,10 @@
 {% extends 'base.html' %}
+{# Fill colors retain the border hue and saturation at one-third lightness. #}
+{% set density_colors = [
+  ('#2ECC71', '#0F4426'), ('#60CD64', '#184C1A'), ('#91CE58', '#304C16'),
+  ('#C2CF4C', '#454A14'), ('#F4D03F', '#614F06'), ('#F1AF3E', '#5E3E07'),
+  ('#EE8E3E', '#5C2E08'), ('#EA6D3D', '#59200A'), ('#E74C3C', '#56120B')
+] %}
 {% block head %}
 {% if not error %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -16,12 +22,12 @@
   #visitor-map .leaflet-control-attribution a, #visitor-map .leaflet-popup-close-button { color: #ffac63; }
   .map-panel { margin-top: 1.5rem; }
   .map-panel > h2 { margin: 0; padding: .8rem; font-size: .9rem; background: #291d15; }
-  .map-legend { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; }
-  .map-legend span { display: inline-flex; align-items: center; gap: .35rem; }
-  .map-swatch { width: .65rem; height: .65rem; border: 2px solid; border-radius: 50%; }
-  .map-low { background: #0F4426; border-color: #2ECC71; }
-  .map-mid { background: #614F06; border-color: #F4D03F; }
-  .map-high { background: #56120B; border-color: #E74C3C; }
+  .map-legend { display: flex; align-items: center; gap: .5rem; margin: 1.25rem; font-size: .9rem; }
+  .map-ramp { display: flex; gap: .25rem; }
+  .map-swatch { display: block; width: .65rem; height: .65rem; border: 2px solid; border-radius: 50%; }
+  {% for color, fill_color in density_colors %}
+  .map-density-{{ loop.index0 }} { background: {{ fill_color }}; border-color: {{ color }}; }
+  {% endfor %}
   .city-schedule-content { padding: 0 1.25rem 1.25rem; }
   .schedule-table { min-width: 32rem; }
   #schedule-form input, #schedule-form button { font: inherit; padding: .6rem .8rem; border: 1px solid #62412b; border-radius: .3rem; }
@@ -41,12 +47,13 @@
 {% if not locations %}<p>No visits match the current filters.</p>
 {% elif not mapped_locations %}<p>No locations could be mapped for visits matching the current filters.</p>{% endif %}
 {% if mapped_locations %}
-<p class="map-legend" aria-label="Visit density legend">
-  <span><i class="map-swatch map-low" aria-hidden="true"></i>Low</span>
-  <span><i class="map-swatch map-mid" aria-hidden="true"></i>Mid</span>
-  <span><i class="map-swatch map-high" aria-hidden="true"></i>High</span>
-  <span>Equal thirds of the busiest location's visit count.</span>
-</p>
+<div class="map-legend" role="group" aria-label="Visit density legend">
+  <span>Low</span>
+  <div class="map-ramp" aria-hidden="true">
+    {% for color, fill_color in density_colors %}<i class="map-swatch map-density-{{ loop.index0 }}"></i>{% endfor %}
+  </div>
+  <span>High</span>
+</div>
 {% endif %}
 <div id="visitor-map" role="region" aria-label="World map of visitor locations" aria-describedby="map-status"></div>
 <p id="map-status" role="status">Loading map…</p>
@@ -91,19 +98,18 @@
     });
     tiles.addTo(map);
     const locations = {{ mapped_locations | tojson }};
-    const densityStep = locations.reduce((max, location) => Math.max(max, location.page_views), 0) / 3;
+    const densityColors = {{ density_colors | tojson }};
+    const maxViews = locations.reduce((max, location) => Math.max(max, location.page_views), 0);
     for (const location of locations) {
-      // Fill colors retain the border hue and saturation at one-third lightness.
-      const colors = location.page_views <= densityStep ? {color: '#2ECC71', fillColor: '#0F4426'}
-        : location.page_views <= 2 * densityStep ? {color: '#F4D03F', fillColor: '#614F06'}
-        : {color: '#E74C3C', fillColor: '#56120B'};
+      const density = Math.ceil(location.page_views * densityColors.length / maxViews) - 1;
+      const [color, fillColor] = densityColors[density];
       const name = [location.city_name, location.region_name, location.country_name || location.country_code]
         .filter(Boolean).join(', ') || 'Unknown location';
       const popup = document.createElement('div');
       popup.textContent = `${name}: ${location.page_views} page views (${location.coordinate_source})`;
       L.circleMarker([location.latitude, location.longitude], {
-        radius: Math.min(28, 5 + 3 * Math.log2(location.page_views + 1)) * 2 / 3,
-        ...colors, weight: 2, fillOpacity: 0.9
+        radius: Math.min(8, 5 + 0.5 * Math.log2(location.page_views)),
+        color, fillColor, weight: 2, fillOpacity: 0.9
       }).bindPopup(popup).addTo(map);
     }
     status.textContent = 'Pan and zoom to explore visitor locations. Counts are also listed below.';
