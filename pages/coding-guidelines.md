@@ -25,12 +25,13 @@ The code should be as lean as possible. Build for the requirements and behaviour
 
 The AI coding assistant is the lead developer and handles implementation,
 tests, and documentation within the architecture and standards set by the
-project owner. The project owner is the architect and release manager and
-owns all Git operations and releases. Read-only git commands are fine.
+project owner. The project owner is the architect and release manager.
 
-The assistant must never run Git commands or release scripts. This includes
-read-only Git commands and invoking release scripts indirectly through tests.
-Leave those operations to the project owner.
+The assistant may use Git for inspection and routine development work within
+the requested scope, including BMForge checks and authorized upstream-source
+updates. Commits, pushes, destructive Git operations, and releases require
+explicit user authorization. Do not invoke release scripts indirectly through
+tests without that authorization.
 
 ## Classify classes by responsibility
 
@@ -249,9 +250,10 @@ python3 -B .agents/bmforge/verify.py
 
 It verifies the bundles and upstream manager against `.agents/bmforge/lock.json`
 without running Git or accessing the network. It does not check for upstream
-updates. The project owner can compare against the separately maintained local
+updates. The assistant can compare against the separately maintained local
 BMForge source with `python3 -B .agents/bmforge/manage.py check --project .`;
-the assistant must leave that command to the owner because it invokes Git.
+this command invokes read-only Git operations. Refresh the upstream source
+only when authorized by the user.
 Report verification limits and continue using intact pinned bundles when the
 upstream source is unavailable. Apply updates only with direct user approval.
 

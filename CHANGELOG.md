@@ -29,6 +29,9 @@ within 60 seconds per IP; BMCyber changes and activation remain outstanding.
 
 ### Changed
 
+- Allow the assistant to use Git for inspection, routine development, and
+  BMForge maintenance within the authorized scope. Keep commits, pushes,
+  destructive Git operations, and releases subject to explicit authorization.
 - Pin BMForge security-events 0.1.0 and HTTP 0.5.1 plus the manager from local
   BMForge 0.21.2 (`efb49f99fc86`). Keep the existing HTTP stack and Python
   dependencies; MyCount has no event counter or enforcement client.
