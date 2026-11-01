@@ -9,18 +9,81 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Summary
+
+Publish trusted collector request and malformed-payload events through the
+existing systemd journal, ready for BMCyber's native Fail2ban integration.
+The companion thresholds are 60 POST attempts or 5 malformed submissions
+within 60 seconds per IP; BMCyber changes and activation remain outstanding.
+
 ### Added
 
 - Added the bmcyber.osoyalce.com site to the CORS whitelist.
+- Add request-scoped `collection_request` and `malformed_payload` events,
+  a message-only security logger, explicit journal service output, source
+  validation, concurrency/error cleanup tests, and an integration guide.
+- Count each attributable `POST /count` before origin/body validation. Add
+  the malformed event for allowed-origin JSON/content-type/size/schema
+  failures. Health, OPTIONS, counter reads, other routes, dependency outages,
+  and analytics bot classifications do not generate malformed events.
 
 ### Changed
 
+- Pin BMForge security-events 0.1.0 and HTTP 0.5.1 plus the manager from local
+  BMForge 0.21.2 (`efb49f99fc86`). Keep the existing HTTP stack and Python
+  dependencies; MyCount has no event counter or enforcement client.
+- Reject missing/invalid client attribution rather than falling back to
+  Caddy's address; normalize numeric direct and trusted-proxy sources.
 - Refresh the four attached BMForge skill bundles and manager from local
   BMForge 0.21.1 (source revision `cbf2ad642fe7`) and update the pinned hashes.
   HTTP and database specifications advance to 0.5.0, adding local timestamp
   display and explicit charset/collation guidance; RCA and visualization
   remain at 0.1.0. This updates development guidance and reference assets only;
   application runtime and database migrations are outside this update.
+
+### Required BMCyber companion changes (not implemented)
+
+The BMCyber checkout is unchanged. Its existing file-based `fail2safe` jail
+does not consume MyCount's new journal events. In a separate BMCyber change:
+
+- Adopt BMForge Fail2ban 0.3.0. Use native `backend = systemd`, remove
+  `logpath`, and scope matching to the verified
+  `_SYSTEMD_UNIT=mycount-server.service` journal metadata.
+- Provide anchored matching for the exact `collection_request` and
+  `malformed_payload` events. Either parameterize the existing filter's
+  event name or provide separate owned filters; keep unrelated messages
+  and user-supplied free text outside matching.
+- Configure two initially disabled jails with these agreed policies:
+
+  | Jail | Event | `findtime` | `maxretry` |
+  | --- | --- | --- | --- |
+  | `bmcyber-mycount-flood` | `collection_request` | 60 seconds | 60 |
+  | `bmcyber-mycount-malformed` | `malformed_payload` | 60 seconds | 5 |
+
+- Aggregate by IP across sites, page URLs and collector workers. Preserve
+  `usedns = no`, administrative/proxy exemptions, the existing finite
+  20-hour Fail2ban ticket interval and BMCyber's 20–24-hour enforcement
+  policy. Both jails invoke the existing ban-only BMCyber action with their
+  own source identifiers; unban/stop/flush hooks remain empty.
+- Verify the Fail2ban host interpreter's native journal bindings and journal
+  access during preflight, including read-only `--check`. The distribution's
+  `python3-systemd` package belongs to Fail2ban's host environment, not
+  MyCount's or BMCyber's application venv.
+- Update the existing installer/service controls to own and manage both
+  jails. Explicitly migrate or retire the legacy `bmcyber-mycount` jail:
+  the installer currently preserves existing `.local` files, so replacing
+  a shipped template alone is insufficient. Retain the prior configuration
+  and operator exemptions, and leave the new jails disabled for verification.
+- Update companion documentation and tests. On a disposable systemd host,
+  start from actual MyCount requests through the trusted proxy and verify
+  exact journal messages/metadata, IPv4/IPv6, multi-worker aggregation,
+  below/at-threshold behavior and time-window expiry, exemptions, and the
+  received BMCyber request. Exercise unavailable-service/error/lost-reply
+  action failures without retries. Reuse BMCyber's existing firewall tests.
+
+Native journal/Fail2ban acceptance and production activation have not been
+performed here. No host packages, services, firewall rules or BMCyber files
+were changed by this implementation.
 
 ## [2.9.1] - 2026-10-29 @ 16:54
 

@@ -23,6 +23,8 @@ Read the relevant skill and only the references needed for the task:
   local investigation; remote access requires authorization for that host.
 - [HTTP](.agents/skills/bmforge-http/SKILL.md): request boundaries, server
   lifecycle, health checks, and accessible presentation.
+- [Security events](.agents/skills/bmforge-security-events/SKILL.md): trusted
+  request-scoped event publication through the existing systemd journal.
 - [Database](.agents/skills/bmforge-db-server/SKILL.md): domain data access,
   transactions, and resource ownership.
 - [Visualization](.agents/skills/bmforge-visualization/SKILL.md): browser charts,

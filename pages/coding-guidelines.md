@@ -228,6 +228,7 @@ The attached skills are:
 | --- | --- |
 | `bmforge-rca` | Collect production evidence read-only from an authorized host, then reproduce, investigate, and test locally. |
 | `bmforge-http` | Apply request validation, lifecycle, health-check, and presentation practices to the existing HTTP interfaces. |
+| `bmforge-security-events` | Bind trusted client addresses at ingress and emit named events through the collector service's systemd journal; leave counting and enforcement to the consumer. |
 | `bmforge-db-server` | Keep SQL in domain interfaces, use the existing shared manager, and verify transactions and resource ownership. |
 | `bmforge-visualization` | Build charts and maps within the existing display interface, safely passing application data to browser libraries. |
 

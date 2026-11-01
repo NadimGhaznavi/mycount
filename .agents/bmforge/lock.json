@@ -1,6 +1,6 @@
 {
   "branch": "main",
-  "manager_sha256": "9cf2afa34123e1c7b3e88397740088b56c5fe81191589c84ee91a6f2f1f748dd",
+  "manager_sha256": "b6ff5d0231ded11897af3a001e523315ac71509107496257b0db87f9d1051957",
   "mode": "attached",
   "repository": "/home/dan/.cache/bmforge-upstream",
   "schema": 1,
@@ -11,13 +11,18 @@
       "spec_version": "0.5.0"
     },
     "bmforge-http": {
-      "sha256": "2468185f8117093e6ca3b54ef5d4ac795e3bb528c39c486ee076a087eea08616",
-      "source_commit": "cbf2ad642fe732d0ecdc71a4330aa229e5605f61",
-      "spec_version": "0.5.0"
+      "sha256": "5ba81f017676444a118112c3ad14dc2f603961c5f98a6b68a40dd7815995098a",
+      "source_commit": "efb49f99fc862003091618646d4690b27fa2cf5e",
+      "spec_version": "0.5.1"
     },
     "bmforge-rca": {
       "sha256": "df97c3eb0f314b0e31075c64151a2fe175fa0bb1e1319ed69e3f01e85b676bf2",
       "source_commit": "cbf2ad642fe732d0ecdc71a4330aa229e5605f61",
+      "spec_version": "0.1.0"
+    },
+    "bmforge-security-events": {
+      "sha256": "ff7017659dba46e2035cf6fa30afc04efa2fc2126ab46146b8ab58e18c6838bc",
+      "source_commit": "efb49f99fc862003091618646d4690b27fa2cf5e",
       "spec_version": "0.1.0"
     },
     "bmforge-visualization": {
@@ -26,5 +31,5 @@
       "spec_version": "0.1.0"
     }
   },
-  "source_commit": "cbf2ad642fe732d0ecdc71a4330aa229e5605f61"
+  "source_commit": "efb49f99fc862003091618646d4690b27fa2cf5e"
 }

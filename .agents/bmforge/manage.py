@@ -81,6 +81,7 @@ SKILLS = {
     "bmforge-timeline": ("pages/component-timeline.md", ()),
     "bmforge-nftables": ("pages/component-nftables.md", ()),
     "bmforge-fail2ban": ("pages/component-fail2ban.md", ()),
+    "bmforge-security-events": ("pages/component-security-events.md", ()),
     "bmforge-github-pages": ("pages/jekyll-setup.md", ()),
     "bmforge-rca": (None, ()),
 }
@@ -99,6 +100,7 @@ HEALTH = "pages/health-checks.md"
 DB_TEMPLATE = "components/templates/db-server/interface/DbMgr.py"
 GIT_TEMPLATE = "components/templates/git/Git.py"
 GIF_TEMPLATE = "components/templates/gif-animation/interface/GIFAnimation.py"
+SECURITY_EVENTS_TEMPLATE = "components/templates/security-events/interface/SecurityEvents.py"
 CONSTANTS_TEMPLATE = "templates/project/constants/DProject.py"
 LOCALIZER_TEMPLATE = "components/templates/localization/interface/Localizer.py"
 TEXT_TEMPLATE = "components/templates/constants/DText.py"
@@ -217,6 +219,8 @@ def bundle(source, name):
         files["assets/Git.py"] = GIT_TEMPLATE
     if name == "bmforge-gif-animation":
         files["assets/GIFAnimation.py"] = GIF_TEMPLATE
+    if name == "bmforge-security-events":
+        files["assets/SecurityEvents.py"] = SECURITY_EVENTS_TEMPLATE
     if name == "bmforge-constants":
         files["assets/DProject.py"] = CONSTANTS_TEMPLATE
     if name == "bmforge-localization":

@@ -253,6 +253,10 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
         ),
+        "mycount/constants/DSecurityEvents.py": (
+            "mycount/__init__.py",
+            "mycount/constants/__init__.py",
+        ),
         "mycount/constants/DVisitorDetails.py": (
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
@@ -307,7 +311,9 @@ class DDeployment:
             "mycount/activity/CollectVisit.py",
             "mycount/activity/CountVisits.py",
             "mycount/constants/DMyCount.py",
+            "mycount/constants/DSecurityEvents.py",
             "mycount/interface/GeoIpUnavailable.py",
+            "mycount/interface/SecurityEvents.py",
             "mycount/interface/VisitPayload.py",
             "mycount/interface/VisitorAddress.py",
             "mycount/interface/__init__.py",
@@ -413,6 +419,10 @@ class DDeployment:
             "mycount/constants/DRouterMappings.py",
             "mycount/interface/__init__.py",
         ),
+        "mycount/interface/SecurityEvents.py": (
+            "mycount/__init__.py",
+            "mycount/interface/__init__.py",
+        ),
         "mycount/interface/ServiceLogger.py": (
             "mycount/__init__.py",
             "mycount/interface/__init__.py",
@@ -502,8 +512,10 @@ class DDeployment:
             "mycount/activity/BrowserMetadata.py",
             "mycount/activity/CollectVisit.py",
             "mycount/constants/DMyCount.py",
+            "mycount/constants/DSecurityEvents.py",
             "mycount/interface/CollectorHttp.py",
             "mycount/interface/Network.py",
+            "mycount/interface/SecurityEvents.py",
             "mycount/interface/ServiceLogger.py",
             "mycount/interface/VisitPayload.py",
             "mycount/server/__init__.py",

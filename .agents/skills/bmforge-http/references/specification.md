@@ -4,7 +4,7 @@ lang: en
 locale: en-US
 language_name: English
 component_id: "bmforge.http-server"
-spec_version: "0.5.0"
+spec_version: "0.5.1"
 spec_status: "draft"
 translation_key: bmforge-component-http
 ---
@@ -19,7 +19,7 @@ Provide a small, locally owned HTTP service using Python's `ThreadingHTTPServer`
 
 ## Approved runtime modules
 
-This is the **complete approved module inventory for the reusable HTTP Display Server infrastructure** in specification `0.5.0`.
+This is the **complete approved module inventory for the reusable HTTP Display Server infrastructure** in specification `0.5.1`.
 
 | Origin | Module | Purpose |
 | --- | --- | --- |
@@ -65,6 +65,17 @@ The pinned BMDynIP HTML and CSS are **design references only**. Inspect their va
 - Keep persistence and machine-facing timestamp contracts unambiguous: UTC or ISO 8601 with `Z` or an explicit offset where instants are exchanged. The display rule does not change HTTP protocol date headers, database storage, or discard stored subsecond precision. Keep calendar dates as dates rather than converting them into instants.
 - Test conversion across midnight and daylight-saving changes, including a browser in a different timezone from the server. Editing local times must reject nonexistent times and disambiguate repeated times, following the timeline contract when that component is selected. Use the approved stdlib modules or browser built-ins; no extra date/time package is required by this standard.
 
+## Trusted HTTP source for security events (only when selected)
+
+When the independently selectable [Security Event Producer]({{ site.baseurl }}{% link pages/component-security-events.md %}) is used in an HTTP application, the **HTTP ingress adapter**, not business logic, identifies the client's verified source address and binds it with the producer's request-scoped `trusted_source(...)` context. Application code then calls only `emit("abuse")`. HTTP itself has no Fail2ban, ZMQ, ban, retry, rate-counter or `bmforge-security-events` dependency when this capability is not selected.
+
+- For direct connections, use the **observed peer address**, not an `X-Forwarded-For` value. Behind a proxy, accept a proxy-provided client address only when the actual immediate peer belongs to an explicitly configured trusted proxy address/network **and** the proxy **overwrites** the selected header using its observed connection (rather than passing arbitrary untrusted values). Reject header spoofing by untrusted peers, and do not trust client-provided request bodies or analytics identities.
+- Validate and normalize IPv4/IPv6 numeric addresses with the already-approved stdlib `ipaddress`. Handle direct peers, the exact trusted proxy path, invalid/missing proxy headers, IPv4/IPv6 and deployment listener binding explicitly. A malformed, absent or untrusted address must never be converted to a loggable banning source. Do not silently substitute the proxy address, a loopback address or a made-up client identity.
+- Bind and restore the address only for the actual request's lifetime, even when the handler raises. Do not store per-client mutable address state in shared application globals, store flood counters, or forward address parameters through business activities just to emit security events.
+- Check the installed reverse proxy and backend listener topology so untrusted direct requests cannot masquerade as proxy requests. These are **source-integrity tests**, not re-tests of the downstream nftables IP-blocking component.
+
+**Acceptance:** exercise an ordinary direct request, a valid trusted-proxy request, a forged forwarded header from an untrusted peer, a trusted-proxy request with a missing/invalid header, both address families, simultaneous requests and restored context after an error. Verify the emitted journal security event has the verified original client address, but do not add a firewall-test gate to the HTTP specification.
+
 ## Reference snapshot
 
 - `components/reference/bmgeoip/bmgeoip/server/BMGeoIPServer.py`: listener, CLI binding, integration, lifecycle
@@ -100,3 +111,4 @@ The BMGeoIP examples contain GeoIP-specific routes, globals and integration code
 7. Verify the HTTP implementation uses the approved runtime modules only; any proposed replacement or addition was approved by the user before implementation.
 8. **GUI only:** visually inspect desktop and narrow/mobile pages for a consistent dark, high-contrast, non-pastel palette; legible panels, tables and forms; saturated primary accents; visible keyboard focus; labeled status; and no clipped essential actions. Verify applicable text and control contrast targets. API-only services skip this check.
 9. **Timestamp displays:** verify zero-padded local `yyyy-mm-dd hh:mm:ss` output, a 24-hour clock, no fractional seconds and the same display timezone in server/browser rendering. Cover UTC inputs, a different browser timezone, local midnight and daylight-saving boundaries; ensure machine timestamps retain their offset and stored precision.
+10. **Security producer only, when selected:** exercise direct and trusted-proxy address extraction, forged/untrusted headers, missing or invalid proxy values, IPv4/IPv6 normalization, request-local context isolation and the installed listener. Business code must only emit a named event, not a source IP or ban request.
