@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-11-01 @ 04:15
+
 ### Summary
 
 Publish trusted collector request and malformed-payload events through the
