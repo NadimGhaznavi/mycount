@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-11-01 @ 05:00
+
 ### Summary
 
 Reduce visitor map crowding with smaller dots and green, yellow, and red density
