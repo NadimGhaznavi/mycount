@@ -9,6 +9,15 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [3.1.2] - 2026-11-01 @ 05:11
+
+### Summary
+
+Emphasize visitor map density with nine colors from green through yellow to red
+and gentler logarithmic sizing limited to 5–8 pixel radii. Show all nine equal
+density bands in a compact Low-to-High legend, preserving dark centers and
+2-pixel borders.
+
 ## [3.1.1] - 2026-11-01 @ 05:05
 
 ### Summary
