@@ -123,7 +123,7 @@
       ]
     },
     "mycount/activity/ReadReports.py": {
-      "digest": "9aa574c5864faf5f48f292231b934990c395a0ce6b0a6275af3c31029e710c64",
+      "digest": "ed29ab8881acdaaded47a10b3a469d4b046d884e5ca0446e2b5345c80342b058",
       "targets": [
         "report-server"
       ]
@@ -234,7 +234,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "b637bd81a97ed79fd9f53ea26bc441ab554eb274743edad4d176837d62b418d7",
+      "digest": "b47aa2b894a7d52dfadb23be13a99a5802f95374f6439cbdcb1b06267486e66e",
       "targets": [
         "filesystem",
         "listener",
@@ -242,7 +242,7 @@
       ]
     },
     "mycount/constants/DReports.py": {
-      "digest": "7d8d3281d9df1dc5e8a5d901165a5cef49e86b525a14286c1fb7e5cdd6e362d3",
+      "digest": "144cd587693bb3798c76978a4cb202c73d175d0eb1221952ec6cde0e2a7a948e",
       "targets": [
         "listener",
         "report-server"
@@ -458,7 +458,7 @@
       ]
     },
     "mycount/interface/ReportQuery.py": {
-      "digest": "faf9fdeccaa7987ae3e69a95a3acfb6938701fc6bbe3f5f3cdca306050fc17ab",
+      "digest": "d7d84d11d02bf4dfd95031e57592a2f4e9fbe7096e77fbf01f3000556756f805",
       "targets": [
         "report-server"
       ]
@@ -522,7 +522,7 @@
       ]
     },
     "mycount/server/ControlHandler.py": {
-      "digest": "58e361984ec9c6c61f64508a1113fabbf8c025a7b258c1d252b1a7f0b4e2fa13",
+      "digest": "b227a03a0c3727565dd1c45b9b9f92538fef32f8996ee5c164505f5c702af43e",
       "targets": [
         "report-server"
       ]
@@ -1378,6 +1378,14 @@
         "report-server"
       ],
       "version": "3.2.0"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "3.3.0"
     }
   ]
 }
