@@ -9,6 +9,14 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-11-04 @ 04:32
+
+### Summary
+
+Default Map and Metrics to the first recorded visit through today, so older
+visits stay in the totals and the All Traffic plot grows with the data.
+Preserve selected date ranges and allow reports spanning more than one year.
+
 ## [3.2.0] - 2026-11-01 @ 16:50
 
 ### Added

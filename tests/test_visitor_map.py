@@ -33,7 +33,7 @@ class VisitorMapTests(unittest.TestCase):
     @patch('mycount.activity.ReadReports.DbMgr')
     def test_map_reads_aggregates_in_snapshot_with_local_day_and_bot_filters(self, factory):
         first = datetime(2025, 1, 1)
-        factory.return_value.query.side_effect = [self.locations, [dict(first_visit_at=first)], [dict(site="example"), dict(site="other")]]
+        factory.return_value.query.side_effect = [[dict(first_visit_at=first)], self.locations, [dict(site="example"), dict(site="other")]]
         report = ReadReports().visitor_map(self.options)
         self.assertEqual(report.locations, self.locations)
         self.assertEqual(report.first_visit_at, first)
@@ -41,7 +41,7 @@ class VisitorMapTests(unittest.TestCase):
         self.assertEqual(report.available_sites, ['example', 'other'])
         factory.return_value.transaction.assert_called_once_with(read_only=True)
         factory.return_value.close.assert_called_once()
-        sql, parameters = factory.return_value.query.call_args_list[0].args
+        sql, parameters = factory.return_value.query.call_args_list[1].args
         self.assertIn('GROUP BY latitude, longitude', sql)
         self.assertIn('COUNT(*) AS page_views', sql)
         self.assertIn('Bytespider', parameters)
@@ -77,7 +77,7 @@ class VisitorMapTests(unittest.TestCase):
     @patch('mycount.activity.ReadReports.DbMgr')
     def test_report_resolves_missing_city_after_database_snapshot_closes(self, factory, cities):
         missing = {**self.locations[1], 'latitude': None, 'longitude': None}
-        factory.return_value.query.side_effect = [[missing], [dict(first_visit_at=None)], []]
+        factory.return_value.query.side_effect = [[dict(first_visit_at=None)], [missing], []]
         def locate(rows):
             factory.return_value.close.assert_called_once()
             self.assertEqual(rows, [missing])
@@ -97,7 +97,7 @@ class VisitorMapTests(unittest.TestCase):
         for path in ('/', '/map'):
             with self.subTest(path=path):
                 factory.reset_mock()
-                factory.return_value.query.side_effect = [self.locations, [dict(first_visit_at=None)], []]
+                factory.return_value.query.side_effect = [[dict(first_visit_at=None)], self.locations, []]
                 with ThreadingHTTPServer(('127.0.0.1', 0), ControlHandler) as server:
                     thread = Thread(target=server.serve_forever)
                     thread.start()
@@ -109,10 +109,19 @@ class VisitorMapTests(unittest.TestCase):
                         body = response.read()
                         self.assertIn(b'<title>MyCount Map</title>', body)
                         self.assertNotIn(b'<h1>Visitor Map</h1>', body)
-                        self.assertNotIn('COALESCE(v.is_bot, 0) = 0', factory.return_value.query.call_args_list[0].args[0])
-                        self.assertIn('example', factory.return_value.query.call_args_list[0].args[1])
+                        self.assertNotIn('COALESCE(v.is_bot, 0) = 0', factory.return_value.query.call_args_list[1].args[0])
+                        self.assertIn('example', factory.return_value.query.call_args_list[1].args[1])
                         self.assertIn(b'<option value="example" selected>example</option>', body)
+                        self.assertIn(b'name="start" value="2026-03-08"', body)
                         factory.return_value.close.assert_called_once()
+                        factory.reset_mock()
+                        factory.return_value.query.side_effect = [[dict(first_visit_at=datetime(2024, 1, 1, 2))], self.locations, []]
+                        connection.request('GET', path + '?end=2026-03-08&timezone=America%2FToronto')
+                        response = connection.getresponse()
+                        self.assertEqual(response.status, 200)
+                        self.assertIn(b'name="start" value="2023-12-31"', response.read())
+                        self.assertEqual(factory.return_value.query.call_args_list[1].args[1][-2:],
+                                         (datetime(2023, 12, 31, 5), datetime(2026, 3, 9, 4)))
                         factory.reset_mock()
                         connection.request('GET', path + '?start=bad')
                         response = connection.getresponse()

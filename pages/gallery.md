@@ -17,6 +17,9 @@ author_profile: true
 Map, Metrics, and Marketing share Report filters for site, date range, and
 bot exclusion. Site defaults to `*` (all sites); choose a recorded site and
 click **Apply filters** to limit traffic visualizations and tables to that site.
+Map and Metrics default to the first recorded visit through today in the report's
+timezone. Select From and Through dates to view a fixed range. All Traffic uses
+the same filters as the other Metrics charts and tables.
 Marketing post annotations remain shared because posts are not assigned to sites.
 
 ![Map Page](/pages/images/map-page.png)

@@ -32,10 +32,10 @@ class ReportQuery:
         try:
             end = date.fromisoformat(field("end", today.isoformat()))
             start = date.fromisoformat(field("start", (end - timedelta(days=DReports.DEFAULT_DAYS - 1)).isoformat()))
-            if end == date.max or not 0 <= (end - start).days < DReports.MAX_DAYS:
+            if end == date.max or start > end:
                 raise ValueError
         except (ValueError, OverflowError) as error:
-            raise ValueError(f"Choose a date range of 1 to {DReports.MAX_DAYS} days.") from error
+            raise ValueError("Choose valid dates with From on or before Through.") from error
         before = None
         cursor = field("before", "")
         if cursor:
