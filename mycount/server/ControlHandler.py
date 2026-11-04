@@ -51,10 +51,10 @@ class ControlHandler(BaseHTTPRequestHandler):
                 self.marketing(options, saved=query.get("saved") == ["1"])
                 return
             if path in ("/", "/map"):
-                self.visitor_map(options)
+                self.visitor_map(options, all_history="start" not in query)
                 return
             try:
-                report = ReadReports().metrics(options)
+                report = ReadReports().metrics(options, all_history="start" not in query)
             except pymysql.MySQLError:
                 logging.exception("Unable to read site visits")
                 self.respond(503, ControlPages().render(Report(options, [], None), error="Site visits unavailable."),
@@ -101,9 +101,9 @@ class ControlHandler(BaseHTTPRequestHandler):
         else:
             self.send_error(404, "Page not found")
 
-    def visitor_map(self, options: ReportOptions) -> None:
+    def visitor_map(self, options: ReportOptions, *, all_history: bool = False) -> None:
         try:
-            report = ReadReports().visitor_map(options)
+            report = ReadReports().visitor_map(options, all_history=all_history)
         except pymysql.MySQLError:
             logging.exception("Unable to read visitor locations")
             self.respond(503, ControlPages().visitor_map(Report(options, [], None),
