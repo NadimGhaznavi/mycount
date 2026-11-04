@@ -1,6 +1,8 @@
 """Own report query selection, snapshot transactions, and connection lifetime."""
 
-from datetime import datetime
+from dataclasses import replace
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 from mycount.constants.DReports import DReports
 from mycount.constants.DVisitors import DVisitors
@@ -14,14 +16,17 @@ from mycount.activity.ResolveVisitorLocations import ResolveVisitorLocations
 
 
 class ReadReports:
-    def metrics(self, options: ReportOptions) -> Report:
-        days = options.day_ranges()
-        filters = dict(site=options.site, exclude_bots=options.exclude_bots,
-                       start=days[0][1], end=days[-1][2])
+    def metrics(self, options: ReportOptions, *, all_history: bool = False) -> Report:
         db = DbMgr()
         try:
             with db.transaction(read_only=True):
                 visits = VisitDb(db)
+                first = visits.first_visit_at()
+                if all_history:
+                    options = self._history_options(options, first)
+                days = options.day_ranges()
+                filters = dict(site=options.site, exclude_bots=options.exclude_bots,
+                               start=days[0][1], end=days[-1][2])
                 sites = visits.totals_by_site(**filters)
                 pages = visits.totals_by_page(**filters)
                 locations = visits.totals_by_location(**filters)
@@ -29,7 +34,6 @@ class ReadReports:
                 referrers = visits.totals_by_referrer(**filters)
                 languages = visits.totals_by_language(**filters)
                 daily = visits.daily_totals(days, exclude_bots=options.exclude_bots, site=options.site)
-                first = visits.first_visit_at()
                 available_sites = visits.available_sites()
             older = None
             if len(recent) > DReports.PAGE_SIZE:
@@ -57,22 +61,30 @@ class ReadReports:
         finally:
             db.close()
 
-    def visitor_map(self, options: ReportOptions) -> Report:
-        days = options.day_ranges()
+    def visitor_map(self, options: ReportOptions, *, all_history: bool = False) -> Report:
         db = DbMgr()
         try:
             with db.transaction(read_only=True):
                 visits = VisitDb(db)
+                first = visits.first_visit_at()
+                if all_history:
+                    options = self._history_options(options, first)
+                days = options.day_ranges()
                 locations = visits.totals_by_coordinates(
                     exclude_bots=options.exclude_bots, start=days[0][1], end=days[-1][2],
                     site=options.site)
-                first = visits.first_visit_at()
                 available_sites = visits.available_sites()
         finally:
             db.close()
         mapped = ResolveVisitorLocations(CityLocations()).resolve(locations)
         return Report(options, [], first, locations=locations, map_locations=mapped,
                       available_sites=available_sites)
+
+    @staticmethod
+    def _history_options(options: ReportOptions, first: datetime | None) -> ReportOptions:
+        start = (first.replace(tzinfo=timezone.utc).astimezone(ZoneInfo(options.timezone)).date()
+                 if first is not None else options.end)
+        return replace(options, start=min(start, options.end))
 
     def marketing(self, options: ReportOptions) -> Report:
         days = options.day_ranges()
