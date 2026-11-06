@@ -9,6 +9,11 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-11-06 @ 18:10
+
+- Added ai, llamasrv, and nd3g sites to the CORS whitelist.
+- Removed llamaserver (it's deco'd)
+
 ## [3.3.0] - 2026-11-04 @ 04:32
 
 ### Summary
