@@ -183,7 +183,7 @@ class ControlServerTests(unittest.TestCase):
                     self.assertIn(b'>3</td>', body)
                     factory.return_value.transaction.assert_called_once_with(read_only=True)
                     factory.return_value.close.assert_called_once()
-                    self.assertIn(b'value="1" checked', body)
+                    self.assertIn(b'value="basic" selected', body)
                     for call in factory.return_value.query.call_args_list[1:-1]:
                         self.assertIn('AND NOT (COALESCE(v.is_bot, 0) = 1', call.args[0])
                         self.assertIn('mycount_smoke_', call.args[1])
@@ -197,7 +197,7 @@ class ControlServerTests(unittest.TestCase):
                         response = connection.getresponse()
                         self.assertEqual(response.status, 200)
                         filtered = response.read()
-                        self.assertEqual(b'value="1" checked' in filtered, excluded)
+                        self.assertEqual(b'value="basic" selected' in filtered, excluded)
                         self.assertEqual(filtered.count(b'class="visits">0</td>'), 3)
                         self.assertIn(b'<summary>Referrers</summary>', filtered)
                         self.assertIn(b'data-local-time="long-date">September 23, 2026</time>', filtered)

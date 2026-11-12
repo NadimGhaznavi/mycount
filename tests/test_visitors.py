@@ -85,12 +85,14 @@ class VisitorsTests(unittest.TestCase):
         self.assertLess(navigation.index('href="/visitors"'), navigation.index('href="/reference"'))
         query = parse_qs(urlsplit(VisitorsQuery.link(filters, report.older)).query)
         self.assertEqual(VisitorsQuery.filters(query), filters)
-        self.assertEqual(ReportQuery.resolve(query).before, report.older)
-        self.assertTrue(ReportQuery.resolve(query).exclude_bots)
-        query = parse_qs(urlsplit(VisitorsQuery.link(filters, report.older, exclude_bots=False)).query)
-        self.assertFalse(ReportQuery.resolve(query).exclude_bots)
+        report_query = {key: value for key, value in query.items() if key != 'site'}
+        self.assertEqual(ReportQuery.resolve(report_query).before, report.older)
+        self.assertTrue(ReportQuery.resolve(report_query).exclude_bots)
+        query = parse_qs(urlsplit(VisitorsQuery.link(filters, report.older, filter_mode='none')).query)
+        report_query = {key: value for key, value in query.items() if key != 'site'}
+        self.assertFalse(ReportQuery.resolve(report_query).exclude_bots)
         self.assertEqual(VisitorsQuery.filters(query), filters)
-        self.assertEqual(ReportQuery.resolve(query).before, report.older)
+        self.assertEqual(ReportQuery.resolve(report_query).before, report.older)
         with self.assertRaises(ValueError):
             VisitorsQuery.filters({'site': ['one', 'two']})
 
@@ -136,8 +138,8 @@ class VisitorsTests(unittest.TestCase):
                 response = connection.getresponse()
                 self.assertEqual(response.status, 200)
                 body = response.read()
-                self.assertEqual(b'value="1" checked' in body, excluded)
-                self.assertIn(b'exclude_bots=' + (b'1' if excluded else b'0'), body)
+                self.assertEqual(b'value="basic" selected' in body, excluded)
+                self.assertIn(b'filter=' + (b'basic' if excluded else b'none'), body)
                 sql = factory.return_value.query.call_args_list[0].args[0]
                 self.assertEqual('NOT (COALESCE(v.is_bot, 0) = 1' in sql, excluded)
             for path in ('/visitors?before=bad', '/visitors?site=one&site=two',

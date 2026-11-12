@@ -26,6 +26,8 @@ from mycount.interface.DbCommitUncertain import DbCommitUncertain
 from mycount.server.ControlPages import ControlPages
 from mycount.interface.CityLocations import CityLocations
 from mycount.interface.CitySchedule import CitySchedule
+from mycount.interface.IsoForestSchedule import IsoForestSchedule
+from mycount.activity.ReadIsoForest import ReadIsoForest
 
 
 class ControlHandler(BaseHTTPRequestHandler):
@@ -40,6 +42,32 @@ class ControlHandler(BaseHTTPRequestHandler):
             self.respond(200, ControlPages.favicon(), "image/png")
         elif path == "/api/city-schedule":
             self.city_schedule()
+        elif path == "/api/isoforest-schedule":
+            self.isoforest_settings()
+        elif path == "/isoforest":
+            query = parse_qs(request.query, keep_blank_values=True)
+            values = query.get("run", [""])
+            try:
+                if len(values) != 1 or (values[0] and (not values[0].isascii() or not values[0].isdecimal())):
+                    raise ValueError("Choose a valid IsoForest run.")
+                run_id = int(values[0]) if values[0] else None
+                if run_id is not None and not 0 < run_id < 2**64:
+                    raise ValueError("Choose a valid IsoForest run.")
+            except ValueError as error:
+                self.send_error(400, str(error))
+                return
+            try:
+                data = ReadIsoForest().read(run_id)
+            except ValueError as error:
+                self.send_error(404, str(error))
+                return
+            except pymysql.MySQLError:
+                logging.exception("Unable to read IsoForest runs")
+                self.respond(503, ControlPages().isoforest(
+                    dict(runs=[], selected=None, observations=[], first_visit_at=None),
+                    error="IsoForest runs unavailable."), "text/html; charset=utf-8")
+                return
+            self.respond(200, ControlPages().isoforest(data), "text/html; charset=utf-8")
         elif path in ("/", "/map", "/metrics", "/marketing"):
             query = parse_qs(request.query, keep_blank_values=True)
             try:
@@ -65,7 +93,7 @@ class ControlHandler(BaseHTTPRequestHandler):
             query = parse_qs(request.query, keep_blank_values=True)
             try:
                 options = ReportQuery.resolve({"before": query.get("before", [""]),
-                                               "exclude_bots": query.get("exclude_bots", ["1"])})
+                                               "filter": [ReportQuery.filter_mode(query)]})
                 filters = VisitorsQuery.filters(query)
             except ValueError as error:
                 self.send_error(400, str(error))
@@ -123,7 +151,7 @@ class ControlHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         path = urlsplit(self.path).path
-        if path not in ("/marketing", "/api/city-schedule"):
+        if path not in ("/marketing", "/api/city-schedule", "/api/isoforest-schedule", "/api/isoforest-run"):
             self.send_error(404, "Page not found")
             return
         origin = self.headers.get("Origin")
@@ -136,11 +164,14 @@ class ControlHandler(BaseHTTPRequestHandler):
                               or parsed_origin.netloc != self.headers.get("Host")):
             self.send_error(403, "Cross-site submission refused")
             return
-        if path == "/api/city-schedule":
+        if path in ("/api/city-schedule", "/api/isoforest-schedule", "/api/isoforest-run"):
             if self.headers.get("Sec-Fetch-Site") == "cross-site":
                 self.send_error(403, "Cross-site submission refused")
                 return
-            self.city_schedule(update=True)
+            if path == "/api/city-schedule":
+                self.city_schedule(update=True)
+            else:
+                self.isoforest_settings(update=True, request_run=path == "/api/isoforest-run")
             return
         content_type = self.headers.get("Content-Type", "")
         if content_type.split(";", 1)[0] not in ("application/x-www-form-urlencoded", "multipart/form-data"):
@@ -232,3 +263,43 @@ class ControlHandler(BaseHTTPRequestHandler):
             self.send_header("Location", location)
         self.end_headers()
         self.wfile.write(body)
+
+    def isoforest_settings(self, *, update: bool = False, request_run: bool = False) -> None:
+        def respond(status, payload):
+            self.respond(status, json.dumps(payload).encode(), "application/json; charset=utf-8")
+
+        if update:
+            if self.headers.get("Content-Type", "").split(";", 1)[0] != "application/json":
+                respond(415, {"error": "Expected JSON settings."})
+                return
+            try:
+                if self.headers.get("Transfer-Encoding") or len(self.headers.get_all("Content-Length", [])) != 1:
+                    raise ValueError("Supply one Content-Length and no Transfer-Encoding.")
+                length = int(self.headers.get("Content-Length", "0"))
+                if not 0 < length <= DMyCount.MAX_BODY_BYTES:
+                    raise ValueError("Invalid request size.")
+                body = self.rfile.read(length)
+                if len(body) != length:
+                    raise ValueError("Incomplete request.")
+                values = json.loads(body)
+                if request_run:
+                    if not isinstance(values, dict) or values:
+                        raise ValueError("Supply an empty JSON object to request a run.")
+                else:
+                    if not isinstance(values, dict) or values.keys() != {"enabled", "expression"}:
+                        raise ValueError("Provide an enabled flag and a five-field cron expression.")
+                    values = CitySchedule.validate(**values)
+            except (ValueError, UnicodeError) as error:
+                respond(400, {"error": str(error)})
+                return
+        try:
+            schedule = IsoForestSchedule()
+            if request_run:
+                schedule.request_run()
+            settings = schedule.update(**values) if update and not request_run else schedule.read()
+            pending = schedule.requested()
+        except (OSError, ValueError):
+            logging.exception("Unable to access IsoForest settings")
+            respond(503, {"error": "IsoForest settings unavailable. Reload to check saved settings before retrying."})
+            return
+        respond(202 if request_run else 200, {"schedule": settings, "queued": pending})

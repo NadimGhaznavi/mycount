@@ -1,7 +1,7 @@
 """Integration checks against a disposable local MariaDB instance only."""
 
 from dataclasses import replace
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from hashlib import sha256
 import json
 import os
@@ -38,6 +38,12 @@ from mycount.interface.DbCommitUncertain import DbCommitUncertain
 from mycount.interface.MarketingScreenshots import MarketingScreenshots
 from browser_automation_cases import browser_automation_cases
 from test_crawl_campaigns import campaign
+from mycount.constants.DIsoForest import DIsoForest
+from mycount.entity.IsoForestObservation import IsoForestObservation
+from mycount.entity.IsoForestResult import IsoForestResult
+from mycount.interface.IsoForestDb import IsoForestDb
+from mycount.interface.IsoForestSchedule import IsoForestSchedule
+from mycount.activity.RunIsoForest import RunIsoForest
 
 
 @unittest.skipUnless(shutil.which("mariadb-install-db") and shutil.which("mariadbd"),
@@ -70,7 +76,8 @@ class DatabaseTests(unittest.TestCase):
                                                                       'https://example.com')
             close.assert_called_once()
         self.assertEqual(visits.count_by_site('collected'), 0)
-        self.assertEqual(len(visits.visitor_records({'site': 'collected'}, exclude_bots=False)), 24)
+        self.assertEqual(len(visits.visitor_records({'site': 'collected'}, exclude_bots=False,
+                                                   limit=len(rows))), len(rows))
         self.assertEqual(self.db.query('SELECT is_bot FROM page_views WHERE page_view_id=%s',
                                        (view_id,)), [{'is_bot': 1}])
 
@@ -168,9 +175,104 @@ class DatabaseTests(unittest.TestCase):
             cls.server.wait(timeout=5)
 
     def tearDown(self):
+        self.db.execute("DELETE FROM isoforest_runs")
         self.db.execute("DELETE FROM marketing_posts")
         self.db.execute("DELETE FROM page_views")
         self.db.execute("DELETE FROM pages")
+
+    def test_isoforest_raw_snapshot_includes_known_bots_and_test_traffic(self):
+        visits = VisitDb(self.db)
+        first = visits.record(Visit('blog', 'https://blog.example/', datetime(2026, 11, 10, tzinfo=timezone.utc),
+                                    is_bot=True, client_details=(('timezone', 'Asia/Shanghai'), ('device_memory', 8))))
+        second = visits.record(Visit('mycount_smoke_raw', 'https://example.com/__mycount_test__/',
+                                     datetime(2026, 11, 10, tzinfo=timezone.utc), is_bot=False))
+        source = IsoForestDb(self.db).raw_visits()
+        self.assertEqual({row.page_view_id for row in source}, {first, second})
+        self.assertEqual(dict(source[0].client_details)['timezone'], 'Asia/Shanghai')
+        self.assertEqual(dict(source[0].client_details)['device_memory'], 8)
+
+    def isoforest_fixture(self):
+        store = IsoForestDb(self.db)
+        visits = VisitDb(self.db)
+        start = datetime(2026, 11, 10)
+        ids = [visits.record(Visit('example', f'https://example.com/{i}',
+                                  (start + timedelta(minutes=i)).replace(tzinfo=timezone.utc),
+                                  is_bot=i in (1, 3), country_code='CA', city_name='Toronto',
+                                  latitude=43, longitude=-79, languages=('en-CA',))) for i in range(1, 5)]
+        raw = store.raw_visits()
+        observations = tuple(IsoForestObservation(start, f'10.{i}.0.0/16', 'example', (identifier,), 1,
+                                                 (0.,) * len(DIsoForest.FEATURES))
+                             for i, identifier in enumerate(ids, start=1))
+        result = IsoForestResult(observations, (.1, -.1, -.1, .1), b'test-model',
+                                 {'features': DIsoForest.FEATURES})
+        run_id = store.start_run(start)
+        store.publish(run_id, raw, result, start + timedelta(seconds=1), .1)
+        return store, ids, result, run_id
+
+    def test_isoforest_results_filter_all_aggregates_before_pagination_and_keep_unassessed(self):
+        store, ids, result, run_id = self.isoforest_fixture()
+        start = datetime(2026, 11, 10)
+        new = VisitDb(self.db).record(Visit('example', 'https://example.com/new',
+            datetime(2026, 11, 10, 1, tzinfo=timezone.utc), is_bot=False))
+        plus = VisitDb(self.db, isoforest_run_id=run_id)
+        for query in (plus.totals_by_site, plus.totals_by_page, plus.totals_by_location,
+                      plus.totals_by_coordinates, plus.totals_by_referrer, plus.totals_by_language):
+            with self.subTest(query=query.__name__):
+                self.assertEqual(sum(row['page_views'] for row in query(exclude_bots=True)), 2)
+        self.assertEqual([row['page_view_id'] for row in plus.recent_visits(exclude_bots=True, limit=1)], [new])
+        self.assertEqual([row['page_view_id'] for row in plus.visitor_records({}, exclude_bots=True)], [new, ids[3]])
+        self.assertEqual([row['page_view_id'] for row in plus.recent_visits(
+            exclude_bots=True, before=(datetime(2026, 11, 10, 1), new))], [ids[3]])
+        options = ReportOptions(date(2026, 11, 9), date(2026, 11, 11), 'UTC')
+        self.assertEqual([row['page_views'] for row in plus.daily_totals(options.day_ranges(), exclude_bots=True)], [0, 2, 0])
+        self.assertEqual(plus.first_visit_at(), start + timedelta(minutes=1))
+        self.assertEqual(plus.available_sites(), ['example'])
+        self.assertEqual(len(VisitDb(self.db).recent_visits(exclude_bots=True)), 3)
+        self.assertEqual(len(VisitDb(self.db).recent_visits()), 5)
+        self.assertEqual(self.db.query('SELECT is_bot FROM page_views WHERE page_view_id=%s', (ids[1],))[0]['is_bot'], 0)
+        self.assertEqual(store.active_run()['run_id'], run_id)
+
+    def test_isoforest_publication_rolls_back_partial_evidence_and_preserves_active_run(self):
+        store, ids, result, previous = self.isoforest_fixture()
+        started = datetime(2026, 11, 11)
+        candidate = store.start_run(started)
+        duplicate = replace(result, observations=(result.observations[0], result.observations[0]), decisions=(-.1, -.1))
+        with self.assertRaises(pymysql.IntegrityError):
+            store.publish(candidate, store.raw_visits(), duplicate, started, .1)
+        self.assertEqual(store.active_run()['run_id'], previous)
+        self.assertEqual(store.observations(candidate), [])
+        self.assertEqual(store.run(candidate)['status'], 'running')
+        store.fail_run(candidate, started, 'Expected test failure')
+        self.assertEqual(store.run(candidate)['status'], 'failed')
+        store.fail_run(previous, started, 'Uncertain acknowledgement')
+        self.assertEqual(store.run(previous)['status'], 'complete')
+        VisitorSchema(self.db).apply()
+        self.assertEqual(store.active_run()['run_id'], previous)
+
+    def test_isoforest_failed_worker_leaves_completed_results_and_records_failure(self):
+        store, ids, result, previous = self.isoforest_fixture()
+        with tempfile.TemporaryDirectory() as directory, \
+                patch('mycount.activity.RunIsoForest.DbMgr', return_value=self.db), \
+                patch.object(self.db, 'close'), \
+                patch('mycount.interface.IsoForestModel.IsoForestModel') as model:
+            model.return_value.fit.side_effect = ValueError('expected model failure')
+            with self.assertRaisesRegex(ValueError, 'expected model failure'):
+                RunIsoForest(IsoForestSchedule(Path(directory))).run()
+        self.assertEqual(store.active_run()['run_id'], previous)
+        self.assertEqual(store.recent_runs()[0]['status'], 'failed')
+        self.assertEqual(store.observations(store.recent_runs()[0]['run_id']), [])
+
+    def test_isoforest_empty_source_publishes_and_new_tables_use_pinned_collation(self):
+        with tempfile.TemporaryDirectory() as directory, \
+                patch('mycount.activity.RunIsoForest.DbMgr', return_value=self.db), \
+                patch.object(self.db, 'close'):
+            run_id = RunIsoForest(IsoForestSchedule(Path(directory))).run()
+        run = IsoForestDb(self.db).active_run()
+        self.assertEqual((run['run_id'], run['source_views'], run['observation_count']), (run_id, 0, 0))
+        collations = self.db.query("""SELECT TABLE_COLLATION FROM information_schema.TABLES
+            WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME LIKE %s""", ('isoforest_%',))
+        self.assertEqual(len(collations), 3)
+        self.assertTrue(all(row['TABLE_COLLATION'] == 'utf8mb4_unicode_ci' for row in collations))
 
     def test_marketing_posts_persist_and_schema_reapplication_preserves_them(self):
         marketing = MarketingDb(self.db)

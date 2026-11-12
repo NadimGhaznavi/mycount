@@ -21,3 +21,4 @@ class Report:
     posts: list[dict[str, object]] = field(default_factory=list)
     older: tuple[datetime, int] | None = None
     available_sites: list[str] = field(default_factory=list)
+    isoforest_run: dict[str, object] | None = None

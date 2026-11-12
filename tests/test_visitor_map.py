@@ -63,7 +63,7 @@ class VisitorMapTests(unittest.TestCase):
         self.assertIn('popup.textContent =', body)
         self.assertIn('OpenStreetMap</a> contributors', body)
         self.assertIn('value="America/Toronto"', body)
-        self.assertIn('value="1" checked', body)
+        self.assertIn('value="basic" selected', body)
         self.assertIn('<a href="/">Map</a>', ControlPages().reference().decode())
         self.assertNotIn('<a href="/">Map</a>', body)
         self.assertIn('<a href="/metrics">Metrics</a>', body)

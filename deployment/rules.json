@@ -10,7 +10,8 @@
       "mycount/server/templates/visitor_map.html",
       "mycount/server/templates/visitors.html",
       "mycount/server/templates/reference.html",
-      "mycount/server/templates/marketing.html"
+      "mycount/server/templates/marketing.html",
+      "mycount/server/templates/isoforest.html"
     ],
     "scripts/install-caddy.sh": [
       "caddy/mycount.caddy"
@@ -41,6 +42,10 @@
     ],
     "systemd/mycount-router.service": [
       "mycount/server/RouterWorker.py",
+      "mycount/constants/DMyCount.py"
+    ],
+    "systemd/mycount-isoforest.service": [
+      "mycount/activity/RunIsoForest.py",
       "mycount/constants/DMyCount.py"
     ]
   },
@@ -75,7 +80,8 @@
       "mycount/activity/ReconcileMarketingScreenshots.py",
       "mycount/activity/RefreshCities.py",
       "scripts/restart.sh",
-      "scripts/services.sh"
+      "scripts/services.sh",
+      "systemd/mycount-isoforest.service"
     ],
     "listener": [
       "systemd/mycount-server.service",

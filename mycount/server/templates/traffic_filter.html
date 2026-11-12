@@ -1,0 +1,7 @@
+<label>Filter
+  <select name="filter">
+    {% for value, label in traffic_filters %}
+    <option value="{{ value }}"{% if options.filter_mode == value %} selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+</label>

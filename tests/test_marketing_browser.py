@@ -15,6 +15,7 @@ from urllib.parse import parse_qs, urlsplit
 
 from mycount.server.ControlPages import ControlPages
 from mycount.interface.ReportQuery import ReportQuery
+from mycount.constants.DTrafficFilters import DTrafficFilters
 
 
 CHROME = shutil.which('google-chrome') or shutil.which('chromium')
@@ -34,6 +35,7 @@ class MarketingBrowserTests(unittest.TestCase):
                 options = ReportQuery.resolve(query)
                 filters = template.render(options=options, available_sites=["example", "other"],
                                           exclude_bots=options.exclude_bots,
+                                          traffic_filters=DTrafficFilters.OPTIONS, isoforest_run=None,
                                           error=query.get('error'))
                 body = ('<!doctype html><pre id="result"></pre>' + filters + '''
                     <script>
@@ -56,9 +58,11 @@ class MarketingBrowserTests(unittest.TestCase):
             thread = Thread(target=server.serve_forever, daemon=True)
             thread.start()
             try:
-                for suffix, expected_requests in [('', 2), ('&timezone=Asia%2FTokyo', 2),
-                                                   ('&timezone=America%2FToronto', 1),
-                                                   ('&timezone=UTC&error=save', 1)]:
+                for suffix, expected_requests, expected_filter in [('', 2, 'none'),
+                        ('&timezone=Asia%2FTokyo', 2, 'none'),
+                        ('&timezone=America%2FToronto', 1, 'none'),
+                        ('&timezone=UTC&error=save', 1, 'none'),
+                        ('&filter=isoforest_plus', 2, 'isoforest_plus')]:
                     with self.subTest(suffix=suffix), TemporaryDirectory(prefix='mycount-filters-browser-') as temporary:
                         requests.clear()
                         result = subprocess.run([
@@ -73,7 +77,7 @@ class MarketingBrowserTests(unittest.TestCase):
                         captured = json.loads(html.unescape(match[1]))
                         self.assertFalse(captured['visibleTimezone'])
                         self.assertEqual(captured['fields'], dict(start='2026-03-07', end='2026-03-10',
-                                                                 timezone='America/Toronto', exclude_bots='0', site='example'))
+                                                                 timezone='America/Toronto', filter=expected_filter, site='example'))
                         reports = [query for query in requests if 'start' in query]
                         self.assertEqual(len(reports), expected_requests)
                         if expected_requests == 2:

@@ -17,6 +17,7 @@ ProtectHome=true
 ProtectSystem=strict
 ReadWritePaths=@APP@/pages/marketing
 ReadWritePaths=@APP@/data/cities
+ReadWritePaths=@APP@/data/isoforest
 
 [Install]
 WantedBy=multi-user.target

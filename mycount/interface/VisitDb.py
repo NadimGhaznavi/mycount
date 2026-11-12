@@ -13,8 +13,9 @@ from mycount.entity.CampaignVisit import CampaignVisit
 
 
 class VisitDb:
-    def __init__(self, db: DbMgr) -> None:
+    def __init__(self, db: DbMgr, *, isoforest_run_id: int | None = None) -> None:
         self._db = db
+        self._isoforest_run_id = isoforest_run_id
 
     def campaign_candidates(self, site: str, *, start: datetime | None = None,
                             end: datetime | None = None) -> list[CampaignVisit]:
@@ -191,7 +192,7 @@ class VisitDb:
 
     def available_sites(self) -> list[str]:
         """List sites with non-test traffic across all dates, including bots."""
-        where, params = self._traffic_filter(False)
+        where, params = self._traffic_filter(False, apply_isoforest=False)
         rows = self._db.query(f"""
             SELECT DISTINCT p.site
             FROM page_views v JOIN pages p ON p.page_id = v.page_id
@@ -202,7 +203,7 @@ class VisitDb:
 
     def first_visit_at(self) -> datetime | None:
         """Return the earliest non-test visit across all sites, including bots."""
-        where, params = self._traffic_filter(False)
+        where, params = self._traffic_filter(False, apply_isoforest=False)
         return self._db.query(
             f"SELECT MIN(v.received_at) AS first_visit_at FROM page_views v {where}", params,
         )[0]['first_visit_at']
@@ -241,6 +242,10 @@ class VisitDb:
             condition, bot_params = self._bot_condition()
             clauses.append(f"NOT ({condition})")
             params += bot_params
+        condition, run_params = self._isoforest_condition()
+        if condition:
+            clauses.append(condition)
+            params += run_params
         for name, value in filters.items():
             expression = expressions[name]
             clauses.append(f"CAST({expression} AS CHAR) LIKE %s ESCAPE '='")
@@ -286,10 +291,9 @@ class VisitDb:
             {where} AND p.site = %s
         """, (*params, site))[0]["visits"]
 
-    @classmethod
-    def _filter(cls, exclude_bots: bool, start: datetime | None,
+    def _filter(self, exclude_bots: bool, start: datetime | None,
                 end: datetime | None, site: str = "*") -> tuple[str, tuple[object, ...]]:
-        where, parameters = cls._traffic_filter(exclude_bots, site)
+        where, parameters = self._traffic_filter(exclude_bots, site)
         clauses = [where.removeprefix("WHERE ")] if where else []
         if start is not None:
             clauses.append("v.received_at >= %s")
@@ -299,8 +303,8 @@ class VisitDb:
             parameters += (end,)
         return ("WHERE " + " AND ".join(clauses) if clauses else "", parameters)
 
-    @classmethod
-    def _traffic_filter(cls, exclude_bots: bool, site: str = "*") -> tuple[str, tuple[object, ...]]:
+    def _traffic_filter(self, exclude_bots: bool, site: str = "*", *,
+                        apply_isoforest: bool = True) -> tuple[str, tuple[object, ...]]:
         """Exclude explicit tests on every report, and bots when requested.
 
         Looking up the page here also supports reports that do not join pages,
@@ -315,9 +319,13 @@ class VisitDb:
             DReports.TEST_PAGE_URL_PATTERN,
         )
         if exclude_bots:
-            condition, bot_params = cls._bot_condition()
+            condition, bot_params = self._bot_condition()
             where += f" AND NOT ({condition})"
             params += bot_params
+        condition, run_params = self._isoforest_condition()
+        if apply_isoforest and condition:
+            where += " AND " + condition
+            params += run_params
         if site != "*":
             where += """ AND EXISTS (
                 SELECT 1 FROM pages site_page
@@ -325,6 +333,18 @@ class VisitDb:
             )"""
             params += (site,)
         return where, params
+
+    def _isoforest_condition(self) -> tuple[str, tuple[object, ...]]:
+        if self._isoforest_run_id is None:
+            return "", ()
+        return """NOT EXISTS (
+            SELECT 1 FROM isoforest_observation_visits classified
+            JOIN isoforest_observations observation
+                ON observation.run_id = classified.run_id
+                    AND observation.observation_id = classified.observation_id
+            WHERE classified.run_id = %s AND classified.page_view_id = v.page_view_id
+                AND observation.is_anomaly = 1
+        )""", (self._isoforest_run_id,)
 
     @staticmethod
     def _bot_condition() -> tuple[str, tuple[object, ...]]:
