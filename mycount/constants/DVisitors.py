@@ -1,4 +1,4 @@
-"""Columns displayed and filtered in the visitor record table."""
+"""Visitor table columns and pagination defaults."""
 
 from typing import Final
 
@@ -6,7 +6,8 @@ from mycount.constants.DVisitorDetails import DVisitorDetails
 
 
 class DVisitors:
-    PAGE_SIZE: Final[int] = 30
+    # Maximum visitor records displayed per page.
+    PAGE_SIZE: Final[int] = 20
     NUMERIC_COLUMNS: Final[frozenset[str]] = frozenset(
         DVisitorDetails.INTEGER_RANGES.keys() | DVisitorDetails.NUMBER_RANGES.keys()
         | DVisitorDetails.BOOLEAN_FIELDS | {"is_bot", "latitude", "longitude"}

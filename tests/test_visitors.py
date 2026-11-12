@@ -98,11 +98,12 @@ class VisitorsTests(unittest.TestCase):
     def test_snapshot_bounds_rows_and_closes_connection_on_failure(self, factory):
         timestamp = datetime(2026, 10, 9)
         factory.return_value.query.side_effect = [
-            [dict(received_at=timestamp, page_view_id=index) for index in range(31, 0, -1)],
+            [dict(received_at=timestamp, page_view_id=index)
+             for index in range(DVisitors.PAGE_SIZE + 1, 0, -1)],
             [dict(first_visit_at=timestamp)],
         ]
         report = ReadReports().visitors(ReportQuery.resolve({}), {'site': 'example'})
-        self.assertEqual(len(report.recent), 30)
+        self.assertEqual(len(report.recent), DVisitors.PAGE_SIZE)
         self.assertEqual(report.older, (timestamp, 2))
         factory.return_value.transaction.assert_called_once_with(read_only=True)
         factory.return_value.close.assert_called_once()
@@ -126,7 +127,7 @@ class VisitorsTests(unittest.TestCase):
             self.assertEqual(response.status, 200)
             self.assertIn(b'No visits match the current filters.', response.read())
             parameters = factory.return_value.query.call_args_list[0].args[1]
-            self.assertEqual(parameters, ('%50=%=_==%', '%0%', 31))
+            self.assertEqual(parameters, ('%50=%=_==%', '%0%', DVisitors.PAGE_SIZE + 1))
             for excluded, query in [(True, ''), (False, '?exclude_bots=0'),
                                     (True, '?exclude_bots=0&exclude_bots=1')]:
                 factory.reset_mock()

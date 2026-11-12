@@ -15,6 +15,10 @@ Store browser client details in 29 individual, typed page-view columns. Migrate
 and verify existing JSON values before removing the old column, and expose
 each field separately in Visitors while preserving the browser payload format.
 
+### Changed
+
+- Display up to 20 rows per Visitors page, controlled by `DVisitors.PAGE_SIZE`.
+
 ## [3.4.0] - 2026-11-06 @ 18:10
 
 - Added ai, llamasrv, and nd3g sites to the CORS whitelist.
