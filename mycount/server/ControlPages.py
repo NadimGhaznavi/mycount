@@ -110,6 +110,7 @@ class ControlPages:
     def visitors(self, report: Report, filters: dict[str, str], *, error: str | None = None) -> bytes:
         return self._templates.get_template("visitors.html").render(
             active_page="visitors", columns=DVisitors.COLUMNS, rows=report.recent,
+            numeric_columns=DVisitors.NUMERIC_COLUMNS,
             filters=filters, error=error, first_visit_at=report.first_visit_at,
             exclude_bots=report.options.exclude_bots, refreshed_at=datetime.now(timezone.utc),
             newest_url=VisitorsQuery.link(filters, exclude_bots=report.options.exclude_bots),

@@ -39,9 +39,14 @@ class DeploymentImpactTests(unittest.TestCase):
                 self.assertEqual(self.impact.affected_targets(artifact), set(DDeployment.TARGETS))
 
     def test_schema_and_deployment_activity_affect_filesystem(self):
-        for artifact in ("mycount/activity/VisitorSchema.py", "mycount/activity/DeploymentImpact.py"):
+        for artifact in ("mycount/activity/VisitorSchema.py", "mycount/interface/ClientDetailsMigration.py",
+                         "mycount/activity/DeploymentImpact.py"):
             with self.subTest(artifact=artifact):
                 self.assertEqual(self.impact.affected_targets(artifact), {DDeployment.FILESYSTEM})
+
+    def test_client_column_mapping_affects_setup_and_both_servers(self):
+        self.assertEqual(self.impact.affected_targets("mycount/constants/DClientDetails.py"),
+                         set(DDeployment.TARGETS))
 
     def test_unmapped_artifacts_have_no_declared_impact(self):
         for artifact in ("README.md", "mycount/interface/Unmapped.py"):

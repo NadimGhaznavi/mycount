@@ -1,10 +1,10 @@
 """Persist a processed visit through the shared database bridge."""
 
 from datetime import datetime, timezone
-import json
 
 from mycount.entity.Visit import Visit
 from mycount.constants.DVisitorDetails import DVisitorDetails
+from mycount.constants.DClientDetails import DClientDetails
 from mycount.interface.DbMgr import DbMgr
 from mycount.constants.DReports import DReports
 from mycount.constants.DVisitors import DVisitors
@@ -29,8 +29,8 @@ class VisitDb:
             params += (end,)
         where += """ AND v.visitor_id IS NOT NULL AND v.ip_address IS NOT NULL
             AND v.browser_family = %s AND v.os_family = %s
-            AND JSON_VALUE(v.client_details, '$.platform') = %s
-            AND JSON_VALUE(v.client_details, '$.vendor') = %s"""
+            AND v.platform = %s
+            AND v.vendor = %s"""
         params += (DCrawlCampaigns.BROWSER, DCrawlCampaigns.OS,
                    DCrawlCampaigns.PLATFORM, DCrawlCampaigns.VENDOR)
         rows = self._db.query(f"""
@@ -53,21 +53,26 @@ class VisitDb:
 
     def record(self, visit: Visit) -> int:
         """Commit the page, view, and language preferences together."""
+        details = dict(visit.client_details)
+        detail_columns = ", ".join(column for _, column, _ in DClientDetails.COLUMNS)
+        detail_slots = ", ".join("%s" for _ in DClientDetails.COLUMNS)
         with self._db.transaction():
             page_id = self._db.insert(
                 "INSERT INTO pages(site, url) VALUES (%s, %s) "
                 "ON DUPLICATE KEY UPDATE page_id = LAST_INSERT_ID(page_id)",
                 (visit.site, visit.url),
             )
-            view_id = self._db.insert("""
+            view_id = self._db.insert(f"""
                 INSERT INTO page_views
                     (page_id, received_at, country_code, region_name,
                      city_name, browser_family, os_family, device_category,
                      search, referrer, referrer_host, user_agent,
-                     browser_version, os_version, device_brand, device_model, is_bot, client_details,
-                     visitor_id, ip_address, latitude, longitude, zip, timezone, country_name)
+                     browser_version, os_version, device_brand, device_model, is_bot,
+                     visitor_id, ip_address, latitude, longitude, zip, timezone, country_name,
+                     {detail_columns})
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        {detail_slots})
             """, (
                 page_id, visit.received_at.astimezone(timezone.utc).replace(tzinfo=None),
                 visit.country_code, visit.region_name, visit.city_name,
@@ -75,8 +80,8 @@ class VisitDb:
                 visit.search, visit.referrer,
                 visit.referrer_host, visit.user_agent, visit.browser_version, visit.os_version,
                 visit.device_brand, visit.device_model, visit.is_bot,
-                json.dumps(dict(visit.client_details), allow_nan=False) if visit.client_details else None,
                 visit.visitor_id, visit.ip_address, visit.latitude, visit.longitude, visit.zip, visit.timezone, visit.country_name,
+                *(details.get(key) for key, _, _ in DClientDetails.COLUMNS),
             ))
             for position, language in enumerate(visit.languages, start=1):
                 self._db.execute(
@@ -334,8 +339,7 @@ class VisitDb:
         return (f"COALESCE(v.is_bot, 0) = 1 "
                 f"OR COALESCE(v.browser_family, '') IN ({placeholders}) "
                 f"OR {agent_conditions} "
-                "OR COALESCE(JSON_UNQUOTE(JSON_EXTRACT(v.client_details, '$.webdriver')), "
-                "'false') = 'true' "
+                "OR COALESCE(v.webdriver, 0) = 1 "
                 f"OR {profile_condition}", families + tokens + profile_params)
 
     @staticmethod
@@ -349,27 +353,27 @@ class VisitDb:
         os_placeholders = ", ".join("%s" for _ in desktop_os)
         platform_placeholders = ", ".join("%s" for _ in desktop_platforms)
         return (f"""COALESCE(
-            JSON_VALUE(v.client_details, '$.vendor') = %s AND (
+            v.vendor = %s AND (
                 (v.device_category = %s
-                 AND JSON_VALUE(v.client_details, '$.platform') = %s
-                 AND JSON_VALUE(v.client_details, '$.screen_width') = %s
-                 AND JSON_VALUE(v.client_details, '$.screen_height') = %s
-                 AND JSON_VALUE(v.client_details, '$.device_memory') = %s
-                 AND JSON_VALUE(v.client_details, '$.max_touch_points') = %s
-                 AND JSON_VALUE(v.client_details, '$.hardware_concurrency') >= %s)
+                 AND v.platform = %s
+                 AND v.screen_width = %s
+                 AND v.screen_height = %s
+                 AND v.device_memory = %s
+                 AND v.max_touch_points = %s
+                 AND v.hardware_concurrency >= %s)
                 OR (v.os_family IN ({os_placeholders})
-                    AND JSON_VALUE(v.client_details, '$.platform') = %s)
-                OR (JSON_VALUE(v.client_details, '$.screen_width') = %s
-                    AND JSON_VALUE(v.client_details, '$.screen_height') = %s
-                    AND JSON_VALUE(v.client_details, '$.viewport_width') > %s)
-                OR (JSON_VALUE(v.client_details, '$.platform') = %s
-                    AND JSON_VALUE(v.client_details, '$.screen_width') = %s
-                    AND JSON_VALUE(v.client_details, '$.screen_height') = %s
-                    AND JSON_VALUE(v.client_details, '$.device_memory') = %s
+                    AND v.platform = %s)
+                OR (v.screen_width = %s
+                    AND v.screen_height = %s
+                    AND v.viewport_width > %s)
+                OR (v.platform = %s
+                    AND v.screen_width = %s
+                    AND v.screen_height = %s
+                    AND v.device_memory = %s
                     AND v.referrer_host = %s)
                 OR (v.os_family = %s
-                    AND JSON_VALUE(v.client_details, '$.platform') IN ({platform_placeholders})
-                    AND JSON_VALUE(v.client_details, '$.max_touch_points') = %s)
+                    AND v.platform IN ({platform_placeholders})
+                    AND v.max_touch_points = %s)
             ), 0)""", (
                 DVisitorDetails.BOT_CLIENT_VENDOR,
                 "mobile", DVisitorDetails.BOT_LINUX_PLATFORM,

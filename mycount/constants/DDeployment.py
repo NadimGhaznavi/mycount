@@ -197,6 +197,7 @@ class DDeployment:
             "mycount/constants/DGeoIp.py",
             "mycount/constants/DMyCount.py",
             "mycount/constants/DVisitorDetails.py",
+            "mycount/interface/ClientDetailsMigration.py",
             "mycount/interface/CountryNameMigration.py",
             "mycount/interface/DbMgr.py",
         ),
@@ -208,6 +209,10 @@ class DDeployment:
             "mycount/constants/__init__.py",
         ),
         "mycount/constants/DCities.py": (
+            "mycount/__init__.py",
+            "mycount/constants/__init__.py",
+        ),
+        "mycount/constants/DClientDetails.py": (
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
         ),
@@ -263,6 +268,7 @@ class DDeployment:
         ),
         "mycount/constants/DVisitors.py": (
             "mycount/__init__.py",
+            "mycount/constants/DVisitorDetails.py",
             "mycount/constants/__init__.py",
         ),
         "mycount/constants/__init__.py": (
@@ -304,6 +310,13 @@ class DDeployment:
         "mycount/interface/CitySchedule.py": (
             "mycount/__init__.py",
             "mycount/constants/DCities.py",
+            "mycount/interface/__init__.py",
+        ),
+        "mycount/interface/ClientDetailsMigration.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DClientDetails.py",
+            "mycount/interface/DbMgr.py",
+            "mycount/interface/VisitorDetails.py",
             "mycount/interface/__init__.py",
         ),
         "mycount/interface/CollectorHttp.py": (
@@ -429,6 +442,7 @@ class DDeployment:
         ),
         "mycount/interface/VisitDb.py": (
             "mycount/__init__.py",
+            "mycount/constants/DClientDetails.py",
             "mycount/constants/DCrawlCampaigns.py",
             "mycount/constants/DReports.py",
             "mycount/constants/DVisitorDetails.py",

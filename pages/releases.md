@@ -66,6 +66,16 @@ The release script prepares metadata after changing both the version and codenam
 so the recorded hashes match the published constants. It checks dependencies again
 after merging into `dev` and includes the manifest in the release commit.
 
+The client-details column migration requires the filesystem/setup deployment
+workflow. It runs through `VisitorSchema` after the affected services stop and
+before they restart. It copies legacy `page_views.client_details` JSON into 29
+nullable columns in batches of 500 rows and reads each batch back before
+committing it. Invalid legacy values or a verification failure stop the upgrade
+and retain the JSON column; correct the reported data and rerun the upgrade.
+The JSON column is removed only after every batch passes. Browser timezone is
+stored in `browser_timezone`; `timezone` continues to hold the GeoIP timezone.
+The browser payload format remains unchanged.
+
 The initial baseline was read from the installed 0.6.5 application. It contains
 hashes only for retained installed artifacts. Unavailable source inputs, including
 original systemd/Caddy templates and unretained setup scripts, have null hashes

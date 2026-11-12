@@ -20,6 +20,32 @@ from mycount.server.ControlPages import ControlPages
 
 
 class VisitorsTests(unittest.TestCase):
+    def test_client_fields_render_and_filter_individually_with_numeric_sorting(self):
+        row = dict.fromkeys(name for name, _ in DVisitors.COLUMNS)
+        row.update(received_at=datetime(2026, 11, 12), page_view_id=10,
+                   browser_timezone='Asia/Shanghai', timezone='Europe/London',
+                   viewport_width=1214, timezone_offset=-480, webdriver=0,
+                   connection_downlink=7.85, vendor='<vendor>')
+        report = Report(ReportQuery.resolve({}), [], None, recent=[row],
+                        older=(row['received_at'], row['page_view_id']))
+        filters = {'browser_timezone': 'Asia/Shanghai', 'webdriver': '0'}
+        body = ControlPages().visitors(report, filters).decode()
+        self.assertIn('name="browser_timezone" value="Asia/Shanghai"', body)
+        self.assertIn('name="webdriver" value="0"', body)
+        self.assertNotIn('name="client_details"', body)
+        self.assertIn('<td>Asia/Shanghai</td>', body)
+        self.assertIn('<td>Europe/London</td>', body)
+        self.assertIn('<td>&lt;vendor&gt;</td>', body)
+        for value in ('1214', '-480', '0', '7.85'):
+            self.assertIn(f'<td data-sort-number="{value}">{value}</td>', body)
+        self.assertIn('<td data-sort-number="">—</td>', body)
+        query = parse_qs(urlsplit(VisitorsQuery.link(filters, report.older)).query)
+        self.assertEqual(VisitorsQuery.filters(query), filters)
+        self.assertEqual(ReportQuery.resolve(query).before, report.older)
+        reference = ControlPages().reference().decode()
+        self.assertIn('<td><code>browser_timezone</code></td>', reference)
+        self.assertNotIn('<td><code>client_details</code></td>', reference)
+
     def test_languages_follow_city_and_preserve_filter_in_pagination(self):
         row = dict.fromkeys(name for name, _ in DVisitors.COLUMNS)
         row.update(received_at=datetime(2026, 10, 9, 12), page_view_id=10,
