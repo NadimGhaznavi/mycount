@@ -13,7 +13,7 @@
       ]
     },
     "deployment/rules.json": {
-      "digest": "54d7edfba9fff3c8ffc277361786d876eefeeb43f895d5cb9666182f87e75533",
+      "digest": "8cf0cc612a70ee0d08a757a2faadbc09c64a62830d58c974550801653473679f",
       "targets": [
         "filesystem"
       ]
@@ -86,6 +86,12 @@
         "listener"
       ]
     },
+    "mycount/activity/BuildIsoForestFeatures.py": {
+      "digest": "df94d4a926928348401f57e121aae08e16cbbed2e897f367310802d0eed147c3",
+      "targets": [
+        "filesystem"
+      ]
+    },
     "mycount/activity/CollectVisit.py": {
       "digest": "37bd1c3812ba6c2d822f854d6bb7ee663b54c28f036d207d60172a0d9d5a9bcc",
       "targets": [
@@ -122,8 +128,14 @@
         "filesystem"
       ]
     },
+    "mycount/activity/ReadIsoForest.py": {
+      "digest": "f9e7b9928a06b276454dd1c62a8ffc8b9759dad41256400689753f33f4712dfc",
+      "targets": [
+        "report-server"
+      ]
+    },
     "mycount/activity/ReadReports.py": {
-      "digest": "ed29ab8881acdaaded47a10b3a469d4b046d884e5ca0446e2b5345c80342b058",
+      "digest": "fd99ecdfc42deed448478047e44e1aeae9ff9f9baa64ea7d15b39337e721799e",
       "targets": [
         "report-server"
       ]
@@ -152,6 +164,12 @@
         "report-server"
       ]
     },
+    "mycount/activity/RunIsoForest.py": {
+      "digest": "66e24fd63827fee74deec9f666d93b971a398a3a2bfeff1da6512b2393448257",
+      "targets": [
+        "filesystem"
+      ]
+    },
     "mycount/activity/SaveMarketingPost.py": {
       "digest": "b65cd6f29fb65e21f03b549a31ff0a30edccf02cfff31f521903d2b09a71561a",
       "targets": [
@@ -159,7 +177,7 @@
       ]
     },
     "mycount/activity/VisitorSchema.py": {
-      "digest": "d0d4e1bf6b46da0aa710115bc42b0355cbcd2fa60190414e906edf93ee836120",
+      "digest": "2d86c827a61bf7d2a0fa0da0c0954da65312ab3f97ee45a76f7df55554e0552a",
       "targets": [
         "filesystem"
       ]
@@ -183,6 +201,14 @@
       "digest": "694b69b26a00e0e4491636a9ff19362c0821c55bb04ea929aed6539682bad92c",
       "targets": [
         "filesystem",
+        "report-server"
+      ]
+    },
+    "mycount/constants/DClientDetails.py": {
+      "digest": "acdb1cae1d0126d9fc5b2ff8a48921642696db7e3e9fab7e14926796e3eecb9d",
+      "targets": [
+        "filesystem",
+        "listener",
         "report-server"
       ]
     },
@@ -214,7 +240,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "96c121bd7b68a2405a346f8977ea837f6cebe185ba6e88cbebe8eeb428e13778",
+      "digest": "831d320790588f5c6ae2049ee0b09f4ed8669c03948485560bb279b241d6d947",
       "targets": [
         "filesystem"
       ]
@@ -226,6 +252,13 @@
         "listener"
       ]
     },
+    "mycount/constants/DIsoForest.py": {
+      "digest": "71d3bbd12f33f3cf373b0df4c49310b2e6b8c48fc43f2722f65fbbe95339050c",
+      "targets": [
+        "filesystem",
+        "report-server"
+      ]
+    },
     "mycount/constants/DMarketing.py": {
       "digest": "afab63920d431f28ca418c90a20d278ecc237db65eda0dafb6abdac644dc4a53",
       "targets": [
@@ -234,7 +267,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "6b4c214c2ac96ac5b1b3d32f67bccfb2a6164aa511947a04ad30deeb6987d739",
+      "digest": "0d3253010858c0f0ba96f1f4d6dbe042c271b2107b5bf70272ab43fe100b6ae6",
       "targets": [
         "filesystem",
         "listener",
@@ -261,6 +294,12 @@
         "listener"
       ]
     },
+    "mycount/constants/DTrafficFilters.py": {
+      "digest": "3d1ddfb2957516af2f1fed40c2bb39db00fd5dc8a7018dc4a43140d6ce815786",
+      "targets": [
+        "report-server"
+      ]
+    },
     "mycount/constants/DVisitorDetails.py": {
       "digest": "034086d417993d4f84ad802e624c7566c21ec2bbd107b04f3a9dc93e7f8e8a34",
       "targets": [
@@ -270,7 +309,7 @@
       ]
     },
     "mycount/constants/DVisitors.py": {
-      "digest": "0165c84dc115e7215eb65701af0f762276ebbd48e2ef1e3d8db83d4bb3a157b8",
+      "digest": "0335f7cf93576e128ae77ff9def0ff60b261643623c94d67716a68d6a16f8492",
       "targets": [
         "listener",
         "report-server"
@@ -297,6 +336,27 @@
         "listener"
       ]
     },
+    "mycount/entity/IsoForestObservation.py": {
+      "digest": "c27c48a1d6cdc439ac7e3f1ad979fcc1635d6092033750bfb874d22d28ec0fd9",
+      "targets": [
+        "filesystem",
+        "report-server"
+      ]
+    },
+    "mycount/entity/IsoForestResult.py": {
+      "digest": "beac7ddaa74a01405811563be98fddcd94846ae3f7ce17ce71e3a94c94e63a10",
+      "targets": [
+        "filesystem",
+        "report-server"
+      ]
+    },
+    "mycount/entity/IsoForestVisit.py": {
+      "digest": "3bdbfcbeeb3c146ac9218219600c3afd773a4e320a57798c8e44589e31a99443",
+      "targets": [
+        "filesystem",
+        "report-server"
+      ]
+    },
     "mycount/entity/MarketingPost.py": {
       "digest": "3172399d072561dc45bc20798eeddc93130769f784b86ce8fc827a5125a61bc0",
       "targets": [
@@ -305,13 +365,13 @@
       ]
     },
     "mycount/entity/Report.py": {
-      "digest": "c7b8c5ef5020d0e792e80bde54b87a9a58d2b2c87cabf7e03b592d42d08a304d",
+      "digest": "29c3c77a4ad73da9ace4157effa6628145dd32ca783a8fd0c2d8f58d6083039b",
       "targets": [
         "report-server"
       ]
     },
     "mycount/entity/ReportOptions.py": {
-      "digest": "786a4ca193a78dba06656a0025289ed0a76c5f4d1c326d795d1078b856dc5e5f",
+      "digest": "b93682d9c363e885f1e5b58726e1b7ecf49742b799995477c4337f869c935fde",
       "targets": [
         "report-server"
       ]
@@ -339,10 +399,16 @@
       ]
     },
     "mycount/interface/CitySchedule.py": {
-      "digest": "7b6f490607a0304b8925f9eecd6874d983315ed9e78523a73b5c9cef924ce349",
+      "digest": "7b6cb28909e3fe389f19db0c4ddac10aff9e94d6fa63d5f4c396f5a7218d82a2",
       "targets": [
         "filesystem",
         "report-server"
+      ]
+    },
+    "mycount/interface/ClientDetailsMigration.py": {
+      "digest": "86ca55bf6cc53c25e8eea015924a896bac67f6cfcd2bcd5a45a31a94e9a56793",
+      "targets": [
+        "filesystem"
       ]
     },
     "mycount/interface/CollectorHttp.py": {
@@ -417,6 +483,26 @@
         "filesystem"
       ]
     },
+    "mycount/interface/IsoForestDb.py": {
+      "digest": "14e06d3ca2936779c0d9c08513e6ce57336c8f13cc6e89e543775327ae4459dd",
+      "targets": [
+        "filesystem",
+        "report-server"
+      ]
+    },
+    "mycount/interface/IsoForestModel.py": {
+      "digest": "8945618838b5b374c86453125cb397aa41da436d15f280cee2b6c7e51e53915b",
+      "targets": [
+        "filesystem"
+      ]
+    },
+    "mycount/interface/IsoForestSchedule.py": {
+      "digest": "be76ddfdbe63e29b2daa600ed2e85c97ed077ee38343c6ec528132940e050df8",
+      "targets": [
+        "filesystem",
+        "report-server"
+      ]
+    },
     "mycount/interface/MarketingDb.py": {
       "digest": "ec86524eb839417b08a53c07f2bd5fb2925ea546b8d8d8304e2a6330d70f3d10",
       "targets": [
@@ -458,7 +544,7 @@
       ]
     },
     "mycount/interface/ReportQuery.py": {
-      "digest": "d7d84d11d02bf4dfd95031e57592a2f4e9fbe7096e77fbf01f3000556756f805",
+      "digest": "8cf82c4c73e549c579be40b42e0fc347e60b220e99ab2db8fab926afaf81113a",
       "targets": [
         "report-server"
       ]
@@ -483,7 +569,7 @@
       ]
     },
     "mycount/interface/VisitDb.py": {
-      "digest": "05c679cff10a0b934e359cec02db35469bf02c85daad38e5be77c3d6ed33865c",
+      "digest": "42c602820d197ca1c1ef5dd88748c678bbbe56a234bb49756f02f2bf8bec1639",
       "targets": [
         "listener",
         "report-server"
@@ -504,11 +590,12 @@
     "mycount/interface/VisitorDetails.py": {
       "digest": "d13cbd0b1424267ba36bd463471d2b6d059da4654c4e459b8f409f8d5ce031df",
       "targets": [
+        "filesystem",
         "listener"
       ]
     },
     "mycount/interface/VisitorsQuery.py": {
-      "digest": "74d164a5b86bcb70f1809b42b80593755b8eb52f4820f278d36cc64a916a2c05",
+      "digest": "499c17939e812d1113c3f243b24e34d33068969add5ba947a0e0d7589c523e57",
       "targets": [
         "report-server"
       ]
@@ -522,13 +609,13 @@
       ]
     },
     "mycount/server/ControlHandler.py": {
-      "digest": "b227a03a0c3727565dd1c45b9b9f92538fef32f8996ee5c164505f5c702af43e",
+      "digest": "384e4641950a9737083bdafeff5afb29108c5eac5d3b865b403fe1835afb54e0",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/ControlPages.py": {
-      "digest": "5b7917ad4870439b2d1b6138db5e06e33ad2354b232f63f7622a3f533bea17cc",
+      "digest": "189f27468f9c60b9a197e55925f870a781b438b8e8b47607486b73d3a9fe99f9",
       "targets": [
         "report-server"
       ]
@@ -577,7 +664,7 @@
       ]
     },
     "mycount/server/templates/base.html": {
-      "digest": "ad510240c0d8841afb985f64b947f515ae28658d28e4954ca8a0fdf7be31f89d",
+      "digest": "f4d9e11cb6a539d77c74337195c4e33b1d831c65347a73bd831e83ad02f51329",
       "targets": [
         "report-server"
       ]
@@ -600,8 +687,20 @@
         "report-server"
       ]
     },
+    "mycount/server/templates/isoforest.html": {
+      "digest": "08a9861a8c144e74c2fb4d253944b37b5ecb26df9650183ccacac224cefc1d5c",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/server/templates/isoforest_status.html": {
+      "digest": "80a3c9de453babac3352ee2dbd3aca8a08bce9fcd6ca9fa8b483641381f18eb4",
+      "targets": [
+        "report-server"
+      ]
+    },
     "mycount/server/templates/local_time.html": {
-      "digest": "fb661c35d5c4db68d91e3fe237f195c65f1606653365d0144bc2c3470d5ea139",
+      "digest": "5aff6cb0279a1b7b02785d9c4b707dcba73720d0f499e9fa7cd4266372a5a29e",
       "targets": [
         "report-server"
       ]
@@ -631,25 +730,31 @@
       ]
     },
     "mycount/server/templates/reference.html": {
-      "digest": "7ac78bcc3ed7b612cf70e1040b434d36c6e3c263e34bd1a79907fa89702f7840",
+      "digest": "377743c577d2c1f72ced40177a128107812d698613a56d770f29d0caf4301d89",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/templates/report_filters.html": {
-      "digest": "4381e1c417103b66a7fad2bd98b16c36c47dfa190680936955350e5932c311b7",
+      "digest": "7180e90219c1794d808483df4983e9bd218473556345cfa668b2cd4303ed667c",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/templates/styles.html": {
-      "digest": "641ffa69e2a6cd2036f7ab6c69876de0dec7faeb5f0ad4292916570a71e4039a",
+      "digest": "842177d3350a6df9f7ffbe86a679fe4fa62062e5bb4e59f76fbc8569c1df9a3b",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/templates/table_sort.html": {
       "digest": "478eebfdf148814d976f4c8fa89bb8725d3ddd788320be7c6a43ab252c584c87",
+      "targets": [
+        "report-server"
+      ]
+    },
+    "mycount/server/templates/traffic_filter.html": {
+      "digest": "7be6465e94eac3cd507a8ae383aab66b863df648a0b30f3e0aedc90530a62b93",
       "targets": [
         "report-server"
       ]
@@ -661,13 +766,13 @@
       ]
     },
     "mycount/server/templates/visitors.html": {
-      "digest": "f2e603818642892a100b02e39ed67bb64a208776c8a78ae738a4986fe65b5cc9",
+      "digest": "04a30515632e0b924e8a66501d93b93e9158391baf3d24a6a0ca3d2987c6e5f6",
       "targets": [
         "report-server"
       ]
     },
     "requirements.txt": {
-      "digest": "3e7318bc5350b9122cc4c2684ac90f0d9442eadef75a8e1a032f90e8b249e200",
+      "digest": "01dee08ad2bdd3b554c34da0f01ba6820e3f4765141bc49ae64f4f2ed24be50f",
       "targets": [
         "filesystem",
         "listener",
@@ -687,7 +792,7 @@
       ]
     },
     "scripts/install-services.sh": {
-      "digest": "57a50dbe7226c74332f013d9baf3e97325e04dc8f19262b914fb416c10aed41a",
+      "digest": "d22693801e0939f3f2b4b71e72ff7c2fd1063a61e00b4eaae1002cdecad3da99",
       "targets": [
         "filesystem"
       ]
@@ -717,7 +822,7 @@
       ]
     },
     "scripts/uninstall.sh": {
-      "digest": "61c78ce978d36ca3571b26ad16bc6e947f285c2abdce2a1e2a67f6d2c4a9cd00",
+      "digest": "91a7dfa14bc7066dc94f8bafe1d6336c7aeb1982adf4bf9925216b464c841988",
       "targets": [
         "filesystem"
       ]
@@ -735,9 +840,15 @@
       ]
     },
     "systemd/mycount-control.service": {
-      "digest": "d13623cb8c4664af063bffcf85868a3e8ece4810f7ad61762c62a99985a40bf4",
+      "digest": "aec88086e958ef2a502debb3f592bb148c2586d33a50c48e456f4751033efef1",
       "targets": [
         "report-server"
+      ]
+    },
+    "systemd/mycount-isoforest.service": {
+      "digest": "49854a9b66cd391a40e7db29385f06051cf4d4c7699ff3e4e6a63d55f31324af",
+      "targets": [
+        "filesystem"
       ]
     },
     "systemd/mycount-router.service": {
@@ -1394,6 +1505,14 @@
         "report-server"
       ],
       "version": "3.4.0"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "3.5.0"
     }
   ]
 }

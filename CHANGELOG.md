@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [3.5.0] - 2026-11-12 @ 06:10
+
 ### Summary
 
 Store browser client details in 29 individual, typed page-view columns. Migrate
