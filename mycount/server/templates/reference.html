@@ -2,45 +2,45 @@
 {% block content %}
 <h1>Data Sources</h1>
 <p>Static inventory of external data available through the current browser integration, incoming request, and all 14 BMGeoIP fields. Optional values depend on browser support and GeoIP coverage; historical visits may lack newer fields.</p>
-<p>Table and Column name the storage destinations. --- means no value is stored. Optional browser fields share the client_details JSON column; Details names each JSON key. Geographic values returned by BMGeoIP are stored as snapshots in visits.</p>
+<p>Table and Column name the storage destinations. --- means no value is stored. Optional browser details use individual nullable columns in page_views. Missing values are NULL; reported zero and false values are retained. Geographic values returned by BMGeoIP are stored as snapshots in visits.</p>
 <div class="table-wrap"><table aria-label="Data reference">
 <thead><tr><th scope="col">Source</th><th scope="col">Source Details</th><th scope="col">Table</th><th scope="col">Column</th><th scope="col">Details</th></tr></thead>
 <tbody>
-<tr><td>Browser</td><td>Date.getTimezoneOffset()</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>timezone_offset</code>. UTC minus local time, in minutes.</td></tr>
-<tr><td>Browser</td><td>devicePixelRatio</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>pixel_ratio</code>. Device pixel ratio.</td></tr>
+<tr><td>Browser</td><td>Date.getTimezoneOffset()</td><td><code>page_views</code></td><td><code>timezone_offset</code></td><td>UTC minus local time, in minutes.</td></tr>
+<tr><td>Browser</td><td>devicePixelRatio</td><td><code>page_views</code></td><td><code>pixel_ratio</code></td><td>Device pixel ratio.</td></tr>
 <tr><td>Browser</td><td>document.referrer</td><td><code>page_views</code></td><td><code>referrer</code></td><td>Full HTTP(S) referrer exposed by the browser, including any available path, query, and fragment. Browser referrer policy may limit it; empty becomes NULL.</td></tr>
-<tr><td>Browser</td><td>innerHeight</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>viewport_height</code>. Viewport height.</td></tr>
-<tr><td>Browser</td><td>innerWidth</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>viewport_width</code>. Viewport width.</td></tr>
-<tr><td>Browser</td><td>Intl.DateTimeFormat().resolvedOptions().timeZone</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>timezone</code>. Browser timezone name; distinct from GeoIP timezone.</td></tr>
+<tr><td>Browser</td><td>innerHeight</td><td><code>page_views</code></td><td><code>viewport_height</code></td><td>Viewport height.</td></tr>
+<tr><td>Browser</td><td>innerWidth</td><td><code>page_views</code></td><td><code>viewport_width</code></td><td>Viewport width.</td></tr>
+<tr><td>Browser</td><td>Intl.DateTimeFormat().resolvedOptions().timeZone</td><td><code>page_views</code></td><td><code>browser_timezone</code></td><td>Browser timezone name; distinct from GeoIP timezone.</td></tr>
 <tr><td>Browser</td><td>location.hash</td><td>---</td><td>---</td><td>Page fragment is available in the browser but excluded from the payload.</td></tr>
 <tr><td>Browser</td><td>location.origin + location.pathname</td><td><code>pages</code></td><td><code>url</code></td><td>Required page origin and path; validated against the configured request origin.</td></tr>
 <tr><td>Browser</td><td>location.search</td><td><code>page_views</code></td><td><code>search</code></td><td>Exact query string, including the leading ?. Empty string means no query; NULL means not supplied by an older client or historical visit. Stored separately from the page URL.</td></tr>
-<tr><td>Browser</td><td>matchMedia(prefers-color-scheme)</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>color_scheme</code>. Dark, light, or no-preference.</td></tr>
-<tr><td>Browser</td><td>matchMedia(prefers-reduced-motion)</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>reduced_motion</code>. Reduced-motion preference.</td></tr>
-<tr><td>Browser</td><td>navigator.connection.downlink</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>connection_downlink</code>. Estimated downlink in Mbps.</td></tr>
-<tr><td>Browser</td><td>navigator.connection.effectiveType</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>connection_effective_type</code>. Estimated connection class.</td></tr>
-<tr><td>Browser</td><td>navigator.connection.rtt</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>connection_rtt</code>. Estimated round-trip time in milliseconds.</td></tr>
-<tr><td>Browser</td><td>navigator.connection.saveData</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>save_data</code>. Reduced-data preference.</td></tr>
-<tr><td>Browser</td><td>navigator.cookieEnabled</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>cookie_enabled</code>. Whether cookies are enabled; no cookie contents collected.</td></tr>
-<tr><td>Browser</td><td>navigator.deviceMemory</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>device_memory</code>. Approximate reported device memory in GB.</td></tr>
-<tr><td>Browser</td><td>navigator.doNotTrack</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>do_not_track</code>. Recognized Do Not Track value; recorded without disabling collection.</td></tr>
-<tr><td>Browser</td><td>navigator.globalPrivacyControl</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>global_privacy_control</code>. Privacy preference flag; recorded without disabling collection.</td></tr>
-<tr><td>Browser</td><td>navigator.hardwareConcurrency</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>hardware_concurrency</code>. Reported logical processor count.</td></tr>
+<tr><td>Browser</td><td>matchMedia(prefers-color-scheme)</td><td><code>page_views</code></td><td><code>color_scheme</code></td><td>Dark, light, or no-preference.</td></tr>
+<tr><td>Browser</td><td>matchMedia(prefers-reduced-motion)</td><td><code>page_views</code></td><td><code>reduced_motion</code></td><td>Reduced-motion preference.</td></tr>
+<tr><td>Browser</td><td>navigator.connection.downlink</td><td><code>page_views</code></td><td><code>connection_downlink</code></td><td>Estimated downlink in Mbps.</td></tr>
+<tr><td>Browser</td><td>navigator.connection.effectiveType</td><td><code>page_views</code></td><td><code>connection_effective_type</code></td><td>Estimated connection class.</td></tr>
+<tr><td>Browser</td><td>navigator.connection.rtt</td><td><code>page_views</code></td><td><code>connection_rtt</code></td><td>Estimated round-trip time in milliseconds.</td></tr>
+<tr><td>Browser</td><td>navigator.connection.saveData</td><td><code>page_views</code></td><td><code>save_data</code></td><td>Reduced-data preference.</td></tr>
+<tr><td>Browser</td><td>navigator.cookieEnabled</td><td><code>page_views</code></td><td><code>cookie_enabled</code></td><td>Whether cookies are enabled; no cookie contents collected.</td></tr>
+<tr><td>Browser</td><td>navigator.deviceMemory</td><td><code>page_views</code></td><td><code>device_memory</code></td><td>Approximate reported device memory in GB.</td></tr>
+<tr><td>Browser</td><td>navigator.doNotTrack</td><td><code>page_views</code></td><td><code>do_not_track</code></td><td>Recognized Do Not Track value; recorded without disabling collection.</td></tr>
+<tr><td>Browser</td><td>navigator.globalPrivacyControl</td><td><code>page_views</code></td><td><code>global_privacy_control</code></td><td>Privacy preference flag; recorded without disabling collection.</td></tr>
+<tr><td>Browser</td><td>navigator.hardwareConcurrency</td><td><code>page_views</code></td><td><code>hardware_concurrency</code></td><td>Reported logical processor count.</td></tr>
 <tr><td>Browser</td><td>navigator.languages</td><td><code>page_view_languages</code></td><td><code>language_tag</code>, <code>preference_order</code></td><td>Preferred language tags in browser-supplied preference order; the list may be empty.</td></tr>
-<tr><td>Browser</td><td>navigator.maxTouchPoints</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>max_touch_points</code>. Maximum simultaneous touch points.</td></tr>
-<tr><td>Browser</td><td>navigator.onLine</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>online</code>. Reported online status.</td></tr>
-<tr><td>Browser</td><td>navigator.pdfViewerEnabled</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>pdf_viewer_enabled</code>. Built-in PDF viewer support.</td></tr>
-<tr><td>Browser</td><td>navigator.platform</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>platform</code>. Reported platform.</td></tr>
+<tr><td>Browser</td><td>navigator.maxTouchPoints</td><td><code>page_views</code></td><td><code>max_touch_points</code></td><td>Maximum simultaneous touch points.</td></tr>
+<tr><td>Browser</td><td>navigator.onLine</td><td><code>page_views</code></td><td><code>online</code></td><td>Reported online status.</td></tr>
+<tr><td>Browser</td><td>navigator.pdfViewerEnabled</td><td><code>page_views</code></td><td><code>pdf_viewer_enabled</code></td><td>Built-in PDF viewer support.</td></tr>
+<tr><td>Browser</td><td>navigator.platform</td><td><code>page_views</code></td><td><code>platform</code></td><td>Reported platform.</td></tr>
 <tr><td>Browser</td><td>navigator.userAgent</td><td><code>page_views</code></td><td><code>user_agent</code></td><td>User-agent string supplied in the payload. Empty strings become NULL.</td></tr>
-<tr><td>Browser</td><td>navigator.vendor</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>vendor</code>. Reported browser vendor.</td></tr>
-<tr><td>Browser</td><td>navigator.webdriver</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>webdriver</code>. Reported automation flag.</td></tr>
-<tr><td>Browser</td><td>performance navigation entry.type</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>navigation_type</code>. Navigation type, such as navigate, reload, or back_forward.</td></tr>
-<tr><td>Browser</td><td>screen.availHeight</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>available_height</code>. Available screen height.</td></tr>
-<tr><td>Browser</td><td>screen.availWidth</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>available_width</code>. Available screen width.</td></tr>
-<tr><td>Browser</td><td>screen.colorDepth</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>color_depth</code>. Screen color depth.</td></tr>
-<tr><td>Browser</td><td>screen.height</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>screen_height</code>. Screen height.</td></tr>
-<tr><td>Browser</td><td>screen.pixelDepth</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>pixel_depth</code>. Screen pixel depth.</td></tr>
-<tr><td>Browser</td><td>screen.width</td><td><code>page_views</code></td><td><code>client_details</code></td><td>Optional browser details: JSON key <code>screen_width</code>. Screen width.</td></tr>
+<tr><td>Browser</td><td>navigator.vendor</td><td><code>page_views</code></td><td><code>vendor</code></td><td>Reported browser vendor.</td></tr>
+<tr><td>Browser</td><td>navigator.webdriver</td><td><code>page_views</code></td><td><code>webdriver</code></td><td>Reported automation flag.</td></tr>
+<tr><td>Browser</td><td>performance navigation entry.type</td><td><code>page_views</code></td><td><code>navigation_type</code></td><td>Navigation type, such as navigate, reload, or back_forward.</td></tr>
+<tr><td>Browser</td><td>screen.availHeight</td><td><code>page_views</code></td><td><code>available_height</code></td><td>Available screen height.</td></tr>
+<tr><td>Browser</td><td>screen.availWidth</td><td><code>page_views</code></td><td><code>available_width</code></td><td>Available screen width.</td></tr>
+<tr><td>Browser</td><td>screen.colorDepth</td><td><code>page_views</code></td><td><code>color_depth</code></td><td>Screen color depth.</td></tr>
+<tr><td>Browser</td><td>screen.height</td><td><code>page_views</code></td><td><code>screen_height</code></td><td>Screen height.</td></tr>
+<tr><td>Browser</td><td>screen.pixelDepth</td><td><code>page_views</code></td><td><code>pixel_depth</code></td><td>Screen pixel depth.</td></tr>
+<tr><td>Browser</td><td>screen.width</td><td><code>page_views</code></td><td><code>screen_width</code></td><td>Screen width.</td></tr>
 <tr><td>BMGeoIP</td><td>accuracy</td><td>---</td><td>---</td><td>Provider accuracy text; not retained or interpreted by MyCount.</td></tr>
 <tr><td>BMGeoIP</td><td>city</td><td><code>page_views</code></td><td><code>city_name</code></td><td>City name; empty values become NULL. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits.</td></tr>
 <tr><td>BMGeoIP</td><td>continent</td><td>---</td><td>---</td><td>Returned by BMGeoIP; not retained by MyCount.</td></tr>
@@ -53,7 +53,7 @@
 <tr><td>BMGeoIP</td><td>source</td><td>---</td><td>---</td><td>Provider source text; not retained by MyCount.</td></tr>
 <tr><td>BMGeoIP</td><td>start_ip</td><td>---</td><td>---</td><td>Inclusive provider range start; used to select a match, not retained.</td></tr>
 <tr><td>BMGeoIP</td><td>state</td><td><code>page_views</code></td><td><code>region_name</code></td><td>State/region name; empty values become NULL. Copied into new visits as a nullable location snapshot; later dataset refreshes do not change historical visits.</td></tr>
-<tr><td>BMGeoIP</td><td>timezone</td><td><code>page_views</code></td><td><code>timezone</code></td><td>GeoIP timezone, stored separately from the browser timezone in client_details. Empty values become NULL. Copied into new visits; historical visits are unchanged.</td></tr>
+<tr><td>BMGeoIP</td><td>timezone</td><td><code>page_views</code></td><td><code>timezone</code></td><td>GeoIP timezone, stored separately from the browser timezone in browser_timezone. Empty values become NULL. Copied into new visits; historical visits are unchanged.</td></tr>
 <tr><td>BMGeoIP</td><td>zip</td><td><code>page_views</code></td><td><code>zip</code></td><td>GeoIP ZIP/postal code, stored as text to preserve leading zeros. Empty values become NULL. Copied into new visits; historical visits are unchanged.</td></tr>
 <tr><td>Request</td><td>connection / trusted Caddy visitor header</td><td><code>page_views</code></td><td><code>ip_address</code></td><td>Full IPv4 or IPv6 address used for GeoIP lookup. Historical visits remain NULL; no hash is generated.</td></tr>
 <tr><td>Request</td><td>Origin header</td><td>---</td><td>---</td><td>Checked against configured sites and the page URL; not stored as a separate field.</td></tr>

@@ -4,6 +4,7 @@ from datetime import datetime
 from urllib.parse import urlencode
 
 from mycount.constants.DVisitors import DVisitors
+from mycount.constants.DTrafficFilters import DTrafficFilters
 
 
 class VisitorsQuery:
@@ -20,8 +21,8 @@ class VisitorsQuery:
 
     @staticmethod
     def link(filters: dict[str, str], before: tuple[datetime, int] | None = None, *,
-             exclude_bots: bool = True) -> str:
-        query = {**filters, "exclude_bots": "1" if exclude_bots else "0"}
+             filter_mode: str = DTrafficFilters.BASIC) -> str:
+        query = {**filters, "filter": filter_mode}
         if before is not None:
             query["before"] = f"{before[0].isoformat()},{before[1]}"
         return "/visitors" + ("?" + urlencode(query) if query else "")

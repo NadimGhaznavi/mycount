@@ -1,10 +1,10 @@
 """Persist a processed visit through the shared database bridge."""
 
 from datetime import datetime, timezone
-import json
 
 from mycount.entity.Visit import Visit
 from mycount.constants.DVisitorDetails import DVisitorDetails
+from mycount.constants.DClientDetails import DClientDetails
 from mycount.interface.DbMgr import DbMgr
 from mycount.constants.DReports import DReports
 from mycount.constants.DVisitors import DVisitors
@@ -13,8 +13,9 @@ from mycount.entity.CampaignVisit import CampaignVisit
 
 
 class VisitDb:
-    def __init__(self, db: DbMgr) -> None:
+    def __init__(self, db: DbMgr, *, isoforest_run_id: int | None = None) -> None:
         self._db = db
+        self._isoforest_run_id = isoforest_run_id
 
     def campaign_candidates(self, site: str, *, start: datetime | None = None,
                             end: datetime | None = None) -> list[CampaignVisit]:
@@ -29,8 +30,8 @@ class VisitDb:
             params += (end,)
         where += """ AND v.visitor_id IS NOT NULL AND v.ip_address IS NOT NULL
             AND v.browser_family = %s AND v.os_family = %s
-            AND JSON_VALUE(v.client_details, '$.platform') = %s
-            AND JSON_VALUE(v.client_details, '$.vendor') = %s"""
+            AND v.platform = %s
+            AND v.vendor = %s"""
         params += (DCrawlCampaigns.BROWSER, DCrawlCampaigns.OS,
                    DCrawlCampaigns.PLATFORM, DCrawlCampaigns.VENDOR)
         rows = self._db.query(f"""
@@ -53,21 +54,26 @@ class VisitDb:
 
     def record(self, visit: Visit) -> int:
         """Commit the page, view, and language preferences together."""
+        details = dict(visit.client_details)
+        detail_columns = ", ".join(column for _, column, _ in DClientDetails.COLUMNS)
+        detail_slots = ", ".join("%s" for _ in DClientDetails.COLUMNS)
         with self._db.transaction():
             page_id = self._db.insert(
                 "INSERT INTO pages(site, url) VALUES (%s, %s) "
                 "ON DUPLICATE KEY UPDATE page_id = LAST_INSERT_ID(page_id)",
                 (visit.site, visit.url),
             )
-            view_id = self._db.insert("""
+            view_id = self._db.insert(f"""
                 INSERT INTO page_views
                     (page_id, received_at, country_code, region_name,
                      city_name, browser_family, os_family, device_category,
                      search, referrer, referrer_host, user_agent,
-                     browser_version, os_version, device_brand, device_model, is_bot, client_details,
-                     visitor_id, ip_address, latitude, longitude, zip, timezone, country_name)
+                     browser_version, os_version, device_brand, device_model, is_bot,
+                     visitor_id, ip_address, latitude, longitude, zip, timezone, country_name,
+                     {detail_columns})
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        {detail_slots})
             """, (
                 page_id, visit.received_at.astimezone(timezone.utc).replace(tzinfo=None),
                 visit.country_code, visit.region_name, visit.city_name,
@@ -75,8 +81,8 @@ class VisitDb:
                 visit.search, visit.referrer,
                 visit.referrer_host, visit.user_agent, visit.browser_version, visit.os_version,
                 visit.device_brand, visit.device_model, visit.is_bot,
-                json.dumps(dict(visit.client_details), allow_nan=False) if visit.client_details else None,
                 visit.visitor_id, visit.ip_address, visit.latitude, visit.longitude, visit.zip, visit.timezone, visit.country_name,
+                *(details.get(key) for key, _, _ in DClientDetails.COLUMNS),
             ))
             for position, language in enumerate(visit.languages, start=1):
                 self._db.execute(
@@ -186,7 +192,7 @@ class VisitDb:
 
     def available_sites(self) -> list[str]:
         """List sites with non-test traffic across all dates, including bots."""
-        where, params = self._traffic_filter(False)
+        where, params = self._traffic_filter(False, apply_isoforest=False)
         rows = self._db.query(f"""
             SELECT DISTINCT p.site
             FROM page_views v JOIN pages p ON p.page_id = v.page_id
@@ -197,7 +203,7 @@ class VisitDb:
 
     def first_visit_at(self) -> datetime | None:
         """Return the earliest non-test visit across all sites, including bots."""
-        where, params = self._traffic_filter(False)
+        where, params = self._traffic_filter(False, apply_isoforest=False)
         return self._db.query(
             f"SELECT MIN(v.received_at) AS first_visit_at FROM page_views v {where}", params,
         )[0]['first_visit_at']
@@ -236,6 +242,10 @@ class VisitDb:
             condition, bot_params = self._bot_condition()
             clauses.append(f"NOT ({condition})")
             params += bot_params
+        condition, run_params = self._isoforest_condition()
+        if condition:
+            clauses.append(condition)
+            params += run_params
         for name, value in filters.items():
             expression = expressions[name]
             clauses.append(f"CAST({expression} AS CHAR) LIKE %s ESCAPE '='")
@@ -281,10 +291,9 @@ class VisitDb:
             {where} AND p.site = %s
         """, (*params, site))[0]["visits"]
 
-    @classmethod
-    def _filter(cls, exclude_bots: bool, start: datetime | None,
+    def _filter(self, exclude_bots: bool, start: datetime | None,
                 end: datetime | None, site: str = "*") -> tuple[str, tuple[object, ...]]:
-        where, parameters = cls._traffic_filter(exclude_bots, site)
+        where, parameters = self._traffic_filter(exclude_bots, site)
         clauses = [where.removeprefix("WHERE ")] if where else []
         if start is not None:
             clauses.append("v.received_at >= %s")
@@ -294,8 +303,8 @@ class VisitDb:
             parameters += (end,)
         return ("WHERE " + " AND ".join(clauses) if clauses else "", parameters)
 
-    @classmethod
-    def _traffic_filter(cls, exclude_bots: bool, site: str = "*") -> tuple[str, tuple[object, ...]]:
+    def _traffic_filter(self, exclude_bots: bool, site: str = "*", *,
+                        apply_isoforest: bool = True) -> tuple[str, tuple[object, ...]]:
         """Exclude explicit tests on every report, and bots when requested.
 
         Looking up the page here also supports reports that do not join pages,
@@ -310,9 +319,13 @@ class VisitDb:
             DReports.TEST_PAGE_URL_PATTERN,
         )
         if exclude_bots:
-            condition, bot_params = cls._bot_condition()
+            condition, bot_params = self._bot_condition()
             where += f" AND NOT ({condition})"
             params += bot_params
+        condition, run_params = self._isoforest_condition()
+        if apply_isoforest and condition:
+            where += " AND " + condition
+            params += run_params
         if site != "*":
             where += """ AND EXISTS (
                 SELECT 1 FROM pages site_page
@@ -320,6 +333,18 @@ class VisitDb:
             )"""
             params += (site,)
         return where, params
+
+    def _isoforest_condition(self) -> tuple[str, tuple[object, ...]]:
+        if self._isoforest_run_id is None:
+            return "", ()
+        return """NOT EXISTS (
+            SELECT 1 FROM isoforest_observation_visits classified
+            JOIN isoforest_observations observation
+                ON observation.run_id = classified.run_id
+                    AND observation.observation_id = classified.observation_id
+            WHERE classified.run_id = %s AND classified.page_view_id = v.page_view_id
+                AND observation.is_anomaly = 1
+        )""", (self._isoforest_run_id,)
 
     @staticmethod
     def _bot_condition() -> tuple[str, tuple[object, ...]]:
@@ -334,8 +359,7 @@ class VisitDb:
         return (f"COALESCE(v.is_bot, 0) = 1 "
                 f"OR COALESCE(v.browser_family, '') IN ({placeholders}) "
                 f"OR {agent_conditions} "
-                "OR COALESCE(JSON_UNQUOTE(JSON_EXTRACT(v.client_details, '$.webdriver')), "
-                "'false') = 'true' "
+                "OR COALESCE(v.webdriver, 0) = 1 "
                 f"OR {profile_condition}", families + tokens + profile_params)
 
     @staticmethod
@@ -349,27 +373,27 @@ class VisitDb:
         os_placeholders = ", ".join("%s" for _ in desktop_os)
         platform_placeholders = ", ".join("%s" for _ in desktop_platforms)
         return (f"""COALESCE(
-            JSON_VALUE(v.client_details, '$.vendor') = %s AND (
+            v.vendor = %s AND (
                 (v.device_category = %s
-                 AND JSON_VALUE(v.client_details, '$.platform') = %s
-                 AND JSON_VALUE(v.client_details, '$.screen_width') = %s
-                 AND JSON_VALUE(v.client_details, '$.screen_height') = %s
-                 AND JSON_VALUE(v.client_details, '$.device_memory') = %s
-                 AND JSON_VALUE(v.client_details, '$.max_touch_points') = %s
-                 AND JSON_VALUE(v.client_details, '$.hardware_concurrency') >= %s)
+                 AND v.platform = %s
+                 AND v.screen_width = %s
+                 AND v.screen_height = %s
+                 AND v.device_memory = %s
+                 AND v.max_touch_points = %s
+                 AND v.hardware_concurrency >= %s)
                 OR (v.os_family IN ({os_placeholders})
-                    AND JSON_VALUE(v.client_details, '$.platform') = %s)
-                OR (JSON_VALUE(v.client_details, '$.screen_width') = %s
-                    AND JSON_VALUE(v.client_details, '$.screen_height') = %s
-                    AND JSON_VALUE(v.client_details, '$.viewport_width') > %s)
-                OR (JSON_VALUE(v.client_details, '$.platform') = %s
-                    AND JSON_VALUE(v.client_details, '$.screen_width') = %s
-                    AND JSON_VALUE(v.client_details, '$.screen_height') = %s
-                    AND JSON_VALUE(v.client_details, '$.device_memory') = %s
+                    AND v.platform = %s)
+                OR (v.screen_width = %s
+                    AND v.screen_height = %s
+                    AND v.viewport_width > %s)
+                OR (v.platform = %s
+                    AND v.screen_width = %s
+                    AND v.screen_height = %s
+                    AND v.device_memory = %s
                     AND v.referrer_host = %s)
                 OR (v.os_family = %s
-                    AND JSON_VALUE(v.client_details, '$.platform') IN ({platform_placeholders})
-                    AND JSON_VALUE(v.client_details, '$.max_touch_points') = %s)
+                    AND v.platform IN ({platform_placeholders})
+                    AND v.max_touch_points = %s)
             ), 0)""", (
                 DVisitorDetails.BOT_CLIENT_VENDOR,
                 "mobile", DVisitorDetails.BOT_LINUX_PLATFORM,

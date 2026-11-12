@@ -1,7 +1,7 @@
 """Integration checks against a disposable local MariaDB instance only."""
 
 from dataclasses import replace
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from hashlib import sha256
 import json
 import os
@@ -18,6 +18,10 @@ from uuid import uuid4
 import pymysql
 
 from mycount.activity.VisitorSchema import VisitorSchema
+from mycount.constants.DClientDetails import DClientDetails
+from mycount.constants.DVisitorDetails import DVisitorDetails
+from mycount.interface.ClientDetailsMigration import ClientDetailsMigration
+from mycount.interface.VisitorDetails import VisitorDetails
 from mycount.interface.DbMgr import DbMgr
 from mycount.interface.VisitDb import VisitDb
 from mycount.interface.MarketingDb import MarketingDb
@@ -34,6 +38,12 @@ from mycount.interface.DbCommitUncertain import DbCommitUncertain
 from mycount.interface.MarketingScreenshots import MarketingScreenshots
 from browser_automation_cases import browser_automation_cases
 from test_crawl_campaigns import campaign
+from mycount.constants.DIsoForest import DIsoForest
+from mycount.entity.IsoForestObservation import IsoForestObservation
+from mycount.entity.IsoForestResult import IsoForestResult
+from mycount.interface.IsoForestDb import IsoForestDb
+from mycount.interface.IsoForestSchedule import IsoForestSchedule
+from mycount.activity.RunIsoForest import RunIsoForest
 
 
 @unittest.skipUnless(shutil.which("mariadb-install-db") and shutil.which("mariadbd"),
@@ -66,7 +76,8 @@ class DatabaseTests(unittest.TestCase):
                                                                       'https://example.com')
             close.assert_called_once()
         self.assertEqual(visits.count_by_site('collected'), 0)
-        self.assertEqual(len(visits.visitor_records({'site': 'collected'}, exclude_bots=False)), 24)
+        self.assertEqual(len(visits.visitor_records({'site': 'collected'}, exclude_bots=False,
+                                                   limit=len(rows))), len(rows))
         self.assertEqual(self.db.query('SELECT is_bot FROM page_views WHERE page_view_id=%s',
                                        (view_id,)), [{'is_bot': 1}])
 
@@ -164,9 +175,104 @@ class DatabaseTests(unittest.TestCase):
             cls.server.wait(timeout=5)
 
     def tearDown(self):
+        self.db.execute("DELETE FROM isoforest_runs")
         self.db.execute("DELETE FROM marketing_posts")
         self.db.execute("DELETE FROM page_views")
         self.db.execute("DELETE FROM pages")
+
+    def test_isoforest_raw_snapshot_includes_known_bots_and_test_traffic(self):
+        visits = VisitDb(self.db)
+        first = visits.record(Visit('blog', 'https://blog.example/', datetime(2026, 11, 10, tzinfo=timezone.utc),
+                                    is_bot=True, client_details=(('timezone', 'Asia/Shanghai'), ('device_memory', 8))))
+        second = visits.record(Visit('mycount_smoke_raw', 'https://example.com/__mycount_test__/',
+                                     datetime(2026, 11, 10, tzinfo=timezone.utc), is_bot=False))
+        source = IsoForestDb(self.db).raw_visits()
+        self.assertEqual({row.page_view_id for row in source}, {first, second})
+        self.assertEqual(dict(source[0].client_details)['timezone'], 'Asia/Shanghai')
+        self.assertEqual(dict(source[0].client_details)['device_memory'], 8)
+
+    def isoforest_fixture(self):
+        store = IsoForestDb(self.db)
+        visits = VisitDb(self.db)
+        start = datetime(2026, 11, 10)
+        ids = [visits.record(Visit('example', f'https://example.com/{i}',
+                                  (start + timedelta(minutes=i)).replace(tzinfo=timezone.utc),
+                                  is_bot=i in (1, 3), country_code='CA', city_name='Toronto',
+                                  latitude=43, longitude=-79, languages=('en-CA',))) for i in range(1, 5)]
+        raw = store.raw_visits()
+        observations = tuple(IsoForestObservation(start, f'10.{i}.0.0/16', 'example', (identifier,), 1,
+                                                 (0.,) * len(DIsoForest.FEATURES))
+                             for i, identifier in enumerate(ids, start=1))
+        result = IsoForestResult(observations, (.1, -.1, -.1, .1), b'test-model',
+                                 {'features': DIsoForest.FEATURES})
+        run_id = store.start_run(start)
+        store.publish(run_id, raw, result, start + timedelta(seconds=1), .1)
+        return store, ids, result, run_id
+
+    def test_isoforest_results_filter_all_aggregates_before_pagination_and_keep_unassessed(self):
+        store, ids, result, run_id = self.isoforest_fixture()
+        start = datetime(2026, 11, 10)
+        new = VisitDb(self.db).record(Visit('example', 'https://example.com/new',
+            datetime(2026, 11, 10, 1, tzinfo=timezone.utc), is_bot=False))
+        plus = VisitDb(self.db, isoforest_run_id=run_id)
+        for query in (plus.totals_by_site, plus.totals_by_page, plus.totals_by_location,
+                      plus.totals_by_coordinates, plus.totals_by_referrer, plus.totals_by_language):
+            with self.subTest(query=query.__name__):
+                self.assertEqual(sum(row['page_views'] for row in query(exclude_bots=True)), 2)
+        self.assertEqual([row['page_view_id'] for row in plus.recent_visits(exclude_bots=True, limit=1)], [new])
+        self.assertEqual([row['page_view_id'] for row in plus.visitor_records({}, exclude_bots=True)], [new, ids[3]])
+        self.assertEqual([row['page_view_id'] for row in plus.recent_visits(
+            exclude_bots=True, before=(datetime(2026, 11, 10, 1), new))], [ids[3]])
+        options = ReportOptions(date(2026, 11, 9), date(2026, 11, 11), 'UTC')
+        self.assertEqual([row['page_views'] for row in plus.daily_totals(options.day_ranges(), exclude_bots=True)], [0, 2, 0])
+        self.assertEqual(plus.first_visit_at(), start + timedelta(minutes=1))
+        self.assertEqual(plus.available_sites(), ['example'])
+        self.assertEqual(len(VisitDb(self.db).recent_visits(exclude_bots=True)), 3)
+        self.assertEqual(len(VisitDb(self.db).recent_visits()), 5)
+        self.assertEqual(self.db.query('SELECT is_bot FROM page_views WHERE page_view_id=%s', (ids[1],))[0]['is_bot'], 0)
+        self.assertEqual(store.active_run()['run_id'], run_id)
+
+    def test_isoforest_publication_rolls_back_partial_evidence_and_preserves_active_run(self):
+        store, ids, result, previous = self.isoforest_fixture()
+        started = datetime(2026, 11, 11)
+        candidate = store.start_run(started)
+        duplicate = replace(result, observations=(result.observations[0], result.observations[0]), decisions=(-.1, -.1))
+        with self.assertRaises(pymysql.IntegrityError):
+            store.publish(candidate, store.raw_visits(), duplicate, started, .1)
+        self.assertEqual(store.active_run()['run_id'], previous)
+        self.assertEqual(store.observations(candidate), [])
+        self.assertEqual(store.run(candidate)['status'], 'running')
+        store.fail_run(candidate, started, 'Expected test failure')
+        self.assertEqual(store.run(candidate)['status'], 'failed')
+        store.fail_run(previous, started, 'Uncertain acknowledgement')
+        self.assertEqual(store.run(previous)['status'], 'complete')
+        VisitorSchema(self.db).apply()
+        self.assertEqual(store.active_run()['run_id'], previous)
+
+    def test_isoforest_failed_worker_leaves_completed_results_and_records_failure(self):
+        store, ids, result, previous = self.isoforest_fixture()
+        with tempfile.TemporaryDirectory() as directory, \
+                patch('mycount.activity.RunIsoForest.DbMgr', return_value=self.db), \
+                patch.object(self.db, 'close'), \
+                patch('mycount.interface.IsoForestModel.IsoForestModel') as model:
+            model.return_value.fit.side_effect = ValueError('expected model failure')
+            with self.assertRaisesRegex(ValueError, 'expected model failure'):
+                RunIsoForest(IsoForestSchedule(Path(directory))).run()
+        self.assertEqual(store.active_run()['run_id'], previous)
+        self.assertEqual(store.recent_runs()[0]['status'], 'failed')
+        self.assertEqual(store.observations(store.recent_runs()[0]['run_id']), [])
+
+    def test_isoforest_empty_source_publishes_and_new_tables_use_pinned_collation(self):
+        with tempfile.TemporaryDirectory() as directory, \
+                patch('mycount.activity.RunIsoForest.DbMgr', return_value=self.db), \
+                patch.object(self.db, 'close'):
+            run_id = RunIsoForest(IsoForestSchedule(Path(directory))).run()
+        run = IsoForestDb(self.db).active_run()
+        self.assertEqual((run['run_id'], run['source_views'], run['observation_count']), (run_id, 0, 0))
+        collations = self.db.query("""SELECT TABLE_COLLATION FROM information_schema.TABLES
+            WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME LIKE %s""", ('isoforest_%',))
+        self.assertEqual(len(collations), 3)
+        self.assertTrue(all(row['TABLE_COLLATION'] == 'utf8mb4_unicode_ci' for row in collations))
 
     def test_marketing_posts_persist_and_schema_reapplication_preserves_them(self):
         marketing = MarketingDb(self.db)
@@ -278,7 +384,7 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(older[0]['page_view_id'], first)
         self.assertEqual(visits.visitor_records({'site': "' OR 1=1 --"}), [])
         self.assertEqual(len(visits.visitor_records({'visitor_id': 'AB' * 16})), 3)
-        self.assertEqual(len(visits.visitor_records({'client_details': 'America/Toronto'})), 3)
+        self.assertEqual(len(visits.visitor_records({'browser_timezone': 'America/Toronto'})), 3)
 
     def test_visitor_languages_preserve_preference_order_and_filter_before_pagination(self):
         visits = VisitDb(self.db)
@@ -341,7 +447,8 @@ class DatabaseTests(unittest.TestCase):
 
     def test_visitor_details_migration_preserves_old_rows_and_new_round_trip(self):
         columns = ('referrer_host', 'user_agent', 'browser_version', 'os_version',
-                   'device_brand', 'device_model', 'is_bot', 'client_details')
+                   'device_brand', 'device_model', 'is_bot',
+                   *(column for _, column, _ in DClientDetails.COLUMNS))
         self.db.execute('ALTER TABLE page_views ' + ', '.join('DROP COLUMN ' + name for name in columns))
         old_id = self.view(self.page())
         VisitorSchema(self.db).apply()
@@ -365,7 +472,136 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(row['user_agent'], payload['user_agent'])
         self.assertEqual(row['browser_version'], '130.0.0')
         self.assertEqual(row['is_bot'], 0)
-        self.assertEqual(json.loads(row['client_details']), payload['client_details'])
+        self.assertEqual(row['browser_timezone'], 'America/Toronto')
+        self.assertEqual(row['viewport_width'], 1280)
+        self.assertEqual(row['webdriver'], 0)
+        self.assertNotIn('client_details', row)
+
+    @staticmethod
+    def client_details():
+        return dict(
+            screen_width=1214, screen_height=1056, available_width=1214, available_height=1012,
+            color_depth=24, pixel_depth=24, viewport_width=1214, viewport_height=928,
+            pixel_ratio=1, timezone='Asia/Shanghai', timezone_offset=-480,
+            platform='Win32', vendor='Google Inc.', cookie_enabled=True, online=True,
+            pdf_viewer_enabled=True, hardware_concurrency=8, device_memory=8,
+            max_touch_points=0, webdriver=False, color_scheme='light', reduced_motion=False,
+            connection_effective_type='4g', connection_downlink=7.85, connection_rtt=50,
+            save_data=False, navigation_type='navigate', do_not_track='0',
+            global_privacy_control=False,
+        )
+
+    def test_all_client_columns_round_trip_with_bounds_booleans_and_missing_values(self):
+        details = self.client_details()
+        allowed = (DVisitorDetails.INTEGER_RANGES.keys() | DVisitorDetails.NUMBER_RANGES.keys()
+                   | DVisitorDetails.BOOLEAN_FIELDS | DVisitorDetails.TEXT_FIELDS
+                   | DVisitorDetails.ENUM_FIELDS.keys())
+        self.assertEqual(set(details), allowed)
+        visit = Visit(site='example', url='https://example.com/',
+                      received_at=datetime.now(timezone.utc), timezone='America/Toronto')
+        samples = [details, {}]
+        for bound in (0, 1):
+            samples.append({**details,
+                            **{key: limits[bound] for key, limits in DVisitorDetails.INTEGER_RANGES.items()},
+                            **{key: limits[bound] for key, limits in DVisitorDetails.NUMBER_RANGES.items()},
+                            **{key: bool(bound) for key in DVisitorDetails.BOOLEAN_FIELDS},
+                            'vendor': "é' OR 1=1 -- 🦊"})
+        for sample in samples:
+            with self.subTest(sample=sample):
+                view_id = VisitDb(self.db).record(replace(
+                    visit, client_details=VisitorDetails.resolve(sample)))
+                row = self.db.query('SELECT * FROM page_views WHERE page_view_id=%s', (view_id,))[0]
+                self.assertNotIn('client_details', row)
+                self.assertEqual(row['timezone'], 'America/Toronto')
+                for key, column, _ in DClientDetails.COLUMNS:
+                    self.assertEqual(row[column], sample.get(key), column)
+        schema = self.db.query("""
+            SELECT COLUMN_NAME, IS_NULLABLE, COLUMN_DEFAULT FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'page_views'
+        """)
+        mapped = {column for _, column, _ in DClientDetails.COLUMNS}
+        for row in schema:
+            if row['COLUMN_NAME'] in mapped:
+                self.assertEqual(row['IS_NULLABLE'], 'YES')
+                self.assertEqual(row['COLUMN_DEFAULT'], 'NULL')
+
+    def test_client_json_migration_preserves_all_values_and_reruns_without_erasing_columns(self):
+        columns = tuple(column for _, column, _ in DClientDetails.COLUMNS)
+        self.db.execute('ALTER TABLE page_views ' + ', '.join(
+            'DROP COLUMN ' + column for column in columns) + ', ADD COLUMN client_details JSON NULL')
+        self.addCleanup(self.db.execute, 'ALTER TABLE page_views DROP COLUMN IF EXISTS client_details')
+        samples = [self.client_details(),
+                   dict(screen_width=0, vendor='', webdriver=False, connection_downlink=0,
+                        timezone_offset=0, do_not_track='0', global_privacy_control=False),
+                   dict(vendor=None, screen_width=None, viewport_width=None), None, {}]
+        ids = []
+        page_id = self.page()
+        for sample in samples:
+            view_id = self.view(page_id)
+            self.db.execute('UPDATE page_views SET client_details=%s, timezone=%s WHERE page_view_id=%s',
+                            (json.dumps(sample) if sample is not None else None, 'Europe/London', view_id))
+            self.db.execute("INSERT INTO page_view_languages VALUES (%s, 1, 'en-CA')", (view_id,))
+            ids.append(view_id)
+        with patch.object(DClientDetails, 'BATCH_SIZE', 2):
+            VisitorSchema(self.db).apply()
+        for sample, view_id in zip(samples, ids):
+            row = self.db.query('SELECT * FROM page_views WHERE page_view_id=%s', (view_id,))[0]
+            self.assertNotIn('client_details', row)
+            self.assertEqual(row['timezone'], 'Europe/London')
+            for key, column, _ in DClientDetails.COLUMNS:
+                self.assertEqual(row[column], (sample or {}).get(key), column)
+        before = self.db.query('SELECT * FROM page_views ORDER BY page_view_id')
+        VisitorSchema(self.db).apply()
+        self.assertEqual(self.db.query('SELECT * FROM page_views ORDER BY page_view_id'), before)
+        self.assertEqual(len(self.db.query('SELECT * FROM page_view_languages')), len(samples))
+
+    def test_client_migration_keeps_json_and_can_resume_after_invalid_legacy_data(self):
+        self.db.execute('ALTER TABLE page_views ADD COLUMN client_details JSON NULL')
+        self.addCleanup(self.db.execute, 'ALTER TABLE page_views DROP COLUMN IF EXISTS client_details')
+        page_id = self.page()
+        first = self.view(page_id)
+        second = self.view(page_id)
+        self.db.execute('UPDATE page_views SET client_details=%s WHERE page_view_id=%s',
+                        (json.dumps({'viewport_width': 1280}), first))
+        invalid = ({'unknown_field': 1}, {'screen_width': True}, {'timezone': 'x' * 129})
+        with patch.object(DClientDetails, 'BATCH_SIZE', 1):
+            for sample in invalid:
+                self.db.execute('UPDATE page_views SET client_details=%s WHERE page_view_id=%s',
+                                (json.dumps(sample), second))
+                with self.assertRaisesRegex(ValueError, f'page_view_id {second}'):
+                    ClientDetailsMigration(self.db).apply()
+                rows = self.db.query('SELECT client_details, viewport_width FROM page_views ORDER BY page_view_id')
+                self.assertEqual(rows[0]['viewport_width'], 1280)
+                self.assertIsNone(rows[1]['viewport_width'])
+                self.assertEqual(json.loads(rows[1]['client_details']), sample)
+            self.db.execute('UPDATE page_views SET client_details=%s WHERE page_view_id=%s',
+                            (json.dumps({'viewport_width': 0}), second))
+            ClientDetailsMigration(self.db).apply()
+        self.assertEqual(self.db.query('SELECT viewport_width FROM page_views ORDER BY page_view_id'),
+                         [{'viewport_width': 1280}, {'viewport_width': 0}])
+        self.assertEqual(self.db.query("SHOW COLUMNS FROM page_views LIKE 'client_details'"), [])
+
+    def test_client_migration_verification_failure_rolls_back_batch_and_retains_json(self):
+        self.db.execute('ALTER TABLE page_views ADD COLUMN client_details JSON NULL')
+        self.addCleanup(self.db.execute, 'ALTER TABLE page_views DROP COLUMN IF EXISTS client_details')
+        view_id = self.view(self.page())
+        source = json.dumps({'viewport_width': 1280, 'webdriver': False})
+        self.db.execute('UPDATE page_views SET client_details=%s WHERE page_view_id=%s', (source, view_id))
+        execute_many = self.db.execute_many
+
+        def corrupt_write(sql, values):
+            count = execute_many(sql, values)
+            self.db.execute('UPDATE page_views SET viewport_width=1 WHERE page_view_id=%s', (view_id,))
+            return count
+
+        with patch.object(self.db, 'execute_many', side_effect=corrupt_write):
+            with self.assertRaisesRegex(ValueError, 'verification failed'):
+                ClientDetailsMigration(self.db).apply()
+        self.assertEqual(self.db.query('SELECT viewport_width, webdriver, client_details FROM page_views'),
+                         [dict(viewport_width=None, webdriver=None, client_details=source)])
+        ClientDetailsMigration(self.db).apply()
+        self.assertEqual(self.db.query('SELECT viewport_width, webdriver FROM page_views'),
+                         [dict(viewport_width=1280, webdriver=0)])
 
     def test_collection_additions_migrate_and_preserve_exact_values(self):
         self.db.execute('ALTER TABLE page_views DROP COLUMN search, DROP COLUMN referrer')
@@ -458,11 +694,11 @@ class DatabaseTests(unittest.TestCase):
             self.assertEqual(self.db.query(
                 'SELECT latitude, longitude FROM page_views WHERE page_view_id=%s', (view_id,)
             )[0], dict(latitude=latitude, longitude=longitude))
-            row = self.db.query('SELECT zip, timezone, client_details FROM page_views WHERE page_view_id=%s',
+            row = self.db.query('SELECT zip, timezone, browser_timezone FROM page_views WHERE page_view_id=%s',
                                 (view_id,))[0]
             self.assertEqual(row['zip'], '00123')
             self.assertEqual(row['timezone'], 'America/Toronto')
-            self.assertEqual(json.loads(row['client_details'])['timezone'], 'Europe/London')
+            self.assertEqual(row['browser_timezone'], 'Europe/London')
         self.assertEqual(self.db.query(
             'SELECT latitude, longitude, zip, timezone FROM page_views WHERE page_view_id=%s', (old_id,)
         )[0], dict(latitude=None, longitude=None, zip=None, timezone=None))
@@ -605,11 +841,9 @@ class DatabaseTests(unittest.TestCase):
                 with self.subTest(profile=name, stored_flag=flag):
                     view_id = visits.record(replace(enriched, is_bot=flag))
                     (excluded if expected else retained).add(view_id)
-        # Valid historical JSON can contain explicit nulls, unlike new validated payloads.
+        # Missing client details must keep incomplete profiles from matching bots.
         unknown = visits.record(Visit(site='example', url='https://example.com/',
                                      received_at=datetime(2026, 10, 18, 12, tzinfo=timezone.utc)))
-        self.db.execute('UPDATE page_views SET client_details = %s WHERE page_view_id = %s',
-                        (json.dumps(dict(vendor=None, screen_width=None, viewport_width=None)), unknown))
         retained.add(unknown)
         total = len(retained) + len(excluded)
         for enabled, expected_ids in [(False, retained | excluded), (True, retained)]:

@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block head %}
+<style>
+  .isoforest-panels { display: grid; gap: 1.5rem; }
+  .isoforest-content { padding: 1rem; }
+  .isoforest-panels h2 { margin: 0; background: #291d15; font-size: 1rem; }
+  .isoforest-content pre { max-width: 100%; overflow-x: auto; }
+  .isoforest-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; }
+  .isoforest-controls label { display: grid; gap: .3rem; }
+  .isoforest-controls input[type="text"] { width: 16rem; max-width: 100%; }
+  .isoforest-controls input, .isoforest-controls button { font: inherit; padding: .4rem; }
+  .isoforest-controls button { cursor: pointer; }
+  .isoforest-summary { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+  .isoforest-summary strong { color: #ffac63; }
+  .isoforest-observations td { white-space: nowrap; }
+  .isoforest-features { min-width: 25rem; }
+  .isoforest-features dl { display: grid; grid-template-columns: 1fr auto; gap: .3rem 1rem; }
+  .isoforest-features dd { margin: 0; text-align: right; }
+  .isoforest-status { padding: .7rem 1rem; border-left: 3px solid #ffac63; }
+  #isoforest-schedule-status, #isoforest-run-status { margin-bottom: 0; }
+  @media (max-width: 600px) { .isoforest-controls { align-items: start; flex-direction: column; } }
+</style>
+{% endblock %}
+{% block content %}
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+<div class="isoforest-panels">
+  <section class="metric-panel">
+    <h2 class="isoforest-content">IsoForest schedule</h2>
+    <div class="isoforest-content">
+      <form id="isoforest-schedule-form" class="isoforest-controls">
+        <label><span>Enabled</span><input id="isoforest-enabled" type="checkbox" disabled></label>
+        <label>Cron expression<input id="isoforest-expression" type="text" maxlength="255" required aria-describedby="isoforest-cron-help" autocomplete="off" spellcheck="false" disabled></label>
+        <button type="submit" disabled>Update schedule</button>
+        <button id="isoforest-request" type="button" disabled>Queue run</button>
+        <a href="/isoforest">Reload results</a>
+      </form>
+      <p id="isoforest-cron-help">Five fields: minute, hour, day of month, month, day of week. Default <code>0 * * * *</code> runs hourly in the server’s local timezone. A queued run starts on the next minute check, including when the recurring schedule is disabled.</p>
+      <p id="isoforest-schedule-status" role="status" aria-live="polite">Loading schedule…</p>
+      <p id="isoforest-run-status" role="status" aria-live="polite"></p>
+      <noscript><p>Enable JavaScript to update the schedule and queue runs.</p></noscript>
+    </div>
+  </section>
+  <section class="metric-panel">
+    <h2 class="isoforest-content">{% if selected %}Run {{ selected.run_id }} · {{ selected.status }}{% else %}No completed run{% endif %}</h2>
+    <div class="isoforest-content">
+      {% if selected %}
+      <div class="isoforest-summary">
+        <span><strong>{{ selected.source_views }}</strong> collected views</span>
+        <span><strong>{{ selected.observation_count }}</strong> observations</span>
+        <span><strong>{{ selected.anomaly_views }}</strong> anomaly views</span>
+        <span><strong>{{ selected.anomaly_observations }}</strong> anomaly observations</span>
+      </div>
+      <p>Feature version <code>{{ selected.feature_version }}</code>; IPv4 /{{ selected.ipv4_prefix }}, IPv6 /{{ selected.ipv6_prefix }}; {{ selected.window_hours }}-hour UTC windows.</p>
+      <p>Started <time datetime="{{ selected.started_at | utc_iso }}" data-local-time="datetime">—</time>{% if selected.completed_at %}; finished <time datetime="{{ selected.completed_at | utc_iso }}" data-local-time="datetime">—</time>{% endif %}.{% if selected.elapsed_seconds is not none %} Processing: {{ '%.2f' | format(selected.elapsed_seconds) }} seconds.{% endif %}</p>
+      {% if selected.error %}<p role="alert">{{ selected.error }}</p>{% endif %}
+      {% if selected.manifest %}<details><summary>Model settings</summary><pre>{{ selected.manifest | tojson(indent=2) }}</pre></details>{% endif %}
+      {% else %}<p>Queue a run to assess the collected traffic. IsoForest+ applies Basic Bots while model results are unavailable.</p>{% endif %}
+      <p>Every collected view enters the model independently of Basic Bots. IsoForest+ combines both methods when reports are read. Unassessed visits remain visible. The latest completed run supplies the report filter.</p>
+    </div>
+  </section>
+  <section class="metric-panel">
+    <h2 class="isoforest-content">Recent runs</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Run</th><th>Started</th><th>Status</th><th>Views</th><th>Observations</th><th>Anomaly views</th><th>Feature version</th></tr></thead>
+      <tbody>{% for run in runs %}<tr>
+        <td><a href="/isoforest?run={{ run.run_id }}">{{ run.run_id }}</a></td>
+        <td><time datetime="{{ run.started_at | utc_iso }}" data-local-time="datetime">—</time></td>
+        <td>{{ run.status }}</td><td>{{ run.source_views }}</td><td>{{ run.observation_count }}</td><td>{{ run.anomaly_views }}</td><td>{{ run.feature_version }}</td>
+      </tr>{% else %}<tr><td colspan="7">No runs recorded.</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </section>
+  <section class="metric-panel">
+    <h2 class="isoforest-content">Observation evidence</h2>
+    <p>Showing up to {{ observation_limit }} observations from the selected run, with anomalies first and lowest scores first. Negative scores indicate anomaly candidates; each decision applies to the entire network/site/window group. Times below use your local timezone.</p>
+    <div class="table-wrap"><table class="isoforest-observations">
+      <thead><tr><th>Window starts</th><th>Site</th><th>Network block</th><th>Views</th><th>Distinct IPs</th><th>Decision score</th><th>Anomaly</th><th>Features</th></tr></thead>
+      <tbody>{% for row in observations %}<tr>
+        <td><time datetime="{{ row.window_start | utc_iso }}" data-local-time="datetime">—</time></td>
+        <td>{{ row.site }}</td><td>{{ row.network_block }}</td><td>{{ row.page_views }}</td><td>{{ row.distinct_ips }}</td><td>{{ '%.6f' | format(row.decision_score) }}</td><td>{{ 'Yes' if row.is_anomaly else 'No' }}</td>
+        <td><details class="isoforest-features"><summary>Inspect</summary><dl>{% for name in features %}<dt>{{ name }}</dt><dd>{{ '%.6f' | format(row[name]) }}</dd>{% endfor %}</dl></details></td>
+      </tr>{% else %}<tr><td colspan="8">No observation evidence for this run.</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </section>
+</div>
+<script>
+(() => {
+  const form = document.getElementById('isoforest-schedule-form');
+  const enabled = document.getElementById('isoforest-enabled');
+  const expression = document.getElementById('isoforest-expression');
+  const save = form.querySelector('[type="submit"]');
+  const run = document.getElementById('isoforest-request');
+  const status = document.getElementById('isoforest-schedule-status');
+  const runStatus = document.getElementById('isoforest-run-status');
+  function busy(value) { enabled.disabled = expression.disabled = save.disabled = run.disabled = value; }
+  function show(result, saved = false) {
+    enabled.checked = result.schedule.enabled;
+    expression.value = result.schedule.expression;
+    status.textContent = (saved ? 'Schedule saved. ' : '') + (enabled.checked ? 'Scheduled runs enabled.' : 'Scheduled runs disabled.');
+    runStatus.textContent = result.queued ? 'Run queued. Reload results after the next minute check.' : '';
+  }
+  async function request(path, values) {
+    const options = {signal: AbortSignal.timeout(15000)};
+    if (values !== undefined) Object.assign(options, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(values)});
+    const response = await fetch(path, options), result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'IsoForest request failed.');
+    return result;
+  }
+  form.addEventListener('submit', async event => {
+    event.preventDefault(); busy(true); status.textContent = 'Saving schedule…';
+    try { show(await request('/api/isoforest-schedule', {enabled: enabled.checked, expression: expression.value}), true); }
+    catch (error) { status.textContent = error.name === 'TimeoutError' ? 'Save could not be confirmed. Reload before retrying.' : error.message; }
+    finally { busy(false); }
+  });
+  run.addEventListener('click', async () => {
+    busy(true); runStatus.textContent = 'Requesting run…';
+    try { show(await request('/api/isoforest-run', {})); }
+    catch (error) { runStatus.textContent = error.name === 'TimeoutError' ? 'Request could not be confirmed. Reload before retrying.' : error.message; }
+    finally { busy(false); }
+  });
+  request('/api/isoforest-schedule').then(result => { show(result); busy(false); })
+    .catch(error => { status.textContent = (error.message || 'Unable to load schedule.') + ' Reload to retry.'; });
+})();
+</script>
+{% endblock %}

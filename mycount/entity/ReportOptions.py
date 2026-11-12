@@ -4,15 +4,25 @@ from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 
+from mycount.constants.DTrafficFilters import DTrafficFilters
+
 
 @dataclass(frozen=True)
 class ReportOptions:
     start: date
     end: date
     timezone: str
-    exclude_bots: bool = True
+    filter_mode: str = DTrafficFilters.BASIC
     before: tuple[datetime, int] | None = None
     site: str = "*"
+
+    @property
+    def exclude_bots(self) -> bool:
+        return DTrafficFilters.BASIC in DTrafficFilters.MODULES[self.filter_mode]
+
+    @property
+    def uses_isoforest(self) -> bool:
+        return "isoforest" in DTrafficFilters.MODULES[self.filter_mode]
 
     def day_ranges(self) -> list[tuple[str, datetime, datetime]]:
         zone = ZoneInfo(self.timezone)

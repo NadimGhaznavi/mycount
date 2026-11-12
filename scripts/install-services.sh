@@ -78,6 +78,17 @@ PYFLAGS
 fi
 
 stop_services() {
+    if [[ $full_setup == true || " ${units[*]} " == *" ${settings[4]} "* ]]; then
+        # Stop the scheduled worker before replacing its code or changing schema.
+        python3 -B - <<'PY'
+from pathlib import Path
+import subprocess
+from mycount.constants.DIsoForest import DIsoForest
+Path(DIsoForest.CRON_FILE).unlink(missing_ok=True)
+if Path('/etc/systemd/system', DIsoForest.SERVICE_UNIT).exists():
+    subprocess.run(['systemctl', 'stop', DIsoForest.SERVICE_UNIT], check=True)
+PY
+    fi
     for unit in "${units[@]}"; do
         if [[ -e /etc/systemd/system/$unit ]]; then
             systemctl stop "$unit"
@@ -132,12 +143,16 @@ render_definitions() {
     if [[ $full_setup == true || " ${units[*]} " == *" ${settings[4]} "* ]]; then
         install -d -m 755 -o "${settings[2]}" -g "${settings[2]}" -- "$install_dir/pages/marketing"
         install -d -m 755 -o "${settings[2]}" -g "${settings[2]}" -- "$install_dir/data/cities"
+        install -d -m 755 -o "${settings[2]}" -g "${settings[2]}" -- "$install_dir/data/isoforest"
         runuser -u "${settings[2]}" -- "$install_dir/.venv/bin/python" -B - "$install_dir" <<'PYCITIES'
 from pathlib import Path
 import sys
 from mycount.constants.DCities import DCities
 from mycount.interface.CitySchedule import CitySchedule
+from mycount.constants.DIsoForest import DIsoForest
+from mycount.interface.IsoForestSchedule import IsoForestSchedule
 CitySchedule(Path(sys.argv[1]) / DCities.DIRECTORY).install()
+IsoForestSchedule(Path(sys.argv[1]) / DIsoForest.DIRECTORY).install()
 PYCITIES
     fi
 python3 -B - "$checkout" "$full_setup" "${units[@]}" <<'PY'
@@ -149,7 +164,11 @@ from mycount.constants.DCities import DCities
 from mycount.constants.DGeoIp import DGeoIp
 from mycount.constants.DMyCount import DMyCount
 from mycount.constants.DControl import DControl
-for name in sys.argv[3:]:
+from mycount.constants.DIsoForest import DIsoForest
+names = list(sys.argv[3:])
+if sys.argv[2] == 'true' or DControl.SERVICE_UNIT in names:
+    names.append(DIsoForest.SERVICE_UNIT)
+for name in names:
     source = Path(sys.argv[1]) / 'systemd' / name
     unit = source.read_text().replace('@APP@', DMyCount.BASE_DIR)
     unit = unit.replace('@DATABASE_ENV@', DMyCount.DATABASE_ENV).replace('@USER@', DMyCount.SERVICE_USER)
@@ -175,6 +194,20 @@ if sys.argv[2] == 'true' or DControl.SERVICE_UNIT in sys.argv[3:]:
             candidate.replace(cron)
         finally:
             candidate.unlink(missing_ok=True)
+    # systemd loads the protected database environment and runs the job as the
+    # service user. No credentials or UI-provided commands appear in cron.
+    cron = Path(DIsoForest.CRON_FILE)
+    text = ('SHELL=/bin/sh\nPATH=/usr/sbin:/usr/bin:/bin\n'
+            f'* * * * * root /usr/bin/systemctl start --no-block {DIsoForest.SERVICE_UNIT}\n')
+    with NamedTemporaryFile(mode='w', dir=cron.parent, prefix='.mycount-isoforest-', delete=False) as stream:
+        candidate = Path(stream.name)
+        try:
+            stream.write(text)
+            stream.flush()
+            candidate.chmod(0o644)
+            candidate.replace(cron)
+        finally:
+            candidate.unlink(missing_ok=True)
 if sys.argv[2] == 'true':
     # Remove the schedule left by installations that owned GeoIP datasets.
     Path(DGeoIp.CRON_FILE).unlink(missing_ok=True)
@@ -191,6 +224,9 @@ start_services() {
         systemd-analyze verify "/etc/systemd/system/$unit"
     done
     systemctl daemon-reload
+    if [[ $full_setup == true || " ${units[*]} " == *" ${settings[4]} "* ]]; then
+        systemd-analyze verify "/etc/systemd/system/mycount-isoforest.service"
+    fi
     for unit in "${units[@]}"; do
         systemctl enable --now "$unit"
     done

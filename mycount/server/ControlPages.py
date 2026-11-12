@@ -13,6 +13,8 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoes
 from mycount.constants.DMarketing import DMarketing
 from mycount.constants.DVisitors import DVisitors
 from mycount.interface.VisitorsQuery import VisitorsQuery
+from mycount.constants.DTrafficFilters import DTrafficFilters
+from mycount.constants.DIsoForest import DIsoForest
 
 
 class ControlPages:
@@ -47,6 +49,7 @@ class ControlPages:
     def _report_context(report: Report, path: str) -> dict[str, object]:
         return dict(options=report.options, daily=report.daily, available_sites=report.available_sites,
                     first_visit_at=report.first_visit_at, exclude_bots=report.options.exclude_bots,
+                    traffic_filters=DTrafficFilters.OPTIONS, isoforest_run=report.isoforest_run,
                     refreshed_at=datetime.now(timezone.utc),
                     newest_url=ReportQuery.link(path, report.options),
                     older_url=ReportQuery.link(path, report.options, report.older) if report.older else None)
@@ -110,16 +113,27 @@ class ControlPages:
     def visitors(self, report: Report, filters: dict[str, str], *, error: str | None = None) -> bytes:
         return self._templates.get_template("visitors.html").render(
             active_page="visitors", columns=DVisitors.COLUMNS, rows=report.recent,
+            numeric_columns=DVisitors.NUMERIC_COLUMNS,
             filters=filters, error=error, first_visit_at=report.first_visit_at,
-            exclude_bots=report.options.exclude_bots, refreshed_at=datetime.now(timezone.utc),
-            newest_url=VisitorsQuery.link(filters, exclude_bots=report.options.exclude_bots),
-            older_url=VisitorsQuery.link(filters, report.older, exclude_bots=report.options.exclude_bots)
+            options=report.options, traffic_filters=DTrafficFilters.OPTIONS,
+            isoforest_run=report.isoforest_run, refreshed_at=datetime.now(timezone.utc),
+            newest_url=VisitorsQuery.link(filters, filter_mode=report.options.filter_mode),
+            older_url=VisitorsQuery.link(filters, report.older, filter_mode=report.options.filter_mode)
             if report.older else None,
         ).encode("utf-8")
 
     def reference(self, first_visit_at: datetime | None = None) -> bytes:
         return self._templates.get_template("reference.html").render(
             refreshed_at=datetime.now(timezone.utc), active_page="reference", first_visit_at=first_visit_at,
+        ).encode("utf-8")
+
+    def isoforest(self, data: dict[str, object], *, error: str | None = None) -> bytes:
+        selected = data["selected"]
+        features = selected["manifest"]["features"] if selected and selected["manifest"] else DIsoForest.FEATURES
+        return self._templates.get_template("isoforest.html").render(
+            active_page="isoforest", refreshed_at=datetime.now(timezone.utc),
+            error=error, features=features, observation_limit=DIsoForest.OBSERVATION_LIMIT,
+            **data,
         ).encode("utf-8")
 
     def marketing(self, report: Report, *, error: str | None = None,

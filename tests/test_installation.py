@@ -11,6 +11,7 @@ from unittest.mock import patch
 from mycount.constants.DCaddy import DCaddy
 from mycount.constants.DGeoIp import DGeoIp
 from mycount.constants.DCities import DCities
+from mycount.constants.DIsoForest import DIsoForest
 from mycount.constants.DMyCount import DMyCount
 from mycount.constants.DRouterMappings import DRouterMappings
 
@@ -32,6 +33,8 @@ class DeploymentTests(unittest.TestCase):
         self.cron.write_text('schedule')
         self.city_cron = self.root / 'city-cron'
         self.city_cron.write_text('city schedule')
+        self.isoforest_cron = self.root / 'isoforest-cron'
+        self.isoforest_cron.write_text('model schedule')
         self.unit_dir = self.root / 'systemd'
         self.unit_dir.mkdir()
         self.unit = self.unit_dir / DMyCount.SERVICE_UNIT
@@ -40,6 +43,8 @@ class DeploymentTests(unittest.TestCase):
         self.control_unit.write_text('unit')
         self.router_unit = self.unit_dir / DRouterMappings.SERVICE_UNIT
         self.router_unit.write_text('unit')
+        self.isoforest_unit = self.unit_dir / DIsoForest.SERVICE_UNIT
+        self.isoforest_unit.write_text('unit')
         self.credentials = self.root / 'database.env'
         self.credentials.write_text('preserve credentials')
         self.site.write_text('previous site')
@@ -52,6 +57,7 @@ class DeploymentTests(unittest.TestCase):
             (DMyCount, 'DATABASE_ENV', str(self.credentials)),
             (DGeoIp, 'CRON_FILE', str(self.cron)),
             (DCities, 'CRON_FILE', str(self.city_cron)),
+            (DIsoForest, 'CRON_FILE', str(self.isoforest_cron)),
         ):
             self.stack.enter_context(patch.object(cls, key, value))
         self.run = self.stack.enter_context(patch('subprocess.run'))
@@ -70,11 +76,13 @@ class DeploymentTests(unittest.TestCase):
         self.execute('uninstall.sh')
         self.assertEqual(self.config.read_text(), self.other_sites)
         self.assertEqual(self.credentials.read_text(), 'preserve credentials')
-        for path in (self.app, self.cron, self.city_cron, self.unit, self.control_unit, self.router_unit, self.site):
+        for path in (self.app, self.cron, self.city_cron, self.isoforest_cron, self.unit,
+                     self.control_unit, self.router_unit, self.isoforest_unit, self.site):
             self.assertFalse(path.exists())
         commands = [call.args[0] for call in self.run.call_args_list]
         self.assertIn(['systemctl', 'disable', '--now', DMyCount.SERVICE_UNIT], commands)
         self.assertIn(['systemctl', 'disable', '--now', 'mycount-control.service'], commands)
+        self.assertIn(['systemctl', 'disable', '--now', DIsoForest.SERVICE_UNIT], commands)
         self.assertEqual(commands.count(['bash', 'scripts/clear-upnpc-routes.sh']), 2)
         self.assertLess(commands.index(['systemctl', 'disable', '--now', DRouterMappings.SERVICE_UNIT]),
                         commands.index(['bash', 'scripts/clear-upnpc-routes.sh']))
@@ -251,6 +259,7 @@ class DeploymentTests(unittest.TestCase):
         legacy.write_text('old importer')
         source = (ROOT / 'scripts/install-services.sh').read_text().split('render_definitions() {', 1)[1]
         source = source.split("<<'PY'\n", 1)[1].split('\nPY', 1)[0]
+        source = source.replace("'/etc/systemd/system'", repr(str(self.unit_dir)))
         with patch('sys.argv', ['installer', str(ROOT), 'true']):
             exec(compile(source, 'install-services.sh', 'exec'), {'__name__': '__main__'})
         self.assertFalse(self.cron.exists())
@@ -258,6 +267,12 @@ class DeploymentTests(unittest.TestCase):
         self.assertIn('* * * * * mycount ', self.city_cron.read_text())
         self.assertIn('mycount.activity.RefreshCities --scheduled', self.city_cron.read_text())
         self.assertEqual(self.city_cron.stat().st_mode & 0o777, 0o644)
+        self.assertIn(f'* * * * * root /usr/bin/systemctl start --no-block {DIsoForest.SERVICE_UNIT}',
+                      self.isoforest_cron.read_text())
+        self.assertEqual(self.isoforest_cron.stat().st_mode & 0o777, 0o644)
+        worker = (self.unit_dir / DIsoForest.SERVICE_UNIT).read_text()
+        self.assertIn('User=mycount', worker)
+        self.assertIn('EnvironmentFile=', worker)
         self.assertEqual(self.credentials.read_text(), 'preserve credentials')
 
 

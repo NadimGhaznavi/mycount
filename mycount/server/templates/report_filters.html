@@ -15,11 +15,11 @@
     <label>From <input type="date" name="start" value="{{ options.start.isoformat() }}" required></label>
     <label>Through <input type="date" name="end" value="{{ options.end.isoformat() }}" required></label>
     <input type="hidden" name="timezone" value="{{ options.timezone }}">
-    <input type="hidden" name="exclude_bots" value="0">
-    <label><input type="checkbox" name="exclude_bots" value="1"{% if exclude_bots %} checked{% endif %}> Exclude bots</label>
+    {% include 'traffic_filter.html' %}
     <button type="submit">Apply filters</button>
   </fieldset>
 </form>
+{% include 'isoforest_status.html' %}
 <script>
   (() => {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;

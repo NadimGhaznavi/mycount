@@ -37,6 +37,7 @@ class DDeployment:
             "scripts/uninstall.sh",
             "scripts/update-deployment-dependencies.py",
             "scripts/upgrade.sh",
+            "systemd/mycount-isoforest.service",
         ),
         "listener": (
             "requirements.txt",
@@ -101,6 +102,13 @@ class DDeployment:
             "mycount/constants/DVisitorDetails.py",
             "mycount/entity/Visit.py",
         ),
+        "mycount/activity/BuildIsoForestFeatures.py": (
+            "mycount/__init__.py",
+            "mycount/activity/__init__.py",
+            "mycount/constants/DIsoForest.py",
+            "mycount/entity/IsoForestObservation.py",
+            "mycount/entity/IsoForestVisit.py",
+        ),
         "mycount/activity/CollectVisit.py": (
             "mycount/__init__.py",
             "mycount/activity/BrowserMetadata.py",
@@ -145,6 +153,13 @@ class DDeployment:
             "mycount/constants/DMarketing.py",
             "mycount/interface/DbMgr.py",
         ),
+        "mycount/activity/ReadIsoForest.py": (
+            "mycount/__init__.py",
+            "mycount/activity/__init__.py",
+            "mycount/interface/DbMgr.py",
+            "mycount/interface/IsoForestDb.py",
+            "mycount/interface/VisitDb.py",
+        ),
         "mycount/activity/ReadReports.py": (
             "mycount/__init__.py",
             "mycount/activity/ResolveVisitorLocations.py",
@@ -155,6 +170,7 @@ class DDeployment:
             "mycount/entity/ReportOptions.py",
             "mycount/interface/CityLocations.py",
             "mycount/interface/DbMgr.py",
+            "mycount/interface/IsoForestDb.py",
             "mycount/interface/MarketingDb.py",
             "mycount/interface/VisitDb.py",
         ),
@@ -182,6 +198,15 @@ class DDeployment:
             "mycount/activity/__init__.py",
             "mycount/interface/CityLocations.py",
         ),
+        "mycount/activity/RunIsoForest.py": (
+            "mycount/__init__.py",
+            "mycount/activity/BuildIsoForestFeatures.py",
+            "mycount/activity/__init__.py",
+            "mycount/interface/DbMgr.py",
+            "mycount/interface/IsoForestDb.py",
+            "mycount/interface/IsoForestModel.py",
+            "mycount/interface/IsoForestSchedule.py",
+        ),
         "mycount/activity/SaveMarketingPost.py": (
             "mycount/__init__.py",
             "mycount/activity/__init__.py",
@@ -197,8 +222,10 @@ class DDeployment:
             "mycount/constants/DGeoIp.py",
             "mycount/constants/DMyCount.py",
             "mycount/constants/DVisitorDetails.py",
+            "mycount/interface/ClientDetailsMigration.py",
             "mycount/interface/CountryNameMigration.py",
             "mycount/interface/DbMgr.py",
+            "mycount/interface/IsoForestDb.py",
         ),
         "mycount/activity/__init__.py": (
             "mycount/__init__.py",
@@ -208,6 +235,10 @@ class DDeployment:
             "mycount/constants/__init__.py",
         ),
         "mycount/constants/DCities.py": (
+            "mycount/__init__.py",
+            "mycount/constants/__init__.py",
+        ),
+        "mycount/constants/DClientDetails.py": (
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
         ),
@@ -237,6 +268,10 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
         ),
+        "mycount/constants/DIsoForest.py": (
+            "mycount/__init__.py",
+            "mycount/constants/__init__.py",
+        ),
         "mycount/constants/DMarketing.py": (
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
@@ -257,12 +292,17 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
         ),
+        "mycount/constants/DTrafficFilters.py": (
+            "mycount/__init__.py",
+            "mycount/constants/__init__.py",
+        ),
         "mycount/constants/DVisitorDetails.py": (
             "mycount/__init__.py",
             "mycount/constants/__init__.py",
         ),
         "mycount/constants/DVisitors.py": (
             "mycount/__init__.py",
+            "mycount/constants/DVisitorDetails.py",
             "mycount/constants/__init__.py",
         ),
         "mycount/constants/__init__.py": (
@@ -273,6 +313,19 @@ class DDeployment:
             "mycount/entity/__init__.py",
         ),
         "mycount/entity/GeoLocation.py": (
+            "mycount/__init__.py",
+            "mycount/entity/__init__.py",
+        ),
+        "mycount/entity/IsoForestObservation.py": (
+            "mycount/__init__.py",
+            "mycount/entity/__init__.py",
+        ),
+        "mycount/entity/IsoForestResult.py": (
+            "mycount/__init__.py",
+            "mycount/entity/IsoForestObservation.py",
+            "mycount/entity/__init__.py",
+        ),
+        "mycount/entity/IsoForestVisit.py": (
             "mycount/__init__.py",
             "mycount/entity/__init__.py",
         ),
@@ -287,6 +340,7 @@ class DDeployment:
         ),
         "mycount/entity/ReportOptions.py": (
             "mycount/__init__.py",
+            "mycount/constants/DTrafficFilters.py",
             "mycount/entity/__init__.py",
         ),
         "mycount/entity/Visit.py": (
@@ -304,6 +358,13 @@ class DDeployment:
         "mycount/interface/CitySchedule.py": (
             "mycount/__init__.py",
             "mycount/constants/DCities.py",
+            "mycount/interface/__init__.py",
+        ),
+        "mycount/interface/ClientDetailsMigration.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DClientDetails.py",
+            "mycount/interface/DbMgr.py",
+            "mycount/interface/VisitorDetails.py",
             "mycount/interface/__init__.py",
         ),
         "mycount/interface/CollectorHttp.py": (
@@ -373,6 +434,28 @@ class DDeployment:
             "mycount/constants/DMyCount.py",
             "mycount/interface/__init__.py",
         ),
+        "mycount/interface/IsoForestDb.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DClientDetails.py",
+            "mycount/constants/DIsoForest.py",
+            "mycount/entity/IsoForestResult.py",
+            "mycount/entity/IsoForestVisit.py",
+            "mycount/interface/DbMgr.py",
+            "mycount/interface/__init__.py",
+        ),
+        "mycount/interface/IsoForestModel.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DIsoForest.py",
+            "mycount/entity/IsoForestObservation.py",
+            "mycount/entity/IsoForestResult.py",
+            "mycount/interface/__init__.py",
+        ),
+        "mycount/interface/IsoForestSchedule.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DIsoForest.py",
+            "mycount/interface/CitySchedule.py",
+            "mycount/interface/__init__.py",
+        ),
         "mycount/interface/MarketingDb.py": (
             "mycount/__init__.py",
             "mycount/entity/MarketingPost.py",
@@ -411,6 +494,7 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/constants/DMyCount.py",
             "mycount/constants/DReports.py",
+            "mycount/constants/DTrafficFilters.py",
             "mycount/entity/ReportOptions.py",
             "mycount/interface/__init__.py",
         ),
@@ -429,6 +513,7 @@ class DDeployment:
         ),
         "mycount/interface/VisitDb.py": (
             "mycount/__init__.py",
+            "mycount/constants/DClientDetails.py",
             "mycount/constants/DCrawlCampaigns.py",
             "mycount/constants/DReports.py",
             "mycount/constants/DVisitorDetails.py",
@@ -459,6 +544,7 @@ class DDeployment:
         ),
         "mycount/interface/VisitorsQuery.py": (
             "mycount/__init__.py",
+            "mycount/constants/DTrafficFilters.py",
             "mycount/constants/DVisitors.py",
             "mycount/interface/__init__.py",
         ),
@@ -467,6 +553,7 @@ class DDeployment:
         ),
         "mycount/server/ControlHandler.py": (
             "mycount/__init__.py",
+            "mycount/activity/ReadIsoForest.py",
             "mycount/activity/ReadReports.py",
             "mycount/activity/SaveMarketingPost.py",
             "mycount/constants/DMarketing.py",
@@ -477,6 +564,7 @@ class DDeployment:
             "mycount/interface/CitySchedule.py",
             "mycount/interface/DbCommitUncertain.py",
             "mycount/interface/DbMgr.py",
+            "mycount/interface/IsoForestSchedule.py",
             "mycount/interface/MarketingDb.py",
             "mycount/interface/MarketingForm.py",
             "mycount/interface/MarketingScreenshots.py",
@@ -488,7 +576,9 @@ class DDeployment:
         ),
         "mycount/server/ControlPages.py": (
             "mycount/__init__.py",
+            "mycount/constants/DIsoForest.py",
             "mycount/constants/DMarketing.py",
+            "mycount/constants/DTrafficFilters.py",
             "mycount/constants/DVisitors.py",
             "mycount/entity/Report.py",
             "mycount/interface/ReportQuery.py",
@@ -496,6 +586,7 @@ class DDeployment:
             "mycount/server/__init__.py",
             "mycount/server/assets/mycount.png",
             "mycount/server/templates/control.html",
+            "mycount/server/templates/isoforest.html",
             "mycount/server/templates/marketing.html",
             "mycount/server/templates/reference.html",
             "mycount/server/templates/visitor_map.html",
@@ -554,6 +645,11 @@ class DDeployment:
             "mycount/server/templates/pie_charts.html",
             "mycount/server/templates/report_filters.html",
         ),
+        "mycount/server/templates/isoforest.html": (
+            "mycount/server/templates/base.html",
+        ),
+        "mycount/server/templates/isoforest_status.html": (
+        ),
         "mycount/server/templates/local_time.html": (
         ),
         "mycount/server/templates/marketing.html": (
@@ -573,10 +669,14 @@ class DDeployment:
             "mycount/server/templates/base.html",
         ),
         "mycount/server/templates/report_filters.html": (
+            "mycount/server/templates/isoforest_status.html",
+            "mycount/server/templates/traffic_filter.html",
         ),
         "mycount/server/templates/styles.html": (
         ),
         "mycount/server/templates/table_sort.html": (
+        ),
+        "mycount/server/templates/traffic_filter.html": (
         ),
         "mycount/server/templates/visitor_map.html": (
             "mycount/server/templates/base.html",
@@ -585,6 +685,8 @@ class DDeployment:
         ),
         "mycount/server/templates/visitors.html": (
             "mycount/server/templates/base.html",
+            "mycount/server/templates/isoforest_status.html",
+            "mycount/server/templates/traffic_filter.html",
         ),
         "requirements.txt": (
         ),
@@ -606,6 +708,7 @@ class DDeployment:
             "mycount/constants/DControl.py",
             "mycount/constants/DDeployment.py",
             "mycount/constants/DGeoIp.py",
+            "mycount/constants/DIsoForest.py",
             "mycount/constants/DMyCount.py",
             "mycount/constants/DRouterMappings.py",
             "mycount/interface/CitySchedule.py",
@@ -613,6 +716,7 @@ class DDeployment:
             "mycount/interface/DatabaseEnvironment.py",
             "mycount/interface/DbMgr.py",
             "mycount/interface/DeploymentFiles.py",
+            "mycount/interface/IsoForestSchedule.py",
             "mycount/interface/Network.py",
             "mycount/interface/ReleaseFiles.py",
             "requirements.txt",
@@ -645,6 +749,7 @@ class DDeployment:
             "mycount/constants/DCities.py",
             "mycount/constants/DControl.py",
             "mycount/constants/DGeoIp.py",
+            "mycount/constants/DIsoForest.py",
             "mycount/constants/DMarketing.py",
             "mycount/constants/DMyCount.py",
             "mycount/constants/DRouterMappings.py",
@@ -659,6 +764,10 @@ class DDeployment:
         "systemd/mycount-control.service": (
             "mycount/constants/DMyCount.py",
             "mycount/server/ControlServer.py",
+        ),
+        "systemd/mycount-isoforest.service": (
+            "mycount/activity/RunIsoForest.py",
+            "mycount/constants/DMyCount.py",
         ),
         "systemd/mycount-router.service": (
             "mycount/constants/DMyCount.py",

@@ -20,6 +20,32 @@ from mycount.server.ControlPages import ControlPages
 
 
 class VisitorsTests(unittest.TestCase):
+    def test_client_fields_render_and_filter_individually_with_numeric_sorting(self):
+        row = dict.fromkeys(name for name, _ in DVisitors.COLUMNS)
+        row.update(received_at=datetime(2026, 11, 12), page_view_id=10,
+                   browser_timezone='Asia/Shanghai', timezone='Europe/London',
+                   viewport_width=1214, timezone_offset=-480, webdriver=0,
+                   connection_downlink=7.85, vendor='<vendor>')
+        report = Report(ReportQuery.resolve({}), [], None, recent=[row],
+                        older=(row['received_at'], row['page_view_id']))
+        filters = {'browser_timezone': 'Asia/Shanghai', 'webdriver': '0'}
+        body = ControlPages().visitors(report, filters).decode()
+        self.assertIn('name="browser_timezone" value="Asia/Shanghai"', body)
+        self.assertIn('name="webdriver" value="0"', body)
+        self.assertNotIn('name="client_details"', body)
+        self.assertIn('<td>Asia/Shanghai</td>', body)
+        self.assertIn('<td>Europe/London</td>', body)
+        self.assertIn('<td>&lt;vendor&gt;</td>', body)
+        for value in ('1214', '-480', '0', '7.85'):
+            self.assertIn(f'<td data-sort-number="{value}">{value}</td>', body)
+        self.assertIn('<td data-sort-number="">—</td>', body)
+        query = parse_qs(urlsplit(VisitorsQuery.link(filters, report.older)).query)
+        self.assertEqual(VisitorsQuery.filters(query), filters)
+        self.assertEqual(ReportQuery.resolve(query).before, report.older)
+        reference = ControlPages().reference().decode()
+        self.assertIn('<td><code>browser_timezone</code></td>', reference)
+        self.assertNotIn('<td><code>client_details</code></td>', reference)
+
     def test_languages_follow_city_and_preserve_filter_in_pagination(self):
         row = dict.fromkeys(name for name, _ in DVisitors.COLUMNS)
         row.update(received_at=datetime(2026, 10, 9, 12), page_view_id=10,
@@ -59,12 +85,14 @@ class VisitorsTests(unittest.TestCase):
         self.assertLess(navigation.index('href="/visitors"'), navigation.index('href="/reference"'))
         query = parse_qs(urlsplit(VisitorsQuery.link(filters, report.older)).query)
         self.assertEqual(VisitorsQuery.filters(query), filters)
-        self.assertEqual(ReportQuery.resolve(query).before, report.older)
-        self.assertTrue(ReportQuery.resolve(query).exclude_bots)
-        query = parse_qs(urlsplit(VisitorsQuery.link(filters, report.older, exclude_bots=False)).query)
-        self.assertFalse(ReportQuery.resolve(query).exclude_bots)
+        report_query = {key: value for key, value in query.items() if key != 'site'}
+        self.assertEqual(ReportQuery.resolve(report_query).before, report.older)
+        self.assertTrue(ReportQuery.resolve(report_query).exclude_bots)
+        query = parse_qs(urlsplit(VisitorsQuery.link(filters, report.older, filter_mode='none')).query)
+        report_query = {key: value for key, value in query.items() if key != 'site'}
+        self.assertFalse(ReportQuery.resolve(report_query).exclude_bots)
         self.assertEqual(VisitorsQuery.filters(query), filters)
-        self.assertEqual(ReportQuery.resolve(query).before, report.older)
+        self.assertEqual(ReportQuery.resolve(report_query).before, report.older)
         with self.assertRaises(ValueError):
             VisitorsQuery.filters({'site': ['one', 'two']})
 
@@ -72,11 +100,12 @@ class VisitorsTests(unittest.TestCase):
     def test_snapshot_bounds_rows_and_closes_connection_on_failure(self, factory):
         timestamp = datetime(2026, 10, 9)
         factory.return_value.query.side_effect = [
-            [dict(received_at=timestamp, page_view_id=index) for index in range(31, 0, -1)],
+            [dict(received_at=timestamp, page_view_id=index)
+             for index in range(DVisitors.PAGE_SIZE + 1, 0, -1)],
             [dict(first_visit_at=timestamp)],
         ]
         report = ReadReports().visitors(ReportQuery.resolve({}), {'site': 'example'})
-        self.assertEqual(len(report.recent), 30)
+        self.assertEqual(len(report.recent), DVisitors.PAGE_SIZE)
         self.assertEqual(report.older, (timestamp, 2))
         factory.return_value.transaction.assert_called_once_with(read_only=True)
         factory.return_value.close.assert_called_once()
@@ -100,7 +129,7 @@ class VisitorsTests(unittest.TestCase):
             self.assertEqual(response.status, 200)
             self.assertIn(b'No visits match the current filters.', response.read())
             parameters = factory.return_value.query.call_args_list[0].args[1]
-            self.assertEqual(parameters, ('%50=%=_==%', '%0%', 31))
+            self.assertEqual(parameters, ('%50=%=_==%', '%0%', DVisitors.PAGE_SIZE + 1))
             for excluded, query in [(True, ''), (False, '?exclude_bots=0'),
                                     (True, '?exclude_bots=0&exclude_bots=1')]:
                 factory.reset_mock()
@@ -109,8 +138,8 @@ class VisitorsTests(unittest.TestCase):
                 response = connection.getresponse()
                 self.assertEqual(response.status, 200)
                 body = response.read()
-                self.assertEqual(b'value="1" checked' in body, excluded)
-                self.assertIn(b'exclude_bots=' + (b'1' if excluded else b'0'), body)
+                self.assertEqual(b'value="basic" selected' in body, excluded)
+                self.assertIn(b'filter=' + (b'basic' if excluded else b'none'), body)
                 sql = factory.return_value.query.call_args_list[0].args[0]
                 self.assertEqual('NOT (COALESCE(v.is_bot, 0) = 1' in sql, excluded)
             for path in ('/visitors?before=bad', '/visitors?site=one&site=two',

@@ -14,8 +14,9 @@ from mycount.constants.DCities import DCities
 
 
 class CitySchedule:
-    def __init__(self, directory: Path | None = None) -> None:
+    def __init__(self, directory: Path | None = None, *, default_expression: str = DCities.DEFAULT_SCHEDULE) -> None:
         self.directory = directory if directory is not None else Path(__file__).resolve().parents[2] / DCities.DIRECTORY
+        self._default_expression = default_expression
 
     @staticmethod
     def validate(enabled: bool, expression: str) -> dict[str, object]:
@@ -31,9 +32,9 @@ class CitySchedule:
         try:
             values = json.loads((self.directory / "schedule.json").read_text())
         except FileNotFoundError:
-            return self.validate(True, DCities.DEFAULT_SCHEDULE)
+            return self.validate(True, self._default_expression)
         if not isinstance(values, dict) or values.keys() != {"enabled", "expression"}:
-            raise ValueError("Invalid city refresh schedule file.")
+            raise ValueError("Invalid refresh schedule file.")
         return self.validate(**values)
 
     @contextmanager

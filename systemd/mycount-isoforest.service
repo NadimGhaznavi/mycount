@@ -1,0 +1,18 @@
+[Unit]
+Description=MyCount scheduled IsoForest analysis
+After=mariadb.service
+
+[Service]
+Type=oneshot
+User=@USER@
+Group=@USER@
+WorkingDirectory=@APP@
+EnvironmentFile=@DATABASE_ENV@
+ExecStart=@APP@/.venv/bin/python -B -u -m mycount.activity.RunIsoForest --scheduled
+StandardOutput=journal
+StandardError=journal
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=@APP@/data/isoforest

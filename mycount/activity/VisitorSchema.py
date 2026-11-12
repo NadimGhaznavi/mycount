@@ -3,6 +3,8 @@
 from mycount.interface.DbMgr import DbMgr
 from mycount.activity.MarketingSchema import MarketingSchema
 from mycount.interface.CountryNameMigration import CountryNameMigration
+from mycount.interface.ClientDetailsMigration import ClientDetailsMigration
+from mycount.interface.IsoForestDb import IsoForestDb
 from mycount.constants.DMyCount import DMyCount
 from mycount.constants.DGeoIp import DGeoIp
 from mycount.constants.DVisitorDetails import DVisitorDetails
@@ -57,8 +59,7 @@ class VisitorSchema:
                 ADD COLUMN IF NOT EXISTS os_version VARCHAR({DVisitorDetails.VERSION_LENGTH}) NULL,
                 ADD COLUMN IF NOT EXISTS device_brand VARCHAR({DVisitorDetails.TEXT_LENGTH}) NULL,
                 ADD COLUMN IF NOT EXISTS device_model VARCHAR({DVisitorDetails.TEXT_LENGTH}) NULL,
-                ADD COLUMN IF NOT EXISTS is_bot BOOLEAN NULL,
-                ADD COLUMN IF NOT EXISTS client_details JSON NULL
+                ADD COLUMN IF NOT EXISTS is_bot BOOLEAN NULL
         """)
         self._db.execute("""
             ALTER TABLE page_views
@@ -98,8 +99,10 @@ class VisitorSchema:
                     REFERENCES page_views(page_view_id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
         """)
+        ClientDetailsMigration(self._db).apply()
         CountryNameMigration(self._db).apply()
         MarketingSchema(self._db).apply()
+        IsoForestDb(self._db).apply_schema()
 
 
 if __name__ == "__main__":

@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from mycount.constants.DReports import DReports
 from mycount.constants.DMyCount import DMyCount
+from mycount.constants.DTrafficFilters import DTrafficFilters
 from mycount.entity.ReportOptions import ReportOptions
 
 
@@ -48,15 +49,25 @@ class ReportQuery:
                 before = (received_at, view_id)
             except (ValueError, OverflowError) as error:
                 raise ValueError("Invalid recent-visit position.") from error
+        return ReportOptions(start, end, timezone, ReportQuery.filter_mode(query), before, site)
+
+    @staticmethod
+    def filter_mode(query: dict[str, list[str]]) -> str:
+        if "filter" in query:
+            values = query["filter"]
+            if len(values) != 1 or values[0] not in dict(DTrafficFilters.OPTIONS):
+                raise ValueError("Choose a valid traffic filter.")
+            return values[0]
+        # Existing bookmarked URLs used a hidden value followed by a checkbox.
         bots = query.get("exclude_bots", ["1"])[-1]
         if bots not in ("0", "1"):
             raise ValueError("Invalid bot filter.")
-        return ReportOptions(start, end, timezone, bots == "1", before, site)
+        return DTrafficFilters.BASIC if bots == "1" else DTrafficFilters.NONE
 
     @staticmethod
     def link(path: str, options: ReportOptions, before: tuple[datetime, int] | None = None) -> str:
         query = {"start": options.start.isoformat(), "end": options.end.isoformat(),
-                 "timezone": options.timezone, "site": options.site, "exclude_bots": "1" if options.exclude_bots else "0"}
+                 "timezone": options.timezone, "site": options.site, "filter": options.filter_mode}
         if before is not None:
             query["before"] = f"{before[0].isoformat()},{before[1]}"
         return path + "?" + urlencode(query)

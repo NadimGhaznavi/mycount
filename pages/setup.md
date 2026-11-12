@@ -25,6 +25,12 @@ Start runs the collector, Control, and router worker sequentially. Stop uses
 the reverse order. The command stops at the first failed service operation.
 Use `./scripts/services.sh --help` to display usage.
 
+The separate `mycount-isoforest.service` job runs only when the minute cron
+check starts it. Its recurring schedule and queued runs are managed from the
+web interface's **IsoForest** page. See
+[IsoForest traffic filtering]({% link pages/isoforest.md %}) for operation and
+stored evidence.
+
 ## Network configuration
 
 Installation creates `/opt/prod/mycount/conf/mycount.json` using the defaults
