@@ -13,6 +13,7 @@ from mycount.interface.MarketingDb import MarketingDb
 from mycount.interface.VisitDb import VisitDb
 from mycount.interface.CityLocations import CityLocations
 from mycount.activity.ResolveVisitorLocations import ResolveVisitorLocations
+from mycount.interface.IsoForestDb import IsoForestDb
 
 
 class ReadReports:
@@ -20,7 +21,7 @@ class ReadReports:
         db = DbMgr()
         try:
             with db.transaction(read_only=True):
-                visits = VisitDb(db)
+                visits, isoforest_run = self._visits(db, options)
                 first = visits.first_visit_at()
                 if all_history:
                     options = self._history_options(options, first)
@@ -41,7 +42,7 @@ class ReadReports:
                 older = (recent[-1]["received_at"], recent[-1]["page_view_id"])
             return Report(options, daily, first, sites=sites, pages=pages, locations=locations,
                           recent=recent, referrers=referrers, languages=languages, older=older,
-                          available_sites=available_sites)
+                          available_sites=available_sites, isoforest_run=isoforest_run)
         finally:
             db.close()
 
@@ -49,7 +50,7 @@ class ReadReports:
         db = DbMgr()
         try:
             with db.transaction(read_only=True):
-                visits = VisitDb(db)
+                visits, isoforest_run = self._visits(db, options)
                 rows = visits.visitor_records(filters, exclude_bots=options.exclude_bots,
                                               before=options.before, limit=DVisitors.PAGE_SIZE + 1)
                 first = visits.first_visit_at()
@@ -57,7 +58,7 @@ class ReadReports:
             if len(rows) > DVisitors.PAGE_SIZE:
                 rows = rows[:DVisitors.PAGE_SIZE]
                 older = (rows[-1]["received_at"], rows[-1]["page_view_id"])
-            return Report(options, [], first, recent=rows, older=older)
+            return Report(options, [], first, recent=rows, older=older, isoforest_run=isoforest_run)
         finally:
             db.close()
 
@@ -65,7 +66,7 @@ class ReadReports:
         db = DbMgr()
         try:
             with db.transaction(read_only=True):
-                visits = VisitDb(db)
+                visits, isoforest_run = self._visits(db, options)
                 first = visits.first_visit_at()
                 if all_history:
                     options = self._history_options(options, first)
@@ -78,7 +79,7 @@ class ReadReports:
             db.close()
         mapped = ResolveVisitorLocations(CityLocations()).resolve(locations)
         return Report(options, [], first, locations=locations, map_locations=mapped,
-                      available_sites=available_sites)
+                      available_sites=available_sites, isoforest_run=isoforest_run)
 
     @staticmethod
     def _history_options(options: ReportOptions, first: datetime | None) -> ReportOptions:
@@ -92,11 +93,12 @@ class ReadReports:
         try:
             with db.transaction(read_only=True):
                 posts = MarketingDb(db).posts(start=days[0][1], end=days[-1][2])
-                visits = VisitDb(db)
+                visits, isoforest_run = self._visits(db, options)
                 daily = visits.daily_totals(days, exclude_bots=options.exclude_bots, site=options.site)
                 first = visits.first_visit_at()
                 available_sites = visits.available_sites()
-            return Report(options, daily, first, posts=posts, available_sites=available_sites)
+            return Report(options, daily, first, posts=posts, available_sites=available_sites,
+                          isoforest_run=isoforest_run)
         finally:
             db.close()
 
@@ -106,3 +108,10 @@ class ReadReports:
             return VisitDb(db).first_visit_at()
         finally:
             db.close()
+
+    @staticmethod
+    def _visits(db: DbMgr, options: ReportOptions) -> tuple[VisitDb, dict[str, object] | None]:
+        if not options.uses_isoforest:
+            return VisitDb(db), None
+        run = IsoForestDb(db).active_run()
+        return VisitDb(db, isoforest_run_id=run["run_id"] if run is not None else None), run

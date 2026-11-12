@@ -34,6 +34,7 @@ Please contact me via email to provide feedback, report bugs, have feature reque
 
 - [Architecture]({% link pages/architecture.md %})
 - [Collected Data]({% link pages/collected-data.md %})
+- [IsoForest Traffic Filtering]({% link pages/isoforest.md %})
 - [Gallery]({% link pages/gallery.md %})
 
 ### MyCount DevOps Docs

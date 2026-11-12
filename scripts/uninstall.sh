@@ -17,6 +17,7 @@ from tempfile import NamedTemporaryFile
 from mycount.constants.DCaddy import DCaddy
 from mycount.constants.DGeoIp import DGeoIp
 from mycount.constants.DCities import DCities
+from mycount.constants.DIsoForest import DIsoForest
 from mycount.constants.DMyCount import DMyCount
 from mycount.constants.DControl import DControl
 from mycount.constants.DMarketing import DMarketing
@@ -49,7 +50,8 @@ site.unlink(missing_ok=True)
 # Remove the schedule first so no new refresh is launched during removal.
 Path(DGeoIp.CRON_FILE).unlink(missing_ok=True)
 Path(DCities.CRON_FILE).unlink(missing_ok=True)
-for name in (DRouterMappings.SERVICE_UNIT, DControl.SERVICE_UNIT, DMyCount.SERVICE_UNIT):
+Path(DIsoForest.CRON_FILE).unlink(missing_ok=True)
+for name in (DIsoForest.SERVICE_UNIT, DRouterMappings.SERVICE_UNIT, DControl.SERVICE_UNIT, DMyCount.SERVICE_UNIT):
     unit = Path('/etc/systemd/system') / name
     if unit.exists():
         subprocess.run(['systemctl', 'disable', '--now', name], check=True)

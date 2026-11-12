@@ -7,6 +7,10 @@
     }
     const pad = value => String(value).padStart(2, '0');
     const time = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    if (element.dataset.localTime === 'datetime') {
+      element.textContent = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${time}:${pad(date.getSeconds())}`;
+      continue;
+    }
     if (element.dataset.localTime === 'date-only') {
       element.textContent = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
       continue;

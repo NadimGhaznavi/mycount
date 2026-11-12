@@ -9,6 +9,37 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Summary
+
+Store browser client details in 29 individual, typed page-view columns. Migrate
+and verify existing JSON values before removing the old column, and expose
+each field separately in Visitors while preserving the browser payload format.
+
+Add IsoForest+ traffic filtering alongside the existing Basic Bots filter.
+Analyze raw visits in scheduled network-block/time-window batches, retain
+versioned evidence, and combine both methods consistently across report pages.
+
+### Added
+
+- Add an independent IsolationForest pipeline using the tested network-rotation
+  features, IPv4 /16 and IPv6 /48 blocks, daily UTC observation windows, and
+  reproducible model settings. Preserve collected data and Basic Bot flags.
+- Store atomic model runs, typed observation features/scores, visit memberships,
+  source coverage, and model metadata in three new IsoForest tables.
+- Add an IsoForest management page with run history, observation inspection,
+  editable hourly schedule, and a queued-run action. Run analysis through an
+  unprivileged systemd job with the existing protected database environment.
+
+### Changed
+
+- Display up to 20 rows per Visitors page, controlled by `DVisitors.PAGE_SIZE`.
+- Replace Exclude bots checkboxes with None / Basic Bots / IsoForest+ selectors
+  on Map, Metrics, Marketing, and Visitors. Preserve legacy filter links and
+  apply the selected completed run before aggregation and pagination.
+- Keep unassessed visits visible and the previous completed results active on
+  failed runs. Preserve schedule settings on upgrade and remove job definitions
+  on uninstall while retaining database evidence.
+
 ## [3.4.0] - 2026-11-06 @ 18:10
 
 - Added ai, llamasrv, and nd3g sites to the CORS whitelist.

@@ -1,0 +1,12 @@
+{% if not error and options.uses_isoforest %}
+<p role="status" class="isoforest-status">
+  {% if isoforest_run %}
+  IsoForest+ uses run {{ isoforest_run.run_id }}, completed
+  <time datetime="{{ isoforest_run.completed_at | utc_iso }}" data-local-time="datetime">—</time>.
+  Unassessed visits remain visible until a later run.
+  {% else %}
+  IsoForest has not completed a run yet. Basic Bots applies; unassessed visits remain visible.
+  {% endif %}
+  <a href="/isoforest">IsoForest runs and schedule</a>
+</p>
+{% endif %}
