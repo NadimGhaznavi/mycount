@@ -643,8 +643,6 @@ class DDeployment:
         ),
         "mycount/server/templates/chart_theme.html": (
         ),
-        "mycount/server/templates/city_schedule.html": (
-        ),
         "mycount/server/templates/control.html": (
             "mycount/server/templates/all_traffic.html",
             "mycount/server/templates/base.html",
@@ -686,7 +684,6 @@ class DDeployment:
         ),
         "mycount/server/templates/visitor_map.html": (
             "mycount/server/templates/base.html",
-            "mycount/server/templates/city_schedule.html",
             "mycount/server/templates/report_filters.html",
         ),
         "mycount/server/templates/visitors.html": (

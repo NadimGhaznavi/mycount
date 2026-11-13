@@ -54,10 +54,10 @@ class VisitorMapTests(unittest.TestCase):
         mapped = [{**row, 'coordinate_source': 'GeoIP'} for row in self.locations[:2]]
         body = ControlPages().visitor_map(Report(self.options, [], None, locations=self.locations, map_locations=mapped)).decode()
         self.assertIn('6 mapped visits · 4 unmapped visits · 10 total visits', body)
-        self.assertIn('&lt;script&gt;alert(1)&lt;/script&gt;', body)
         self.assertNotIn('<script>alert(1)</script>', body)
         markers = body.split('const locations = ', 1)[1].split(';', 1)[0]
         self.assertIn('"latitude": 0.0', markers)
+        self.assertIn(r'\u003cscript\u003ealert(1)\u003c/script\u003e', markers)
         self.assertNotIn('"latitude": null', markers)
         self.assertNotIn('"longitude": null', markers)
         self.assertIn('popup.textContent =', body)

@@ -11,6 +11,9 @@ permalink: /CHANGELOG/
 
 ### Summary
 
+Resize the visitor map vertically to fill the available browser window space.
+Remove the Visitor Log and City DB sections below the map.
+
 Replace the map's zoom buttons with a vertical slider that adjusts one zoom
 level at a time and stays in sync with other map zoom gestures.
 
