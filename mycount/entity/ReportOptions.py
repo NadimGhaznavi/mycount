@@ -12,7 +12,7 @@ class ReportOptions:
     start: date
     end: date
     timezone: str
-    filter_mode: str = DTrafficFilters.BASIC
+    filter_mode: str = DTrafficFilters.DEFAULT
     before: tuple[datetime, int] | None = None
     site: str = "*"
 

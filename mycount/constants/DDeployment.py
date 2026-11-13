@@ -490,6 +490,11 @@ class DDeployment:
             "mycount/interface/DeploymentConfiguration.py",
             "mycount/interface/__init__.py",
         ),
+        "mycount/interface/ReportPreferences.py": (
+            "mycount/__init__.py",
+            "mycount/constants/DReports.py",
+            "mycount/interface/__init__.py",
+        ),
         "mycount/interface/ReportQuery.py": (
             "mycount/__init__.py",
             "mycount/constants/DMyCount.py",
@@ -569,6 +574,7 @@ class DDeployment:
             "mycount/interface/MarketingForm.py",
             "mycount/interface/MarketingScreenshots.py",
             "mycount/interface/MarketingUpload.py",
+            "mycount/interface/ReportPreferences.py",
             "mycount/interface/ReportQuery.py",
             "mycount/interface/VisitorsQuery.py",
             "mycount/server/ControlPages.py",

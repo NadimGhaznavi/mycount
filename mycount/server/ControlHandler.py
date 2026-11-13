@@ -21,6 +21,7 @@ from mycount.activity.ReadReports import ReadReports
 from mycount.entity.Report import Report
 from mycount.entity.ReportOptions import ReportOptions
 from mycount.interface.ReportQuery import ReportQuery
+from mycount.interface.ReportPreferences import ReportPreferences
 from mycount.interface.VisitorsQuery import VisitorsQuery
 from mycount.interface.DbCommitUncertain import DbCommitUncertain
 from mycount.server.ControlPages import ControlPages
@@ -71,41 +72,45 @@ class ControlHandler(BaseHTTPRequestHandler):
         elif path in ("/", "/map", "/metrics", "/marketing"):
             query = parse_qs(request.query, keep_blank_values=True)
             try:
+                query = ReportPreferences.merge(ReportPreferences.read(self.headers.get("Cookie")), query)
                 options = ReportQuery.resolve(query)
             except ValueError as error:
                 self.send_error(400, str(error))
                 return
+            preferences = ReportPreferences.header(query, options.filter_mode)
             if path == "/marketing":
-                self.marketing(options, saved=query.get("saved") == ["1"])
+                self.marketing(options, saved=query.get("saved") == ["1"], preferences=preferences)
                 return
             if path in ("/", "/map"):
-                self.visitor_map(options, all_history="start" not in query)
+                self.visitor_map(options, all_history="start" not in query, preferences=preferences)
                 return
             try:
                 report = ReadReports().metrics(options, all_history="start" not in query)
             except pymysql.MySQLError:
                 logging.exception("Unable to read site visits")
                 self.respond(503, ControlPages().render(Report(options, [], None), error="Site visits unavailable."),
-                             "text/html; charset=utf-8")
+                             "text/html; charset=utf-8", preferences=preferences)
                 return
-            self.respond(200, ControlPages().render(report), "text/html; charset=utf-8")
+            self.respond(200, ControlPages().render(report), "text/html; charset=utf-8", preferences=preferences)
         elif path == "/visitors":
             query = parse_qs(request.query, keep_blank_values=True)
             try:
-                options = ReportQuery.resolve({"before": query.get("before", [""]),
-                                               "filter": [ReportQuery.filter_mode(query)]})
+                shared = {name: query[name] for name in ("filter", "exclude_bots", "before") if name in query}
+                shared = ReportPreferences.merge(ReportPreferences.read(self.headers.get("Cookie")), shared)
+                options = ReportQuery.resolve(shared)
                 filters = VisitorsQuery.filters(query)
             except ValueError as error:
                 self.send_error(400, str(error))
                 return
+            preferences = ReportPreferences.header(shared, options.filter_mode)
             try:
                 report = ReadReports().visitors(options, filters)
             except pymysql.MySQLError:
                 logging.exception("Unable to read visitor records")
                 self.respond(503, ControlPages().visitors(Report(options, [], None), filters,
-                             error="Visitor records unavailable."), "text/html; charset=utf-8")
+                             error="Visitor records unavailable."), "text/html; charset=utf-8", preferences=preferences)
                 return
-            self.respond(200, ControlPages().visitors(report, filters), "text/html; charset=utf-8")
+            self.respond(200, ControlPages().visitors(report, filters), "text/html; charset=utf-8", preferences=preferences)
         elif path == "/reference":
             first_visit_at = None
             try:
@@ -129,25 +134,26 @@ class ControlHandler(BaseHTTPRequestHandler):
         else:
             self.send_error(404, "Page not found")
 
-    def visitor_map(self, options: ReportOptions, *, all_history: bool = False) -> None:
+    def visitor_map(self, options: ReportOptions, *, all_history: bool = False,
+                    preferences: str | None = None) -> None:
         try:
             report = ReadReports().visitor_map(options, all_history=all_history)
         except pymysql.MySQLError:
             logging.exception("Unable to read visitor locations")
             self.respond(503, ControlPages().visitor_map(Report(options, [], None),
-                         error="Visitor locations unavailable."), "text/html; charset=utf-8")
+                         error="Visitor locations unavailable."), "text/html; charset=utf-8", preferences=preferences)
             return
-        self.respond(200, ControlPages().visitor_map(report), "text/html; charset=utf-8")
+        self.respond(200, ControlPages().visitor_map(report), "text/html; charset=utf-8", preferences=preferences)
 
-    def marketing(self, options: ReportOptions, *, saved: bool = False) -> None:
+    def marketing(self, options: ReportOptions, *, saved: bool = False, preferences: str | None = None) -> None:
         try:
             report = ReadReports().marketing(options)
         except pymysql.MySQLError:
             logging.exception("Unable to read marketing events")
             self.respond(503, ControlPages().marketing(Report(options, [], None), error="Marketing data unavailable."),
-                         "text/html; charset=utf-8")
+                         "text/html; charset=utf-8", preferences=preferences)
             return
-        self.respond(200, ControlPages().marketing(report, saved=saved), "text/html; charset=utf-8")
+        self.respond(200, ControlPages().marketing(report, saved=saved), "text/html; charset=utf-8", preferences=preferences)
 
     def do_POST(self) -> None:
         path = urlsplit(self.path).path
@@ -177,6 +183,11 @@ class ControlHandler(BaseHTTPRequestHandler):
         if content_type.split(";", 1)[0] not in ("application/x-www-form-urlencoded", "multipart/form-data"):
             self.send_error(415, "Expected form data")
             return
+        try:
+            options = ReportQuery.resolve(ReportPreferences.read(self.headers.get("Cookie")))
+        except ValueError as error:
+            self.send_error(400, str(error))
+            return
         fields = {}
         try:
             if self.headers.get("Transfer-Encoding") or len(self.headers.get_all("Content-Length", [])) != 1:
@@ -197,7 +208,7 @@ class ControlHandler(BaseHTTPRequestHandler):
             self.send_error(413, "Screenshot or form is too large")
             return
         except (ValueError, UnicodeError) as error:
-            self.respond(400, ControlPages().marketing(Report(ReportQuery.resolve({}), [], None), error=str(error), fields=fields),
+            self.respond(400, ControlPages().marketing(Report(options, [], None), error=str(error), fields=fields),
                          "text/html; charset=utf-8")
             return
         try:
@@ -208,13 +219,13 @@ class ControlHandler(BaseHTTPRequestHandler):
                 db.close()
         except DbCommitUncertain:
             logging.exception("Marketing save outcome uncertain")
-            self.respond(503, ControlPages().marketing(Report(ReportQuery.resolve({}), [], None),
+            self.respond(503, ControlPages().marketing(Report(options, [], None),
                          error="Save could not be confirmed. Retry this form to confirm the same posting.", fields=fields),
                          "text/html; charset=utf-8")
             return
         except (pymysql.MySQLError, OSError):
             logging.exception("Unable to save marketing event")
-            self.respond(503, ControlPages().marketing(Report(ReportQuery.resolve({}), [], None), error="Posting could not be saved. Please retry.", fields=fields),
+            self.respond(503, ControlPages().marketing(Report(options, [], None), error="Posting could not be saved. Please retry.", fields=fields),
                          "text/html; charset=utf-8")
             return
         self.respond(303, b"", "text/html; charset=utf-8", location="/marketing?saved=1")
@@ -253,7 +264,8 @@ class ControlHandler(BaseHTTPRequestHandler):
             return
         respond(200, {"schedule": values, "dataset": dataset})
 
-    def respond(self, status: int, body: bytes, content_type: str, *, location: str | None = None) -> None:
+    def respond(self, status: int, body: bytes, content_type: str, *, location: str | None = None,
+                preferences: str | None = None) -> None:
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
@@ -261,6 +273,8 @@ class ControlHandler(BaseHTTPRequestHandler):
         self.send_header("X-Content-Type-Options", "nosniff")
         if location is not None:
             self.send_header("Location", location)
+        if preferences is not None:
+            self.send_header("Set-Cookie", preferences)
         self.end_headers()
         self.wfile.write(body)
 

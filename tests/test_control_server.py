@@ -126,6 +126,7 @@ class ControlServerTests(unittest.TestCase):
     @patch("mycount.activity.ReadReports.DbMgr")
     def test_banner_health_and_missing_page(self, factory):
         factory.return_value.query.side_effect = [
+            [],
             [{"first_visit_at": datetime(2026, 9, 23, 12)}],
             [{"site": "<example>", "page_views": 12, "last_visited": datetime(2026, 9, 27, 15, 5)}],
             [{"site": "<example>", "url": "https://example.com/<page>", "page_views": 12,
@@ -183,11 +184,11 @@ class ControlServerTests(unittest.TestCase):
                     self.assertIn(b'>3</td>', body)
                     factory.return_value.transaction.assert_called_once_with(read_only=True)
                     factory.return_value.close.assert_called_once()
-                    self.assertIn(b'value="basic" selected', body)
-                    for call in factory.return_value.query.call_args_list[1:-1]:
+                    self.assertIn(b'value="isoforest_plus" selected>IsoForest+</option>', body)
+                    for call in factory.return_value.query.call_args_list[2:-1]:
                         self.assertIn('AND NOT (COALESCE(v.is_bot, 0) = 1', call.args[0])
                         self.assertIn('mycount_smoke_', call.args[1])
-                    first_visit_call = factory.return_value.query.call_args_list[0]
+                    first_visit_call = factory.return_value.query.call_args_list[1]
                     self.assertIn('mycount_smoke_', first_visit_call.args[1])
                     self.assertNotIn('Bytespider', first_visit_call.args[1])
                     for query, excluded in [('exclude_bots=0', False), ('exclude_bots=0&exclude_bots=1', True)]:
@@ -224,7 +225,7 @@ class ControlServerTests(unittest.TestCase):
                     self.assertIn(b'data-local-time="long-date">September 23, 2026</time>', reference)
                     factory.return_value.close.assert_called_once()
                     factory.reset_mock()
-                    factory.return_value.query.side_effect = [[], [], [{"first_visit_at": None}], []]
+                    factory.return_value.query.side_effect = [[], [], [], [{"first_visit_at": None}], []]
                     connection.request("GET", "/marketing")
                     response = connection.getresponse()
                     self.assertEqual(response.status, 200)
