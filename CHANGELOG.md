@@ -11,6 +11,9 @@ permalink: /CHANGELOG/
 
 ### Summary
 
+Replace the map's zoom buttons with a vertical slider that adjusts one zoom
+level at a time and stays in sync with other map zoom gestures.
+
 Remove the IsoForest run notice and schedule link from Report filters.
 
 Move the last refresh time into the title bar below Counting since, aligned

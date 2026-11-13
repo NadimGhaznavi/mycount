@@ -15,9 +15,10 @@
   #visitor-map .visitor-map-tiles { filter: invert(1) hue-rotate(180deg) brightness(.75) saturate(.45) contrast(1.15); }
   #visitor-map .leaflet-popup-content-wrapper, #visitor-map .leaflet-popup-tip { background: #291d15; color: #f3e7db; }
   #visitor-map .leaflet-popup-content-wrapper, #visitor-map .leaflet-bar { border: 1px solid #62412b; }
-  #visitor-map .leaflet-bar a { background: #291d15; color: #ffac63; border-bottom-color: #62412b; }
-  #visitor-map .leaflet-bar a:hover, #visitor-map .leaflet-bar a:focus { background: #3b2a1e; }
-  #visitor-map .leaflet-bar a.leaflet-disabled { background: #191410; color: #9e8774; }
+  #visitor-map .map-zoom-control { display: flex; flex-direction: column; align-items: center; gap: .4rem; padding: .5rem .25rem; background: #291d15; color: #ffac63; }
+  #visitor-map .map-zoom-control label { font-size: .75rem; }
+  #visitor-map .map-zoom-slider { writing-mode: vertical-lr; direction: rtl; width: 2.75rem; height: 10rem; margin: 0; accent-color: #ffac63; cursor: pointer; touch-action: none; }
+  #visitor-map .map-zoom-slider:focus-visible { outline: 2px solid #ffac63; outline-offset: 2px; }
   #visitor-map .leaflet-control-attribution { background: rgba(25, 20, 16, .92); color: #d8b89d; }
   #visitor-map .leaflet-control-attribution a, #visitor-map .leaflet-popup-close-button { color: #ffac63; }
   .map-panel { margin-top: 1.5rem; }
@@ -87,7 +88,7 @@
       status.textContent = 'Map could not load. Location counts are available below.';
       return;
     }
-    const map = L.map('visitor-map', {worldCopyJump: true, minZoom: 1, preferCanvas: true}).setView([20, 0], 2);
+    const map = L.map('visitor-map', {worldCopyJump: true, minZoom: 1, preferCanvas: true, zoomControl: false}).setView([20, 0], 2);
     const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       className: 'visitor-map-tiles',
       maxZoom: 19,
@@ -97,6 +98,29 @@
       status.textContent = 'Some map tiles could not load. Visitor markers and location counts remain available.';
     });
     tiles.addTo(map);
+    const zoomControl = L.control({position: 'topleft'});
+    zoomControl.onAdd = () => {
+      const container = L.DomUtil.create('div', 'leaflet-bar map-zoom-control');
+      const label = L.DomUtil.create('label', '', container);
+      label.htmlFor = 'map-zoom';
+      label.textContent = 'Zoom';
+      const slider = L.DomUtil.create('input', 'map-zoom-slider', container);
+      slider.id = 'map-zoom';
+      slider.type = 'range';
+      slider.min = map.getMinZoom();
+      slider.max = map.getMaxZoom();
+      slider.step = 1;
+      slider.value = map.getZoom();
+      slider.setAttribute('aria-orientation', 'vertical');
+      slider.setAttribute('aria-controls', 'visitor-map');
+      slider.addEventListener('input', () => map.setZoom(Number(slider.value), {animate: false}));
+      map.on('zoomend', () => { slider.value = map.getZoom(); });
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.disableScrollPropagation(container);
+      L.DomEvent.on(container, 'keydown', L.DomEvent.stopPropagation);
+      return container;
+    };
+    zoomControl.addTo(map);
     const locations = {{ mapped_locations | tojson }};
     const densityColors = {{ density_colors | tojson }};
     const maxViews = locations.reduce((max, location) => Math.max(max, location.page_views), 0);
