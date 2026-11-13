@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [3.5.2] - 2026-11-13 @ 18:59
+
 ### Summary
 
 Resize the visitor map vertically to fill the available browser window space.
