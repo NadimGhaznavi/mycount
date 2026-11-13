@@ -584,6 +584,7 @@ class DDeployment:
             "mycount/__init__.py",
             "mycount/constants/DIsoForest.py",
             "mycount/constants/DMarketing.py",
+            "mycount/constants/DMyCount.py",
             "mycount/constants/DTrafficFilters.py",
             "mycount/constants/DVisitors.py",
             "mycount/entity/Report.py",
@@ -675,7 +676,6 @@ class DDeployment:
             "mycount/server/templates/base.html",
         ),
         "mycount/server/templates/report_filters.html": (
-            "mycount/server/templates/isoforest_status.html",
             "mycount/server/templates/traffic_filter.html",
         ),
         "mycount/server/templates/styles.html": (

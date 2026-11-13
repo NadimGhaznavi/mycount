@@ -9,6 +9,14 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Summary
+
+Remove the IsoForest run notice and schedule link from Report filters.
+
+Move the last refresh time into the title bar below Counting since, aligned
+left, and display it as a full date with a 12-hour time. Add a version and
+codename footer to every report page.
+
 ## [3.5.1] - 2026-11-13 @ 03:16
 
 ### Summary

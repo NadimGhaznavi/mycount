@@ -155,7 +155,7 @@ class ControlServerTests(unittest.TestCase):
                     self.assertIn(b"&lt;example&gt;", body)
                     self.assertIn(b">12</td>", body)
                     self.assertIn(b'2026-09-27T15:05:00+00:00', body)
-                    self.assertIn(b"Last refresh:", body)
+                    self.assertIn(b"Last refreshed:", body)
                     self.assertIn(b'data-local-time="long-date">September 23, 2026</time>', body)
                     self.assertIn(b'name="start" value="2026-09-23"', body)
                     self.assertIn(b'https://example.com/&lt;page&gt;', body)

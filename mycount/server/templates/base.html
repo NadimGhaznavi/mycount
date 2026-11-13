@@ -17,6 +17,7 @@
       {% if first_visit_at is not none %}
       <p>Counting since <time datetime="{{ first_visit_at | utc_iso }}" data-local-time="long-date">{{ first_visit_at.strftime('%B') }} {{ first_visit_at.day }}, {{ first_visit_at.year }}</time></p>
       {% endif %}
+      <p class="last-refresh">Last refreshed: <time datetime="{{ refreshed_at | utc_iso }}" data-local-time="long-datetime">—</time></p>
     </div>
     <nav aria-label="Reports">
       <span aria-hidden="true">[</span>
@@ -26,8 +27,8 @@
       <span aria-hidden="true">]</span>
     </nav>
   </header>
-  <div class="refresh-row"><span class="last-refresh">Last refresh: <time datetime="{{ refreshed_at | utc_iso }}" data-local-time="time">—</time></span></div>
   <main>{% block content %}{% endblock %}</main>
+  <footer class="page-footer">Version: {{ version }} ({{ codename }})</footer>
   {% include 'local_time.html' %}
   {% if active_page in ('metrics', 'visitors') %}{% include 'table_sort.html' %}{% endif %}
 </body>
