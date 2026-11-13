@@ -100,6 +100,7 @@ class VisitorsTests(unittest.TestCase):
     def test_snapshot_bounds_rows_and_closes_connection_on_failure(self, factory):
         timestamp = datetime(2026, 10, 9)
         factory.return_value.query.side_effect = [
+            [],
             [dict(received_at=timestamp, page_view_id=index)
              for index in range(DVisitors.PAGE_SIZE + 1, 0, -1)],
             [dict(first_visit_at=timestamp)],
@@ -130,18 +131,21 @@ class VisitorsTests(unittest.TestCase):
             self.assertIn(b'No visits match the current filters.', response.read())
             parameters = factory.return_value.query.call_args_list[0].args[1]
             self.assertEqual(parameters, ('%50=%=_==%', '%0%', DVisitors.PAGE_SIZE + 1))
-            for excluded, query in [(True, ''), (False, '?exclude_bots=0'),
-                                    (True, '?exclude_bots=0&exclude_bots=1')]:
+            for mode, query in [('isoforest_plus', ''), ('none', '?exclude_bots=0'),
+                                ('basic', '?exclude_bots=0&exclude_bots=1')]:
                 factory.reset_mock()
                 factory.return_value.query.side_effect = [[], [dict(first_visit_at=None)]]
+                if mode == 'isoforest_plus':
+                    factory.return_value.query.side_effect = [[], [], [dict(first_visit_at=None)]]
                 connection.request('GET', '/visitors' + query)
                 response = connection.getresponse()
                 self.assertEqual(response.status, 200)
                 body = response.read()
-                self.assertEqual(b'value="basic" selected' in body, excluded)
-                self.assertIn(b'filter=' + (b'basic' if excluded else b'none'), body)
-                sql = factory.return_value.query.call_args_list[0].args[0]
-                self.assertEqual('NOT (COALESCE(v.is_bot, 0) = 1' in sql, excluded)
+                self.assertIn(f'value="{mode}" selected'.encode(), body)
+                self.assertIn(f'filter={mode}'.encode(), body)
+                record_call = 1 if mode == 'isoforest_plus' else 0
+                sql = factory.return_value.query.call_args_list[record_call].args[0]
+                self.assertEqual('NOT (COALESCE(v.is_bot, 0) = 1' in sql, mode != 'none')
             for path in ('/visitors?before=bad', '/visitors?site=one&site=two',
                          '/visitors?exclude_bots=bad'):
                 connection.request('GET', path)

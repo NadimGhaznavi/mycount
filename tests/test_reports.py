@@ -112,7 +112,7 @@ class ReportTests(unittest.TestCase):
         timestamp = datetime(2026, 3, 8, 12)
         rows = [dict(page_view_id=index, received_at=timestamp, country_code=None,
                      city_name=None, url=f'https://example.com/{index}') for index in range(51, 0, -1)]
-        factory.return_value.query.side_effect = [[dict(first_visit_at=timestamp)], [], [], [], rows, [],
+        factory.return_value.query.side_effect = [[], [dict(first_visit_at=timestamp)], [], [], [], rows, [],
                                                   [dict(language_tag='en-CA', page_views=5000)],
                                                   [dict(day='2026-03-08', page_views=5000)],
                                                   [dict(site="example"), dict(site="other")]]
@@ -124,7 +124,7 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(report.languages, [dict(language_tag='en-CA', page_views=5000)])
         factory.return_value.transaction.assert_called_once_with(read_only=True)
         factory.return_value.close.assert_called_once()
-        calls = factory.return_value.query.call_args_list
+        calls = factory.return_value.query.call_args_list[1:]
         self.assertEqual(calls[4].args[1][-1], 51)
         for call in calls[1:7]:
             self.assertIn(datetime(2026, 3, 8, 5), call.args[1])
@@ -149,12 +149,12 @@ class ReportTests(unittest.TestCase):
 
     @patch('mycount.activity.ReadReports.DbMgr')
     def test_marketing_uses_daily_totals_without_fetching_individual_visits(self, factory):
-        factory.return_value.query.side_effect = [[], [dict(day='2026-03-08', page_views=0)],
+        factory.return_value.query.side_effect = [[], [], [dict(day='2026-03-08', page_views=0)],
                                                   [dict(first_visit_at=None)], [dict(site="example")]]
         options = ReportOptions(date(2026, 3, 8), date(2026, 3, 8), 'UTC', site='example')
         report = ReadReports().marketing(options)
         self.assertEqual(report.daily, [dict(day='2026-03-08', page_views=0)])
-        daily_call = factory.return_value.query.call_args_list[1]
+        daily_call = factory.return_value.query.call_args_list[2]
         self.assertIn('site_page.site = %s', daily_call.args[0])
         self.assertIn('example', daily_call.args[1])
         self.assertEqual(report.available_sites, ['example'])

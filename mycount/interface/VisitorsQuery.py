@@ -21,7 +21,7 @@ class VisitorsQuery:
 
     @staticmethod
     def link(filters: dict[str, str], before: tuple[datetime, int] | None = None, *,
-             filter_mode: str = DTrafficFilters.BASIC) -> str:
+             filter_mode: str = DTrafficFilters.DEFAULT) -> str:
         query = {**filters, "filter": filter_mode}
         if before is not None:
             query["before"] = f"{before[0].isoformat()},{before[1]}"
