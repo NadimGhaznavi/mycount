@@ -33,7 +33,7 @@ class VisitorMapTests(unittest.TestCase):
     @patch('mycount.activity.ReadReports.DbMgr')
     def test_map_reads_aggregates_in_snapshot_with_local_day_and_bot_filters(self, factory):
         first = datetime(2025, 1, 1)
-        factory.return_value.query.side_effect = [[dict(first_visit_at=first)], self.locations, [dict(site="example"), dict(site="other")]]
+        factory.return_value.query.side_effect = [[], [dict(first_visit_at=first)], self.locations, [dict(site="example"), dict(site="other")]]
         report = ReadReports().visitor_map(self.options)
         self.assertEqual(report.locations, self.locations)
         self.assertEqual(report.first_visit_at, first)
@@ -41,14 +41,14 @@ class VisitorMapTests(unittest.TestCase):
         self.assertEqual(report.available_sites, ['example', 'other'])
         factory.return_value.transaction.assert_called_once_with(read_only=True)
         factory.return_value.close.assert_called_once()
-        sql, parameters = factory.return_value.query.call_args_list[1].args
+        sql, parameters = factory.return_value.query.call_args_list[2].args
         self.assertIn('GROUP BY latitude, longitude', sql)
         self.assertIn('COUNT(*) AS page_views', sql)
         self.assertIn('Bytespider', parameters)
         self.assertIn('mycount_smoke_', parameters)
         self.assertEqual(parameters[-2:], (datetime(2026, 3, 8, 5), datetime(2026, 3, 9, 4)))
         self.assertNotIn('latitude IS NOT NULL', sql)
-        self.assertEqual(factory.return_value.query.call_count, 3)
+        self.assertEqual(factory.return_value.query.call_count, 4)
 
     def test_map_preserves_zero_coordinates_and_counts_missing_locations(self):
         mapped = [{**row, 'coordinate_source': 'GeoIP'} for row in self.locations[:2]]
@@ -63,7 +63,7 @@ class VisitorMapTests(unittest.TestCase):
         self.assertIn('popup.textContent =', body)
         self.assertIn('OpenStreetMap</a> contributors', body)
         self.assertIn('value="America/Toronto"', body)
-        self.assertIn('value="basic" selected', body)
+        self.assertIn('value="isoforest_plus" selected>IsoForest+</option>', body)
         self.assertIn('<a href="/">Map</a>', ControlPages().reference().decode())
         self.assertNotIn('<a href="/">Map</a>', body)
         self.assertIn('<a href="/metrics">Metrics</a>', body)
@@ -77,7 +77,7 @@ class VisitorMapTests(unittest.TestCase):
     @patch('mycount.activity.ReadReports.DbMgr')
     def test_report_resolves_missing_city_after_database_snapshot_closes(self, factory, cities):
         missing = {**self.locations[1], 'latitude': None, 'longitude': None}
-        factory.return_value.query.side_effect = [[dict(first_visit_at=None)], [missing], []]
+        factory.return_value.query.side_effect = [[], [dict(first_visit_at=None)], [missing], []]
         def locate(rows):
             factory.return_value.close.assert_called_once()
             self.assertEqual(rows, [missing])
@@ -115,12 +115,12 @@ class VisitorMapTests(unittest.TestCase):
                         self.assertIn(b'name="start" value="2026-03-08"', body)
                         factory.return_value.close.assert_called_once()
                         factory.reset_mock()
-                        factory.return_value.query.side_effect = [[dict(first_visit_at=datetime(2024, 1, 1, 2))], self.locations, []]
+                        factory.return_value.query.side_effect = [[], [dict(first_visit_at=datetime(2024, 1, 1, 2))], self.locations, []]
                         connection.request('GET', path + '?end=2026-03-08&timezone=America%2FToronto')
                         response = connection.getresponse()
                         self.assertEqual(response.status, 200)
                         self.assertIn(b'name="start" value="2023-12-31"', response.read())
-                        self.assertEqual(factory.return_value.query.call_args_list[1].args[1][-2:],
+                        self.assertEqual(factory.return_value.query.call_args_list[2].args[1][-2:],
                                          (datetime(2023, 12, 31, 5), datetime(2026, 3, 9, 4)))
                         factory.reset_mock()
                         connection.request('GET', path + '?start=bad')

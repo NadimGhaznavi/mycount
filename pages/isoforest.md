@@ -11,8 +11,8 @@ Map, Metrics, Marketing, and Visitors share three filter choices:
 | Filter | Behavior |
 | --- | --- |
 | None | Apply neither bot-detection method. |
-| Basic Bots | Use the existing browser, automation-profile, and stored bot classifications. This remains the default. |
-| IsoForest+ | Exclude visits flagged by either Basic Bots or the latest completed IsoForest run. |
+| Basic Bots | Use the existing browser, automation-profile, and stored bot classifications. |
+| IsoForest+ | Exclude visits flagged by either Basic Bots or the latest completed IsoForest run. This is the default. |
 
 IsoForest processes every collected page view, including known bots and test
 traffic. Basic Bot classifications never enter its training features. Existing
@@ -24,6 +24,11 @@ changes report queries, not the collected records. Date ranges, totals,
 charts, and pagination use the selected filter. Existing `exclude_bots=0` and
 `exclude_bots=1` bookmarks still work; new links use `filter=none`,
 `filter=basic`, or `filter=isoforest_plus`.
+
+The browser remembers the selected filter, site, date range, and timezone for
+the session as you navigate between report pages. Explicit URL parameters
+override remembered settings. Visitors shares the traffic filter while its
+column searches remain separate; pagination positions are never remembered.
 
 Each report selects one completed run inside its database snapshot. New or
 otherwise unassessed visits remain visible until a later run. Before the first

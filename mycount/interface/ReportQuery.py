@@ -59,7 +59,9 @@ class ReportQuery:
                 raise ValueError("Choose a valid traffic filter.")
             return values[0]
         # Existing bookmarked URLs used a hidden value followed by a checkbox.
-        bots = query.get("exclude_bots", ["1"])[-1]
+        if "exclude_bots" not in query:
+            return DTrafficFilters.DEFAULT
+        bots = query["exclude_bots"][-1]
         if bots not in ("0", "1"):
             raise ValueError("Invalid bot filter.")
         return DTrafficFilters.BASIC if bots == "1" else DTrafficFilters.NONE
