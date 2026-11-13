@@ -11,6 +11,7 @@ from mycount.interface.ReportQuery import ReportQuery
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 from mycount.constants.DMarketing import DMarketing
+from mycount.constants.DMyCount import DMyCount
 from mycount.constants.DVisitors import DVisitors
 from mycount.interface.VisitorsQuery import VisitorsQuery
 from mycount.constants.DTrafficFilters import DTrafficFilters
@@ -28,6 +29,7 @@ class ControlPages:
             autoescape=select_autoescape(["html"]),
             undefined=StrictUndefined,
         )
+        self._templates.globals.update(version=DMyCount.VERSION, codename=DMyCount.CMDB_CODENAME)
         self._templates.filters["country_flag"] = self._country_flag
         self._templates.filters["country_name"] = self._country_name
         self._templates.filters["utc_iso"] = lambda value: value.replace(tzinfo=timezone.utc).isoformat()

@@ -11,16 +11,21 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 {% endif %}
 <style>
-  #visitor-map { height: 65vh; min-height: 22rem; max-height: 45rem; border: 1px solid #62412b; border-radius: .4rem; margin: 1rem; background: #191410; color-scheme: dark; }
+  body { height: 100dvh; min-height: 100dvh; }
+  main { display: flex; flex-direction: column; }
+  .metrics-filters { flex-shrink: 0; }
+  #visitor-map { flex: 1; min-height: 16rem; border: 1px solid #62412b; border-radius: .4rem; margin: 1rem; background: #191410; color-scheme: dark; }
   #visitor-map .visitor-map-tiles { filter: invert(1) hue-rotate(180deg) brightness(.75) saturate(.45) contrast(1.15); }
   #visitor-map .leaflet-popup-content-wrapper, #visitor-map .leaflet-popup-tip { background: #291d15; color: #f3e7db; }
   #visitor-map .leaflet-popup-content-wrapper, #visitor-map .leaflet-bar { border: 1px solid #62412b; }
-  #visitor-map .leaflet-bar a { background: #291d15; color: #ffac63; border-bottom-color: #62412b; }
-  #visitor-map .leaflet-bar a:hover, #visitor-map .leaflet-bar a:focus { background: #3b2a1e; }
-  #visitor-map .leaflet-bar a.leaflet-disabled { background: #191410; color: #9e8774; }
+  #visitor-map .map-zoom-control { display: flex; flex-direction: column; align-items: center; gap: .4rem; padding: .5rem .25rem; background: #291d15; color: #ffac63; }
+  #visitor-map .map-zoom-control label { font-size: .75rem; }
+  #visitor-map .map-zoom-slider { writing-mode: vertical-lr; direction: rtl; width: 2.75rem; height: 10rem; margin: 0; accent-color: #ffac63; cursor: pointer; touch-action: none; }
+  #visitor-map .map-zoom-slider:focus-visible { outline: 2px solid #ffac63; outline-offset: 2px; }
   #visitor-map .leaflet-control-attribution { background: rgba(25, 20, 16, .92); color: #d8b89d; }
   #visitor-map .leaflet-control-attribution a, #visitor-map .leaflet-popup-close-button { color: #ffac63; }
-  .map-panel { margin-top: 1.5rem; }
+  .map-panel { display: flex; flex-direction: column; flex: 1; margin-top: 1.5rem; }
+  .map-panel > :not(#visitor-map) { flex-shrink: 0; }
   .map-panel > h2 { margin: 0; padding: .8rem; font-size: .9rem; background: #291d15; }
   .map-legend { display: flex; align-items: center; gap: .5rem; margin: 1.25rem; font-size: .9rem; }
   .map-ramp { display: flex; gap: .25rem; }
@@ -28,12 +33,6 @@
   {% for color, fill_color in density_colors %}
   .map-density-{{ loop.index0 }} { background: {{ fill_color }}; border-color: {{ color }}; }
   {% endfor %}
-  .city-schedule-content { padding: 0 1.25rem 1.25rem; }
-  .schedule-table { min-width: 32rem; }
-  #schedule-form input, #schedule-form button { font: inherit; padding: .6rem .8rem; border: 1px solid #62412b; border-radius: .3rem; }
-  #schedule-form button { color: #191410; background: #ffac63; font-weight: 600; cursor: pointer; }
-  #schedule-form button:disabled { opacity: .5; cursor: default; }
-  #schedule-status.error { color: #ff7777; }
 </style>
 {% endblock %}
 {% block content %}
@@ -57,26 +56,9 @@
 {% endif %}
 <div id="visitor-map" role="region" aria-label="World map of visitor locations" aria-describedby="map-status"></div>
 <p id="map-status" role="status">Loading map…</p>
-<noscript><p>Enable JavaScript to use the interactive map. Location counts are available below.</p></noscript>
+<noscript><p>Enable JavaScript to use the interactive map. Visit details are available on the Visitors page.</p></noscript>
 {% endif %}
 </section>
-<details class="metric-panel map-panel">
-  <summary>Visitor Log</summary>
-{% if not error %}
-<div class="table-wrap">
-  <table aria-label="Visitor map locations">
-    <thead><tr><th scope="col">Country</th><th scope="col">State/Province</th><th scope="col">City</th><th scope="col">Latitude</th><th scope="col">Longitude</th><th scope="col" class="visits">Visits</th></tr></thead>
-    <tbody>
-      {% for location in locations %}
-      <tr><td>{{ location.country_name or location.country_code or '---' }}</td><td>{{ location.region_name or '---' }}</td><td>{{ location.city_name or '---' }}</td><td>{{ location.latitude if location.latitude is not none else '---' }}</td><td>{{ location.longitude if location.longitude is not none else '---' }}</td><td class="visits">{{ location.page_views }}</td></tr>
-      {% else %}<tr><td colspan="6">No visits match the current filters.</td></tr>{% endfor %}
-    </tbody>
-    <tfoot><tr><th scope="row" colspan="5">Total:</th><td class="visits">{{ total_views }}</td></tr></tfoot>
-  </table>
-</div>
-{% endif %}
-</details>
-{% include 'city_schedule.html' %}
 {% if not error %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -84,19 +66,44 @@
   (() => {
     const status = document.getElementById('map-status');
     if (!window.L) {
-      status.textContent = 'Map could not load. Location counts are available below.';
+      status.textContent = 'Map could not load. Visit details are available on the Visitors page.';
       return;
     }
-    const map = L.map('visitor-map', {worldCopyJump: true, minZoom: 1, preferCanvas: true}).setView([20, 0], 2);
+    const map = L.map('visitor-map', {worldCopyJump: true, minZoom: 1, preferCanvas: true, zoomControl: false}).setView([20, 0], 2);
+    new ResizeObserver(() => map.invalidateSize()).observe(document.getElementById('visitor-map'));
     const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       className: 'visitor-map-tiles',
       maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' +
+        ' · <a href="https://www.geonames.org/">GeoNames</a> (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>)'
     });
     tiles.on('tileerror', () => {
-      status.textContent = 'Some map tiles could not load. Visitor markers and location counts remain available.';
+      status.textContent = 'Some map tiles could not load. Visitor markers and visit totals remain available.';
     });
     tiles.addTo(map);
+    const zoomControl = L.control({position: 'topleft'});
+    zoomControl.onAdd = () => {
+      const container = L.DomUtil.create('div', 'leaflet-bar map-zoom-control');
+      const label = L.DomUtil.create('label', '', container);
+      label.htmlFor = 'map-zoom';
+      label.textContent = 'Zoom';
+      const slider = L.DomUtil.create('input', 'map-zoom-slider', container);
+      slider.id = 'map-zoom';
+      slider.type = 'range';
+      slider.min = map.getMinZoom();
+      slider.max = map.getMaxZoom();
+      slider.step = 1;
+      slider.value = map.getZoom();
+      slider.setAttribute('aria-orientation', 'vertical');
+      slider.setAttribute('aria-controls', 'visitor-map');
+      slider.addEventListener('input', () => map.setZoom(Number(slider.value), {animate: false}));
+      map.on('zoomend', () => { slider.value = map.getZoom(); });
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.disableScrollPropagation(container);
+      L.DomEvent.on(container, 'keydown', L.DomEvent.stopPropagation);
+      return container;
+    };
+    zoomControl.addTo(map);
     const locations = {{ mapped_locations | tojson }};
     const densityColors = {{ density_colors | tojson }};
     const maxViews = locations.reduce((max, location) => Math.max(max, location.page_views), 0);
@@ -112,7 +119,7 @@
         color, fillColor, weight: 2, fillOpacity: 0.9
       }).bindPopup(popup).addTo(map);
     }
-    status.textContent = 'Pan and zoom to explore visitor locations. Counts are also listed below.';
+    status.textContent = 'Pan and zoom to explore visitor locations. Select a marker to see its visit count.';
   })();
 </script>
 {% endif %}

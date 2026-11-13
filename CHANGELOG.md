@@ -9,6 +9,20 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Summary
+
+Resize the visitor map vertically to fill the available browser window space.
+Remove the Visitor Log and City DB sections below the map.
+
+Replace the map's zoom buttons with a vertical slider that adjusts one zoom
+level at a time and stays in sync with other map zoom gestures.
+
+Remove the IsoForest run notice and schedule link from Report filters.
+
+Move the last refresh time into the title bar below Counting since, aligned
+left, and display it as a full date with a 12-hour time. Add a version and
+codename footer to every report page.
+
 ## [3.5.1] - 2026-11-13 @ 03:16
 
 ### Summary
