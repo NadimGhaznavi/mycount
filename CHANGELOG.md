@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [3.5.1] - 2026-11-13 @ 03:16
+
 ### Summary
 
 Make IsoForest+ the default traffic filter and remember shared report settings
