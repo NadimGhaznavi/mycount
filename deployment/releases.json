@@ -240,7 +240,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "3cd7517a65a3c66b158330c12a8cf264f06cd9f63869a024827cff691c9e93d0",
+      "digest": "1dc51344abe5bef8d70e5076828a1b01994342ab496cc64eaf88a822319de758",
       "targets": [
         "filesystem"
       ]
@@ -267,7 +267,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "fe854c65a9ef59668bf463a6a92b3925bb739d6fccce7d8f2473b73357d8c819",
+      "digest": "f08d2353151ef869d44622e9683c78039f00e7146aa7149595e1c52db3c27f48",
       "targets": [
         "filesystem",
         "listener",
@@ -621,7 +621,7 @@
       ]
     },
     "mycount/server/ControlPages.py": {
-      "digest": "189f27468f9c60b9a197e55925f870a781b438b8e8b47607486b73d3a9fe99f9",
+      "digest": "40a6d3517c0f956b788740e0fbe03e3e6e642493d61773001e414f92d479c046",
       "targets": [
         "report-server"
       ]
@@ -670,19 +670,13 @@
       ]
     },
     "mycount/server/templates/base.html": {
-      "digest": "f4d9e11cb6a539d77c74337195c4e33b1d831c65347a73bd831e83ad02f51329",
+      "digest": "47795a5f175bdd52cd71c21ef2ef12815f6e21056a67a3a6bd84577467e10e07",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/templates/chart_theme.html": {
       "digest": "5acc2544fe82727c9878ebe382b0eac19d27147dc097b976c56ffc20b91edb48",
-      "targets": [
-        "report-server"
-      ]
-    },
-    "mycount/server/templates/city_schedule.html": {
-      "digest": "d828c2e4a3c4282e88b7515df57f119b644657a749284919c204c7586c4bf591",
       "targets": [
         "report-server"
       ]
@@ -706,7 +700,7 @@
       ]
     },
     "mycount/server/templates/local_time.html": {
-      "digest": "5aff6cb0279a1b7b02785d9c4b707dcba73720d0f499e9fa7cd4266372a5a29e",
+      "digest": "0d677846d15dda5198c989177ff030c3f8fa27985454b4f494d62911cb81b891",
       "targets": [
         "report-server"
       ]
@@ -742,13 +736,13 @@
       ]
     },
     "mycount/server/templates/report_filters.html": {
-      "digest": "7180e90219c1794d808483df4983e9bd218473556345cfa668b2cd4303ed667c",
+      "digest": "7177897aea217f89e238a993a988ea4bc134d94afa0f6b581ced35d2b252a146",
       "targets": [
         "report-server"
       ]
     },
     "mycount/server/templates/styles.html": {
-      "digest": "842177d3350a6df9f7ffbe86a679fe4fa62062e5bb4e59f76fbc8569c1df9a3b",
+      "digest": "73918d57ec809a0df106790cac3fadf0c5211315576bf8ff9334e8b0e35b02bc",
       "targets": [
         "report-server"
       ]
@@ -766,7 +760,7 @@
       ]
     },
     "mycount/server/templates/visitor_map.html": {
-      "digest": "9ce4804af2f0ee03112d492ff3b6c7bb3b6c406539945451ff38c382b6e19259",
+      "digest": "31ef5309faf5be09e3577206cafb366209b5b3dfb5195d839883bfee06b16028",
       "targets": [
         "report-server"
       ]
@@ -1527,6 +1521,14 @@
         "report-server"
       ],
       "version": "3.5.1"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "3.5.2"
     }
   ]
 }
