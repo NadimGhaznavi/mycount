@@ -13,3 +13,7 @@ class IsoForestVisit:
     ip_address: str | None
     user_agent: str | None
     client_details: tuple[tuple[str, str | int | float | bool | None], ...]
+    geoip_timezone: str | None = None
+    os_family: str | None = None
+    primary_language: str | None = None
+    referrer_host: str | None = None

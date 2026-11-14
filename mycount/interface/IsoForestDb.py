@@ -40,7 +40,9 @@ class IsoForestDb:
                 INDEX idx_isoforest_complete (status, run_id)
             ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
         """)
-        features = ", ".join(f"{name} DOUBLE NOT NULL" for name in DIsoForest.FEATURES)
+        features = ", ".join(f"{name} DOUBLE " +
+                             ("NULL" if name in DIsoForest.BROWSER_FEATURES else "NOT NULL")
+                             for name in DIsoForest.FEATURES)
         self._db.execute(f"""
             CREATE TABLE IF NOT EXISTS isoforest_observations (
                 run_id BIGINT UNSIGNED NOT NULL,
@@ -59,6 +61,10 @@ class IsoForestDb:
                     REFERENCES isoforest_runs(run_id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
         """)
+        # Explicit, idempotent upgrade: older runs have no browser-context evidence.
+        additions = ", ".join(f"ADD COLUMN IF NOT EXISTS {name} DOUBLE NULL"
+                              for name in DIsoForest.BROWSER_FEATURES)
+        self._db.execute(f"ALTER TABLE isoforest_observations {additions}")
         self._db.execute("""
             CREATE TABLE IF NOT EXISTS isoforest_observation_visits (
                 run_id BIGINT UNSIGNED NOT NULL,
@@ -76,9 +82,12 @@ class IsoForestDb:
     def raw_visits(self) -> list[IsoForestVisit]:
         """Read every collected visit, including Basic Bots and explicit test traffic."""
         details = [(key, column) for key, column, _ in DClientDetails.COLUMNS
-                   if key in DIsoForest.PROFILE_FIELDS]
+                   if key in DIsoForest.PROFILE_FIELDS or key in DIsoForest.TEMPLATE_FIELDS]
         rows = self._db.query(f"""
             SELECT v.page_view_id, v.received_at, p.site, p.url, v.ip_address, v.user_agent,
+                   v.timezone AS geoip_timezone, v.os_family, v.referrer_host,
+                   (SELECT language_tag FROM page_view_languages l
+                    WHERE l.page_view_id = v.page_view_id AND l.preference_order = 1) AS primary_language,
                    {', '.join('v.' + column for _, column in details)}
             FROM page_views v JOIN pages p ON p.page_id = v.page_id
             ORDER BY v.received_at, v.page_view_id
