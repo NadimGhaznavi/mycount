@@ -16,7 +16,7 @@
 <div class="metrics-tables">
 <div class="metrics-site-column">
 <details class="metric-panel">
-  <summary>Report filters</summary>
+  <summary>Report Filters - {{ sites | sum(attribute='page_views') }} visits</summary>
 {% include 'report_filters.html' %}
 </details>
 <details class="metric-panel">
