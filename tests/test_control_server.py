@@ -36,8 +36,13 @@ class ControlServerTests(unittest.TestCase):
              "city_name": None, "url": "https://two.example/"},
         ]
         body = ControlPages().render(Report(ReportOptions(date(2026, 9, 27), date(2026, 9, 27), "UTC"), [{"day": "2026-09-27", "page_views": 2}], None, recent=recent)).decode()
-        self.assertEqual(body.count('<details class="metric-panel">'), 9)
-        self.assertNotIn('<details class="metric-panel" open', body)
+        panels = body.split('<details class="metric-panel"')[1:]
+        self.assertEqual(len(panels), 9)
+        for panel in panels:
+            summary = panel.split('</summary>', 1)[0]
+            expanded = any(title in summary for title in (
+                'Recent Visits', 'Referrers', 'Visits by Site Chart', 'All Traffic'))
+            self.assertEqual(panel.startswith(' open>'), expanded, summary)
         self.assertGreater(body.index('<section class="traffic-chart"'), body.rindex('</table>'))
         self.assertIn('>All Traffic</h2>', body)
         self.assertIn('const daily = [{"day": "2026-09-27", "page_views": 2}]', body)
