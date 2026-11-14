@@ -86,8 +86,14 @@
         "listener"
       ]
     },
+    "mycount/activity/BuildIsoForestBrowserFeatures.py": {
+      "digest": "960db1326df14eb8c58f3afeac9f44b5617843fc72f29d7620e2496b54c1a72b",
+      "targets": [
+        "filesystem"
+      ]
+    },
     "mycount/activity/BuildIsoForestFeatures.py": {
-      "digest": "df94d4a926928348401f57e121aae08e16cbbed2e897f367310802d0eed147c3",
+      "digest": "defd26f3479a1979a83c736fe821b3dd51d7a0d239cc98c20636bf55929fd461",
       "targets": [
         "filesystem"
       ]
@@ -240,7 +246,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "1dc51344abe5bef8d70e5076828a1b01994342ab496cc64eaf88a822319de758",
+      "digest": "e93795474908970697324caeca77e60e6fa4002bf26730f44c50629879e5b357",
       "targets": [
         "filesystem"
       ]
@@ -253,7 +259,7 @@
       ]
     },
     "mycount/constants/DIsoForest.py": {
-      "digest": "71d3bbd12f33f3cf373b0df4c49310b2e6b8c48fc43f2722f65fbbe95339050c",
+      "digest": "ac65114fae5b6c11da3363664609dba3531a25e49e6f7bf9f55f80a1a0967652",
       "targets": [
         "filesystem",
         "report-server"
@@ -267,7 +273,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "f08d2353151ef869d44622e9683c78039f00e7146aa7149595e1c52db3c27f48",
+      "digest": "2652a6a376271c8cd95220aac702ce7aa589dc34cf9f17b214e5823a39fb36a9",
       "targets": [
         "filesystem",
         "listener",
@@ -351,7 +357,7 @@
       ]
     },
     "mycount/entity/IsoForestVisit.py": {
-      "digest": "3bdbfcbeeb3c146ac9218219600c3afd773a4e320a57798c8e44589e31a99443",
+      "digest": "9c584495e1e1492e8c3558da1aa947c28fbb3122bdf913b7102dff35a348ffc9",
       "targets": [
         "filesystem",
         "report-server"
@@ -484,14 +490,14 @@
       ]
     },
     "mycount/interface/IsoForestDb.py": {
-      "digest": "14e06d3ca2936779c0d9c08513e6ce57336c8f13cc6e89e543775327ae4459dd",
+      "digest": "4e5a38dd5baa48376c078a52c540ef2321aa9e69000d0ca30c8265f8a9ae456a",
       "targets": [
         "filesystem",
         "report-server"
       ]
     },
     "mycount/interface/IsoForestModel.py": {
-      "digest": "8945618838b5b374c86453125cb397aa41da436d15f280cee2b6c7e51e53915b",
+      "digest": "49e83b0dd445e01eab5be6d527be1340a921001c14fc1e8f0c8100ec38acd0d1",
       "targets": [
         "filesystem"
       ]
@@ -1529,6 +1535,14 @@
         "report-server"
       ],
       "version": "3.5.2"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "3.5.3"
     }
   ]
 }

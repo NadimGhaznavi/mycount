@@ -80,11 +80,28 @@ class IsoForestTests(unittest.TestCase):
         second = IsoForestModel().fit(observations)
         self.assertEqual(first.decisions, second.decisions)
         self.assertEqual(first.manifest['parameters']['contamination'], 'auto')
+        self.assertEqual(first.manifest['feature_version'], 'browser-context-v3')
+        self.assertEqual(first.manifest['template_fields'], DIsoForest.TEMPLATE_FIELDS)
         model = pickle.loads(first.model)
         matrix = np.asarray([o.features for o in observations], dtype=np.float32)
         np.testing.assert_array_equal(model.predict(matrix) == -1, np.array(first.decisions) < 0)
         empty = IsoForestModel().fit(())
         self.assertEqual((empty.observations, empty.decisions, empty.model), ((), (), None))
+
+    def test_legacy_run_inspection_uses_its_recorded_feature_names(self):
+        selected = dict(run_id=1, status='complete', feature_version='network-rotation-v2',
+                        ipv4_prefix=16, ipv6_prefix=48, window_hours=24, source_views=1,
+                        observation_count=1, anomaly_views=0, anomaly_observations=0,
+                        started_at=datetime(2026, 11, 13), completed_at=datetime(2026, 11, 13),
+                        elapsed_seconds=.1, error=None, manifest={'features': DIsoForest.NETWORK_FEATURES})
+        row = dict.fromkeys(DIsoForest.BROWSER_FEATURES)
+        row.update(dict.fromkeys(DIsoForest.NETWORK_FEATURES, 0.))
+        row.update(window_start=datetime(2026, 11, 13), site='blog', network_block='10.1.0.0/16',
+                   page_views=1, distinct_ips=1, decision_score=.1, is_anomaly=False)
+        body = ControlPages().isoforest(dict(selected=selected, runs=[selected], observations=[row],
+                                              first_visit_at=None)).decode()
+        self.assertIn('<dt>distinct_ips_log</dt>', body)
+        self.assertNotIn('<dt>timezone_gap_hours</dt>', body)
 
     def test_filter_selection_round_trips_and_preserves_legacy_bookmarks(self):
         for mode, label in DTrafficFilters.OPTIONS:

@@ -4,6 +4,7 @@ from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from hashlib import sha256
 import json
+import math
 import os
 from pathlib import Path
 import shutil
@@ -190,6 +191,75 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual({row.page_view_id for row in source}, {first, second})
         self.assertEqual(dict(source[0].client_details)['timezone'], 'Asia/Shanghai')
         self.assertEqual(dict(source[0].client_details)['device_memory'], 8)
+
+    def test_isoforest_browser_inputs_keep_geoip_separate_and_read_primary_language(self):
+        identifier = VisitDb(self.db).record(Visit('blog', 'https://blog.example/',
+            datetime(2026, 11, 13, tzinfo=timezone.utc), is_bot=False,
+            timezone='America/New_York', os_family='Windows', languages=('en-US', 'fr'),
+            referrer_host='www.google.com', client_details=(('timezone', 'Asia/Bangkok'),
+                ('available_height', 1032), ('connection_effective_type', '3g'))))
+        row, = IsoForestDb(self.db).raw_visits()
+        self.assertEqual(row.page_view_id, identifier)
+        self.assertEqual(row.geoip_timezone, 'America/New_York')
+        self.assertEqual(row.os_family, 'Windows')
+        self.assertEqual(row.primary_language, 'en-US')
+        self.assertEqual(row.referrer_host, 'www.google.com')
+        details = dict(row.client_details)
+        self.assertEqual(details['timezone'], 'Asia/Bangkok')
+        self.assertEqual(details['available_height'], 1032)
+        self.assertEqual(details['connection_effective_type'], '3g')
+
+    def test_isoforest_browser_schema_upgrade_preserves_legacy_evidence_and_active_run(self):
+        store, ids, result, run_id = self.isoforest_fixture()
+        legacy_manifest = json.dumps({'features': DIsoForest.NETWORK_FEATURES})
+        self.db.execute('UPDATE isoforest_runs SET feature_version=%s, manifest=%s WHERE run_id=%s',
+                        ('network-rotation-v2', legacy_manifest, run_id))
+        self.db.execute('ALTER TABLE isoforest_observations ' + ', '.join(
+            f'DROP COLUMN {name}' for name in DIsoForest.BROWSER_FEATURES))
+        VisitorSchema(self.db).apply()
+        VisitorSchema(self.db).apply()
+        active = store.active_run()
+        self.assertEqual(active['run_id'], run_id)
+        self.assertEqual(active['feature_version'], 'network-rotation-v2')
+        self.assertEqual(active['manifest']['features'], list(DIsoForest.NETWORK_FEATURES))
+        old_rows = store.observations(run_id)
+        self.assertEqual(len(old_rows), len(ids))
+        self.assertTrue(all(row[name] is None for row in old_rows for name in DIsoForest.BROWSER_FEATURES))
+        self.assertEqual(sorted(row['decision_score'] for row in old_rows), sorted(result.decisions))
+        self.assertEqual(len(VisitDb(self.db).recent_visits()), len(ids))
+
+    def test_isoforest_worker_publishes_versioned_browser_context_without_changing_bot_flags(self):
+        from test_isoforest_browser_features import browser_visit
+
+        inputs = [browser_visit(1, stamp=datetime(2026, 11, 13, 23), browser='Asia/Bangkok'),
+                  browser_visit(2, address='10.2.1.1', stamp=datetime(2026, 11, 14, 1),
+                                browser='Asia/Jakarta')]
+        visits = VisitDb(self.db)
+        identifiers = [visits.record(Visit(row.site, row.url,
+            row.received_at.replace(tzinfo=timezone.utc), ip_address=row.ip_address,
+            user_agent=row.user_agent, timezone=row.geoip_timezone, os_family=row.os_family,
+            languages=(row.primary_language,), client_details=row.client_details, is_bot=False))
+            for row in inputs]
+        with tempfile.TemporaryDirectory() as directory, \
+                patch('mycount.activity.RunIsoForest.DbMgr', return_value=self.db), \
+                patch.object(self.db, 'close'):
+            run_id = RunIsoForest(IsoForestSchedule(Path(directory))).run()
+        store = IsoForestDb(self.db)
+        active = store.active_run()
+        self.assertEqual(active['run_id'], run_id)
+        self.assertEqual(active['feature_version'], 'browser-context-v3')
+        self.assertEqual(active['manifest']['features'], list(DIsoForest.FEATURES))
+        self.assertEqual(active['manifest']['template_fields'], list(DIsoForest.TEMPLATE_FIELDS))
+        evidence = sorted(store.observations(run_id), key=lambda row: row['window_start'])
+        self.assertEqual(len(evidence), 2)
+        self.assertAlmostEqual(evidence[-1]['template_networks_log'], math.log1p(2))
+        self.assertEqual(evidence[-1]['timezone_gap_hours'], 12)
+        self.assertTrue(all(row[name] is not None for row in evidence for name in DIsoForest.FEATURES))
+        self.assertEqual(self.db.query('SELECT is_bot FROM page_views ORDER BY page_view_id'),
+                         [{'is_bot': 0}, {'is_bot': 0}])
+        self.assertEqual({row['page_view_id'] for row in self.db.query(
+            'SELECT page_view_id FROM isoforest_observation_visits WHERE run_id=%s', (run_id,))},
+                         set(identifiers))
 
     def isoforest_fixture(self):
         store = IsoForestDb(self.db)

@@ -8,6 +8,7 @@ import math
 from statistics import median, pstdev
 from urllib.parse import urlsplit
 
+from mycount.activity.BuildIsoForestBrowserFeatures import BuildIsoForestBrowserFeatures
 from mycount.constants.DIsoForest import DIsoForest
 from mycount.entity.IsoForestObservation import IsoForestObservation
 from mycount.entity.IsoForestVisit import IsoForestVisit
@@ -16,6 +17,7 @@ from mycount.entity.IsoForestVisit import IsoForestVisit
 class BuildIsoForestFeatures:
     def build(self, visits: list[IsoForestVisit]) -> tuple[IsoForestObservation, ...]:
         seconds = DIsoForest.WINDOW_HOURS * 3600
+        browser_features = BuildIsoForestBrowserFeatures().build(visits)
         groups = defaultdict(list)
         networks = defaultdict(list)
         for visit in sorted(visits, key=lambda value: (value.received_at, value.page_view_id)):
@@ -33,7 +35,8 @@ class BuildIsoForestFeatures:
                 medium = str(ip_network(f"{address}/{20 if ipv4 else 56}", strict=False))
             details = dict(visit.client_details)
             profile = json.dumps({name: details.get(name) for name in DIsoForest.PROFILE_FIELDS}, sort_keys=True)
-            member = (visit, address, stamp, urlsplit(visit.url).path, profile, fine, medium)
+            member = (visit, address, stamp, urlsplit(visit.url).path, profile, fine, medium,
+                      browser_features[visit.page_view_id])
             groups[window, block, visit.site].append(member)
             networks[window, block].append(member)
         network_ips = {key: self._representatives(members) for key, members in networks.items()}
@@ -59,6 +62,8 @@ class BuildIsoForestFeatures:
                 "inter_ip_median_gap_log": math.log1p(median(gaps)) if gaps else 0.,
                 "inter_ip_gap_cv": pstdev(gaps) / gap_mean if gap_mean > 0 else 0.,
             }
+            values.update({name: sum(ip["browser_features"][name] for ip in ips) / len(ips)
+                           for name in DIsoForest.BROWSER_FEATURES})
             observations.append(IsoForestObservation(
                 datetime.fromtimestamp(window, timezone.utc).replace(tzinfo=None), block, site,
                 tuple(member[0].page_view_id for member in members),
@@ -78,4 +83,6 @@ class BuildIsoForestFeatures:
             "profile": Counter(member[4] for member in rows).most_common(1)[0][0],
             "agent": Counter(member[0].user_agent for member in rows).most_common(1)[0][0],
             "fine": rows[0][5], "medium": rows[0][6],
+            "browser_features": {name: median(member[7][name] for member in rows)
+                                 for name in DIsoForest.BROWSER_FEATURES},
         } for rows in by_ip.values()]
