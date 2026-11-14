@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [3.5.3] - 2026-11-13 @ 20:25
+
 ### Summary
 
 Extend IsoForest with browser/GeoIP timezone disagreement, cross-network browser
