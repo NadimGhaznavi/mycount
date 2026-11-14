@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [3.6.0] - 2026-11-14 @ 11:58
+
 ### Summary
 
 Show the total visits matching the selected report filters in the Metrics
