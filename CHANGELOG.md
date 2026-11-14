@@ -9,6 +9,17 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Summary
+
+Extend IsoForest with browser/GeoIP timezone disagreement, cross-network browser
+template reuse, viewport/timezone variation, OS/platform consistency, and
+direct/unknown referral features. Rolling template comparisons connect matching
+clients across UTC midnight while preserving daily network observation groups.
+
+Version the representation as `browser-context-v3` and migrate feature storage
+without rewriting earlier runs or collected visits. Add regression coverage for
+missing metadata, daylight saving, repeated IPs, window boundaries, and upgrades.
+
 ## [3.5.2] - 2026-11-13 @ 18:59
 
 ### Summary

@@ -20,6 +20,9 @@ class IsoForestModel:
             "sklearn_version": sklearn.__version__, "numpy_version": np.__version__,
             "ipv4_prefix": DIsoForest.IPV4_PREFIX, "ipv6_prefix": DIsoForest.IPV6_PREFIX,
             "window_hours": DIsoForest.WINDOW_HOURS,
+            "profile_fields": DIsoForest.PROFILE_FIELDS,
+            "template_fields": DIsoForest.TEMPLATE_FIELDS,
+            "template_window_hours": DIsoForest.WINDOW_HOURS,
         }
         if not observations:
             return IsoForestResult((), (), None, manifest)

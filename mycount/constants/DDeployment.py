@@ -102,8 +102,15 @@ class DDeployment:
             "mycount/constants/DVisitorDetails.py",
             "mycount/entity/Visit.py",
         ),
+        "mycount/activity/BuildIsoForestBrowserFeatures.py": (
+            "mycount/__init__.py",
+            "mycount/activity/__init__.py",
+            "mycount/constants/DIsoForest.py",
+            "mycount/entity/IsoForestVisit.py",
+        ),
         "mycount/activity/BuildIsoForestFeatures.py": (
             "mycount/__init__.py",
+            "mycount/activity/BuildIsoForestBrowserFeatures.py",
             "mycount/activity/__init__.py",
             "mycount/constants/DIsoForest.py",
             "mycount/entity/IsoForestObservation.py",
