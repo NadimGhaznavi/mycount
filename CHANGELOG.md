@@ -9,6 +9,10 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Fixed
+
+- Sidebar.
+
 ## [3.6.0] - 2026-11-14 @ 11:58
 
 ### Summary
