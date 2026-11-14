@@ -9,6 +9,12 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Summary
+
+Show the total visits matching the selected report filters in the Metrics
+page's Report Filters title. Expand Recent Visits, Referrers, Visits by Site
+Chart, and All Traffic by default while keeping the other sections collapsed.
+
 ## [3.5.3] - 2026-11-13 @ 20:25
 
 ### Summary
