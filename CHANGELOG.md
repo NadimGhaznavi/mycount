@@ -9,9 +9,12 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+- Investigated an "outage": It wasn't an outage, filters were set in the UI.
+  UI settings are now persisted in a browser cookie for the report server.
+
 ### Fixed
 
-- Sidebar.
+- Restore MyCount's `_config.yml` settings after an accidental overwrite.
 
 ## [3.6.0] - 2026-11-14 @ 11:58
 
