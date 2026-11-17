@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Configure the existing Caddy service and forward the public ports.
+# Configure the existing Caddy service and optional UPnP forwarding.
 set -euo pipefail
 umask 022
 [[ $# == 0 && $EUID == 0 ]] || { printf 'Run scripts/install-caddy.sh as root, without arguments.\n' >&2; exit 1; }
@@ -14,6 +14,7 @@ from tempfile import NamedTemporaryFile
 
 from mycount.constants.DCaddy import DCaddy
 from mycount.constants.DMyCount import DMyCount
+from mycount.constants.DRouterMappings import DRouterMappings
 from mycount.interface.Network import Network
 from mycount.interface.RouterMappings import RouterMappings
 
@@ -67,6 +68,7 @@ except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
     else:
         site.write_bytes(previous_site)
     raise
-RouterMappings().forward((http_port, https_port))
+if DRouterMappings.ENABLED:
+    RouterMappings().forward((http_port, https_port))
 print(f'Configured https://{DCaddy.HOSTNAME}:{https_port}{DMyCount.COLLECTION_PATH}; check certificate issuance in the Caddy journal.')
 PY

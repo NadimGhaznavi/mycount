@@ -62,11 +62,12 @@ class DeploymentTests(unittest.TestCase):
             self.stack.enter_context(patch.object(cls, key, value))
         self.run = self.stack.enter_context(patch('subprocess.run'))
         self.run.return_value = subprocess.CompletedProcess([], 0)
+        self.stack.enter_context(patch.object(DRouterMappings, 'ENABLED', True))
         self.router = self.stack.enter_context(patch('mycount.interface.RouterMappings.RouterMappings.forward'))
         self.stack.enter_context(redirect_stdout(io.StringIO()))
 
     def execute(self, script):
-        source = (ROOT / 'scripts' / script).read_text().split("<<'PY'\n", 1)[1].split('\nPY', 1)[0]
+        source = (ROOT / 'scripts' / script).read_text().rsplit("<<'PY'\n", 1)[1].split('\nPY', 1)[0]
         source = source.replace("'/opt/prod'", repr(str(self.app.parent)))
         source = source.replace("'/etc/systemd/system'", repr(str(self.unit_dir)))
         exec(compile(source, script, 'exec'), {'__name__': '__main__'})
@@ -195,6 +196,51 @@ class DeploymentTests(unittest.TestCase):
         self.assertIn('redir https://count.osoyalce.com:8443{uri} permanent', rendered)
         self.assertIn('reverse_proxy 127.0.0.2:37000', rendered)
         self.router.assert_called_once_with((8080, 8443))
+
+    def test_disabled_upnp_still_configures_caddy_without_router_changes(self):
+        with patch.object(DRouterMappings, 'ENABLED', False):
+            self.execute('install-caddy.sh')
+        self.router.assert_not_called()
+        self.assertIn('reverse_proxy', self.site.read_text())
+        self.assertIn(['caddy', 'reload', '--config', str(self.config), '--adapter', 'caddyfile'],
+                      [call.args[0] for call in self.run.call_args_list])
+
+    def test_service_start_respects_router_setting(self):
+        for enabled in (False, True):
+            with self.subTest(enabled=enabled), patch.object(DRouterMappings, 'ENABLED', enabled):
+                self.run.reset_mock()
+                with patch('sys.argv', ['services.sh', 'start']):
+                    self.execute('services.sh')
+                units = [DMyCount.SERVICE_UNIT, 'mycount-control.service']
+                if enabled:
+                    units.append(DRouterMappings.SERVICE_UNIT)
+                self.assertEqual([call.args[0] for call in self.run.call_args_list],
+                                 [['systemctl', 'start', unit] for unit in units])
+
+    def test_service_stop_includes_disabled_router_in_reverse_order(self):
+        with patch.object(DRouterMappings, 'ENABLED', False), patch('sys.argv', ['services.sh', 'stop']):
+            self.execute('services.sh')
+        self.assertEqual([call.args[0] for call in self.run.call_args_list], [
+            ['systemctl', 'stop', DRouterMappings.SERVICE_UNIT],
+            ['systemctl', 'stop', 'mycount-control.service'],
+            ['systemctl', 'stop', DMyCount.SERVICE_UNIT],
+        ])
+
+    def test_restart_stops_and_disables_router_when_off(self):
+        with patch.object(DRouterMappings, 'ENABLED', False):
+            self.execute('restart.sh')
+        self.assertEqual([call.args[0] for call in self.run.call_args_list], [
+            ['bash', 'scripts/install-caddy.sh'],
+            ['systemctl', 'disable', '--now', DRouterMappings.SERVICE_UNIT],
+            ['systemctl', 'restart', DMyCount.SERVICE_UNIT, 'mycount-control.service'],
+        ])
+
+    def test_restart_includes_router_when_enabled(self):
+        self.execute('restart.sh')
+        self.assertEqual([call.args[0] for call in self.run.call_args_list], [
+            ['bash', 'scripts/install-caddy.sh'],
+            ['systemctl', 'restart', DMyCount.SERVICE_UNIT, 'mycount-control.service', DRouterMappings.SERVICE_UNIT],
+        ])
 
     def test_caddy_uses_production_file_overrides(self):
         from mycount.interface.Configuration import Configuration

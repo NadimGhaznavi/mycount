@@ -21,9 +21,18 @@ sudo ./scripts/services.sh start
 sudo ./scripts/services.sh stop
 ```
 
-Start runs the collector, Control, and router worker sequentially. Stop uses
-the reverse order. The command stops at the first failed service operation.
+Start runs the collector and Control sequentially, followed by the router
+worker when enabled. Stop includes the router worker and uses the reverse
+order. The command stops at the first failed service operation.
 Use `./scripts/services.sh --help` to display usage.
+
+Automatic UPnP forwarding is disabled by default through
+`DRouterMappings.ENABLED = False` in `mycount/constants/DRouterMappings.py`.
+Configure the router's HTTP/HTTPS forwarding manually when this setting is off.
+Installation and upgrade stop and disable `mycount-router.service` when off,
+and enable and start it when on. Caddy setup and `scripts/restart.sh` also
+honor the setting. To restore automatic forwarding, set the constant to `True`
+in the checkout before deploying an update.
 
 The separate `mycount-isoforest.service` job runs only when the minute cron
 check starts it. Its recurring schedule and queued runs are managed from the
@@ -66,10 +75,11 @@ sudo ./scripts/restart.sh
 ```
 
 The restart command validates the config, regenerates and reloads Caddy,
-updates the public router mappings, and restarts the collector, report server,
-and router worker. Each MyCount process reads its configuration once; edits
-take effect after restart. Use this command when changing network settings so
-Caddy's upstream and listeners are also updated.
+and restarts the collector and report server. When UPnP is enabled, it also
+updates the public router mappings and restarts the router worker; otherwise
+it stops and disables that worker. Each MyCount process reads its configuration
+once; edits take effect after restart. Use this command when changing network
+settings so Caddy's upstream and listeners are also updated.
 
 Control's `--host` and `--port` arguments still override its configured binding
 for an individual invocation. Database and GeoIP connections retain their
