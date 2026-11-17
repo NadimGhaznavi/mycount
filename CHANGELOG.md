@@ -9,6 +9,20 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+### Summary
+
+Make automatic UPnP forwarding optional through `DRouterMappings.ENABLED`,
+defaulting to off. Installation and upgrade stop and disable the router worker
+when off, and Caddy setup skips automatic mappings to avoid conflicts with
+manual router rules.
+
+- Investigated an "outage": It wasn't an outage, filters were set in the UI.
+  UI settings are now persisted in a browser cookie for the report server.
+
+### Fixed
+
+- Restore MyCount's `_config.yml` settings after an accidental overwrite.
+
 ## [3.6.0] - 2026-11-14 @ 11:58
 
 ### Summary

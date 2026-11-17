@@ -53,10 +53,18 @@ class RouterWorkerTests(unittest.TestCase):
             MaintainRouterMappings(router).run(Event())
 
     def test_entry_point_signals_stop_the_worker(self):
-        with patch('mycount.server.RouterWorker.signal.signal') as register:
+        with patch.object(DRouterMappings, 'ENABLED', True), patch('mycount.server.RouterWorker.signal.signal') as register:
             with patch('mycount.server.RouterWorker.MaintainRouterMappings') as worker:
                 main()
         stopping = worker.return_value.run.call_args.args[0]
         self.assertFalse(stopping.is_set())
         register.call_args_list[0].args[1](15, None)
         self.assertTrue(stopping.is_set())
+
+    def test_disabled_entry_point_does_not_start_router_maintenance(self):
+        with patch.object(DRouterMappings, 'ENABLED', False):
+            with patch('mycount.server.RouterWorker.RouterMappings') as router:
+                with patch('mycount.server.RouterWorker.MaintainRouterMappings') as worker:
+                    main()
+        router.assert_not_called()
+        worker.assert_not_called()

@@ -23,7 +23,11 @@ from mycount.interface.Configuration import Configuration
 
 Configuration.read(Path(DMyCount.BASE_DIR) / DMyCount.CONFIG_FILE, DMyCount.CMDB_NETWORK)
 subprocess.run(['bash', 'scripts/install-caddy.sh'], check=True)
-subprocess.run(['systemctl', 'restart', DMyCount.SERVICE_UNIT, DControl.SERVICE_UNIT,
-                DRouterMappings.SERVICE_UNIT], check=True)
+units = [DMyCount.SERVICE_UNIT, DControl.SERVICE_UNIT]
+if DRouterMappings.ENABLED:
+    units.append(DRouterMappings.SERVICE_UNIT)
+else:
+    subprocess.run(['systemctl', 'disable', '--now', DRouterMappings.SERVICE_UNIT], check=True)
+subprocess.run(['systemctl', 'restart', *units], check=True)
 print('Applied production network configuration and restarted MyCount.')
 PY

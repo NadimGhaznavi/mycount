@@ -25,6 +25,6 @@ The **MyCount** application enforces a CORS whitelist.
 The services should be restarted after changing this file:
 
 ```sh
-sudo systemctl restart mycount-control
-sudo systemctl restart mycount-router
+cd /opt/prod/mycount
+sudo ./scripts/restart.sh
 ```
