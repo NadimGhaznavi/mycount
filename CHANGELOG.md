@@ -9,6 +9,8 @@ permalink: /CHANGELOG/
 
 ## [Unreleased]
 
+## [3.7.0] - 2026-11-17 @ 00:33
+
 ### Summary
 
 Make automatic UPnP forwarding optional through `DRouterMappings.ENABLED`,

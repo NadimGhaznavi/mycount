@@ -246,7 +246,7 @@
       ]
     },
     "mycount/constants/DDeployment.py": {
-      "digest": "e93795474908970697324caeca77e60e6fa4002bf26730f44c50629879e5b357",
+      "digest": "03769a3a600049f74946b14d59ffa9810eab6f8a83ba057e2b236b8760cd0d79",
       "targets": [
         "filesystem"
       ]
@@ -273,7 +273,7 @@
       ]
     },
     "mycount/constants/DMyCount.py": {
-      "digest": "bfc3611a70f8c501b4453e488db8da8dd1a15846c64f2b16b9d38d13230a785c",
+      "digest": "3621f3eece0c131f9089b5a75f43927cfc36a434aed09fd3b09404c296d353cc",
       "targets": [
         "filesystem",
         "listener",
@@ -288,7 +288,7 @@
       ]
     },
     "mycount/constants/DRouterMappings.py": {
-      "digest": "1c1f8eb7948b592f4632e14d390fc53cc0b18bf630256fc6613dfe25dfc3159e",
+      "digest": "7d6463d978b18bc9de174e3c767577857ae1f90844af15d1b7a3d8345039b660",
       "targets": [
         "filesystem",
         "listener"
@@ -645,7 +645,7 @@
       ]
     },
     "mycount/server/RouterWorker.py": {
-      "digest": "69a8980428747690ba4748c565b7417ed6b2204b18e8d11ecf342784581fd585",
+      "digest": "dfa0174ee9b5d91dc76b08d0711320c142161fecd4fd8c3995c5210bebf87528",
       "targets": [
         "listener"
       ]
@@ -792,13 +792,13 @@
       ]
     },
     "scripts/install-caddy.sh": {
-      "digest": "14f42dd62f970db1ff16b459534921c1fefef833bb3529c1c47a3726dcd7feca",
+      "digest": "62c8a453adf34c1039723b33817857521f5782c413c8e16bdb503d18b9e9800e",
       "targets": [
         "filesystem"
       ]
     },
     "scripts/install-services.sh": {
-      "digest": "d22693801e0939f3f2b4b71e72ff7c2fd1063a61e00b4eaae1002cdecad3da99",
+      "digest": "7f79eb04b358383fdb746a59cce7d90326bacf77243eae9f4059b9d073f8b79b",
       "targets": [
         "filesystem"
       ]
@@ -816,13 +816,13 @@
       ]
     },
     "scripts/restart.sh": {
-      "digest": "55376dae22e4da96bd16576c3a9c04b5d4c1be8a240707bd4e2f8da652145631",
+      "digest": "89504f11613107aa585cb407aa7d9dec91b6104ee03ec65245dfa4e46b4f5abe",
       "targets": [
         "filesystem"
       ]
     },
     "scripts/services.sh": {
-      "digest": "9b0ebe768e520e42b707667b7a37048d4a076fca72f7a44c91d7f065f272896b",
+      "digest": "d870da94548a029865cc071e68c732ce58890560a902c82a1633c6efea47e170",
       "targets": [
         "filesystem"
       ]
@@ -1551,6 +1551,14 @@
         "report-server"
       ],
       "version": "3.6.0"
+    },
+    {
+      "targets": [
+        "filesystem",
+        "listener",
+        "report-server"
+      ],
+      "version": "3.7.0"
     }
   ]
 }
