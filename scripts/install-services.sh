@@ -19,10 +19,12 @@ print(DMyCount.SERVICE_USER)
 print(DMyCount.SERVICE_UNIT)
 print(DControl.SERVICE_UNIT)
 print(DRouterMappings.SERVICE_UNIT)
+print(str(DRouterMappings.ENABLED).lower())
 PY
 )
 mapfile -t settings <<< "$settings_output"
 install_dir=${settings[0]}
+router_enabled=${settings[6]}
 [[ -d $install_dir && -f ${settings[1]} ]] || { printf 'Run install.sh first.\n' >&2; exit 1; }
 getent passwd "${settings[2]}" >/dev/null
 [[ $checkout != "$install_dir" ]] || { printf 'Run deployment from a separate checkout.\n' >&2; exit 1; }
@@ -42,7 +44,7 @@ if values['DB_NAME'] != DMyCount.DATABASE_NAME or values['DB_USER'] != DMyCount.
 Configuration.install()
 PY
 targets=(filesystem listener report-server)
-units=("${settings[@]:3}")
+units=("${settings[@]:3:3}")
 full_setup=true
 if [[ $upgrade == true ]]; then
     flags=$(python3 -B - "$install_dir" <<'PYFLAGS'
@@ -228,7 +230,11 @@ start_services() {
         systemd-analyze verify "/etc/systemd/system/mycount-isoforest.service"
     fi
     for unit in "${units[@]}"; do
-        systemctl enable --now "$unit"
+        if [[ $unit == "${settings[5]}" && $router_enabled == false ]]; then
+            systemctl disable --now "$unit"
+        else
+            systemctl enable --now "$unit"
+        fi
     done
 }
 

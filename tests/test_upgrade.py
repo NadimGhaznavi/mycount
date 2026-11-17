@@ -36,7 +36,7 @@ class UpgradeTests(unittest.TestCase):
         self.executable(python, '''#!/bin/bash
 input=$(cat)
 if [[ $input == *'print(DMyCount.BASE_DIR)'* ]]; then
-    printf '%s\\n' "$TEST_APP" "$TEST_CREDENTIALS" mycount mycount-server.service mycount-control.service mycount-router.service
+    printf '%s\\n' "$TEST_APP" "$TEST_CREDENTIALS" mycount mycount-server.service mycount-control.service mycount-router.service "${TEST_ROUTER_ENABLED:-false}"
 elif [[ $input == *'upgrade_targets(previous'* ]]; then
     echo flags >> "$TEST_LOG"
     if [[ ${TEST_FLAGS_FAILURE:-0} != 0 ]]; then exit 1; fi
@@ -86,7 +86,8 @@ fi
         commands = self.log.read_text().splitlines()
         self.assertNotIn('geoip', commands)
         self.assertIn('systemctl enable --now mycount-server.service', commands)
-        self.assertIn('systemctl enable --now mycount-router.service', commands)
+        self.assertIn('systemctl disable --now mycount-router.service', commands)
+        self.assertNotIn('systemctl enable --now mycount-router.service', commands)
         self.assertIn('systemctl enable --now mycount-control.service', commands)
         self.assertIn('caddy', commands)
         self.assertIn('Upgraded MyCount', result.stdout)
@@ -123,11 +124,21 @@ fi
         self.assertEqual(result.returncode, 0, result.stderr)
         commands = self.log.read_text().splitlines()
         self.assertIn('systemctl enable --now mycount-server.service', commands)
-        self.assertIn('systemctl enable --now mycount-router.service', commands)
+        self.assertIn('systemctl disable --now mycount-router.service', commands)
+        self.assertNotIn('systemctl enable --now mycount-router.service', commands)
         self.assertNotIn('systemctl enable --now mycount-control.service', commands)
         self.assertNotIn('schema', commands)
         self.assertNotIn('caddy', commands)
         self.assertTrue(any(line.startswith('health ') and line.endswith('mycount-server.service mycount-router.service') for line in commands))
+
+    def test_enabled_router_is_started_during_upgrade(self):
+        self.env['TEST_FLAGS'] = 'listener'
+        self.env['TEST_ROUTER_ENABLED'] = 'true'
+        result = self.run_script()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        commands = self.log.read_text().splitlines()
+        self.assertIn('systemctl enable --now mycount-router.service', commands)
+        self.assertNotIn('systemctl disable --now mycount-router.service', commands)
 
     def test_health_failure_does_not_publish_release_metadata(self):
         self.env['TEST_FLAGS'] = 'report-server'
@@ -150,6 +161,8 @@ fi
         commands = self.log.read_text().splitlines()
         self.assertNotIn('geoip', commands)
         self.assertIn('systemctl enable --now cron', commands)
+        self.assertIn('systemctl disable --now mycount-router.service', commands)
+        self.assertNotIn('systemctl enable --now mycount-router.service', commands)
         self.assertTrue(any('mycount/data/cities' in line or '/data/cities' in line for line in commands))
 
     def test_missing_installation_fails_before_deployment(self):

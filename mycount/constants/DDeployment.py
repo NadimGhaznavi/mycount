@@ -628,6 +628,7 @@ class DDeployment:
         "mycount/server/RouterWorker.py": (
             "mycount/__init__.py",
             "mycount/activity/MaintainRouterMappings.py",
+            "mycount/constants/DRouterMappings.py",
             "mycount/interface/RouterMappings.py",
             "mycount/server/__init__.py",
         ),
@@ -708,6 +709,7 @@ class DDeployment:
             "caddy/mycount.caddy",
             "mycount/constants/DCaddy.py",
             "mycount/constants/DMyCount.py",
+            "mycount/constants/DRouterMappings.py",
             "mycount/interface/Network.py",
             "mycount/interface/RouterMappings.py",
         ),
